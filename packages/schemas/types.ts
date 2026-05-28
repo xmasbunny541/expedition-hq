@@ -162,6 +162,22 @@ export type ProposalType =
   | "safety"
   | "architecture";
 
+export type ProposalDialogueMessageType =
+  | "decision_note"
+  | "clarification_question"
+  | "user_reply"
+  | "agent_revision_note";
+
+export interface ProposalDialogueMessageSeed {
+  message_id: string;
+  proposal_id: string;
+  author_type: "user" | "agent" | "system";
+  author_id: string;
+  message: string;
+  created_at: string;
+  message_type: ProposalDialogueMessageType;
+}
+
 export interface ProposalSeed {
   proposal_id: string;
   xp_season: string;
@@ -181,9 +197,11 @@ export interface ProposalSeed {
   status: ProposalStatus;
   decision: "approve" | "deny" | "revise" | "defer" | null;
   decision_note: string | null;
+  decision_note_provided?: boolean;
   decided_at: string | null;
   simulated_xp_gain: number;
   simulated_xp_loss: number;
+  dialogue_messages?: ProposalDialogueMessageSeed[];
   is_test_proposal?: boolean;
   expected_decision?: "approve" | "deny" | "revise" | "defer" | null;
   excluded_from_reputation?: boolean;

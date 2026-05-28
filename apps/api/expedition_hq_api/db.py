@@ -45,6 +45,10 @@ EVENT_COMPAT_COLUMNS = {
     "multiplier_notes_json": "TEXT DEFAULT '[]'",
     "scaling_flags_json": "TEXT DEFAULT '[]'",
 }
+PROPOSAL_COMPAT_COLUMNS = {
+    "decision_note_provided": "INTEGER DEFAULT 0",
+    "dialogue_messages_json": "TEXT DEFAULT '[]'",
+}
 
 def db_path() -> Path:
     return Path(os.environ.get("EXPEDITION_HQ_DB_PATH", DEFAULT_DB_PATH))
@@ -359,9 +363,9 @@ def insert_proposal(conn: sqlite3.Connection, proposal: dict[str, Any]) -> dict[
         (proposal_id, xp_season, formula_version, source_agent, proposal_type, title, summary,
          reasoning, estimated_active_minutes, requested_xp_wager, confidence, risk_level,
          affected_areas_json, acceptance_criteria_json, rollback_plan, status, decision,
-         decision_note, decided_at, simulated_xp_gain, simulated_xp_loss, created_at,
-         updated_at, raw_json)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+         decision_note, decision_note_provided, decided_at, simulated_xp_gain, simulated_xp_loss,
+         dialogue_messages_json, created_at, updated_at, raw_json)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''',
         proposal_values(proposal)
     )
@@ -375,9 +379,9 @@ def insert_seed_proposal(conn: sqlite3.Connection, proposal: dict[str, Any]) -> 
         (proposal_id, xp_season, formula_version, source_agent, proposal_type, title, summary,
          reasoning, estimated_active_minutes, requested_xp_wager, confidence, risk_level,
          affected_areas_json, acceptance_criteria_json, rollback_plan, status, decision,
-         decision_note, decided_at, simulated_xp_gain, simulated_xp_loss, created_at,
-         updated_at, raw_json)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+         decision_note, decision_note_provided, decided_at, simulated_xp_gain, simulated_xp_loss,
+         dialogue_messages_json, created_at, updated_at, raw_json)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''',
         proposal_values(proposal)
     )
@@ -391,9 +395,10 @@ def proposal_values(proposal: dict[str, Any]) -> tuple[Any, ...]:
         proposal["requested_xp_wager"], proposal["confidence"], proposal["risk_level"],
         json.dumps(proposal["affected_areas"]), json.dumps(proposal["acceptance_criteria"]),
         proposal.get("rollback_plan"), proposal["status"], proposal.get("decision"),
-        proposal.get("decision_note"), proposal.get("decided_at"), proposal["simulated_xp_gain"],
-        proposal["simulated_xp_loss"], proposal["created_at"], proposal["updated_at"],
-        json.dumps(proposal)
+        proposal.get("decision_note"), 1 if proposal.get("decision_note_provided") else 0,
+        proposal.get("decided_at"), proposal["simulated_xp_gain"], proposal["simulated_xp_loss"],
+        json.dumps(proposal.get("dialogue_messages", [])), proposal["created_at"],
+        proposal["updated_at"], json.dumps(proposal)
     )
 
 def proposal_exists(conn: sqlite3.Connection, proposal_id: str) -> bool:
@@ -412,7 +417,7 @@ def update_proposal_decision(
     conn: sqlite3.Connection,
     proposal_id: str,
     decision: str,
-    decision_note: str,
+    decision_note: str | None,
 ) -> dict[str, Any] | None:
     row = conn.execute(
         "SELECT raw_json FROM proposals WHERE proposal_id = ?",
@@ -426,14 +431,16 @@ def update_proposal_decision(
         '''
         UPDATE proposals
         SET status = ?, decision = ?, decision_note = ?, decided_at = ?,
-            simulated_xp_gain = ?, simulated_xp_loss = ?, updated_at = ?,
-            raw_json = ?
+            decision_note_provided = ?, simulated_xp_gain = ?, simulated_xp_loss = ?,
+            dialogue_messages_json = ?, updated_at = ?, raw_json = ?
         WHERE proposal_id = ?
         ''',
         (
             proposal["status"], proposal["decision"], proposal["decision_note"],
-            proposal["decided_at"], proposal["simulated_xp_gain"], proposal["simulated_xp_loss"],
-            proposal["updated_at"], json.dumps(proposal), proposal_id
+            proposal["decided_at"], 1 if proposal.get("decision_note_provided") else 0,
+            proposal["simulated_xp_gain"], proposal["simulated_xp_loss"],
+            json.dumps(proposal.get("dialogue_messages", [])), proposal["updated_at"],
+            json.dumps(proposal), proposal_id
         )
     )
     insert_event(conn, proposal_decision_event(proposal))
@@ -446,3 +453,9 @@ def ensure_compatible_schema(conn: sqlite3.Connection) -> None:
     for column, definition in EVENT_COMPAT_COLUMNS.items():
         if column not in event_columns:
             conn.execute(f"ALTER TABLE events ADD COLUMN {column} {definition}")
+    proposal_columns = {
+        row["name"] for row in conn.execute("PRAGMA table_info(proposals)").fetchall()
+    }
+    for column, definition in PROPOSAL_COMPAT_COLUMNS.items():
+        if column not in proposal_columns:
+            conn.execute(f"ALTER TABLE proposals ADD COLUMN {column} {definition}")

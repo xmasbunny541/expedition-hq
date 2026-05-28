@@ -94,7 +94,7 @@ class ProposalIn(BaseModel):
 
 class ProposalDecisionIn(BaseModel):
     decision: Literal["approve", "deny", "revise", "defer"]
-    decision_note: str = Field(min_length=1)
+    decision_note: str | None = None
 
 @app.get("/health")
 def health() -> dict[str, Any]:

@@ -141,9 +141,11 @@ CREATE TABLE IF NOT EXISTS proposals (
   status TEXT NOT NULL,
   decision TEXT,
   decision_note TEXT,
+  decision_note_provided INTEGER DEFAULT 0,
   decided_at TEXT,
   simulated_xp_gain REAL DEFAULT 0,
   simulated_xp_loss REAL DEFAULT 0,
+  dialogue_messages_json TEXT DEFAULT '[]',
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL,
   raw_json TEXT NOT NULL

@@ -189,15 +189,6 @@ function SystemsView({
   );
 }
 
-const decisionNotes: Record<ProposalDecision, string> = {
-  approve: "Approved in local Proposal Desk; eligible for implementation planning only.",
-  deny: "Denied in local Proposal Desk; simulated soft-wager loss recorded.",
-  revise: "Revision requested in local Proposal Desk; no simulated XP loss recorded.",
-  defer: "Deferred in local Proposal Desk for later review; no simulated XP loss recorded."
-};
-
-const qaDenialDecisionNote = "Denied because this violates the read-only Observatory posture. Expedition HQ must not add live tunnel controls, token rotation, OpenClaw config mutation, memory mutation, external sends, or production MCP controls during the MVP/calibration phase.";
-
 const decisionButtonLabels: Record<ProposalDecision, string> = {
   approve: "Record Approval",
   deny: "Deny",
@@ -212,12 +203,33 @@ const decisionButtonTitles: Record<ProposalDecision, string> = {
   defer: "Defer Proposal - records a local deferral only."
 };
 
-function decisionNoteFor(proposal: Proposal, decision: ProposalDecision) {
-  if (proposal.is_test_proposal && proposal.expected_decision === "deny" && decision === "deny") {
-    return qaDenialDecisionNote;
-  }
-  return decisionNotes[decision];
-}
+const decisionActionNames: Record<ProposalDecision, string> = {
+  approve: "Approve",
+  deny: "Deny",
+  revise: "Revise",
+  defer: "Defer"
+};
+
+const decisionSubmitLabels: Record<ProposalDecision, string> = {
+  approve: "Record Approval",
+  deny: "Record Denial",
+  revise: "Request Revision",
+  defer: "Record Deferral"
+};
+
+const decisionTextareaLabels: Record<ProposalDecision, string> = {
+  approve: "Optional: why is this worth pursuing?",
+  deny: "Optional: what made this not worth pursuing?",
+  revise: "Optional: what feels unclear, wrong, too broad, too narrow, or not quite right?",
+  defer: "Optional: why should this wait?"
+};
+
+const decisionHelperText: Record<ProposalDecision, string> = {
+  approve: "Useful notes explain the value, timing, and what should be true before implementation planning starts.",
+  deny: "Useful notes identify the blocker, risk, low value, or mismatch so future proposals can avoid the same issue.",
+  revise: "Useful notes help the agent ask better follow-up questions before resubmitting a narrower or clearer proposal.",
+  defer: "Useful notes explain whether this should wait for timing, dependencies, risk reduction, or better evidence."
+};
 
 function ProposalAnalytics({ proposals }: { proposals: Proposal[] }) {
   const reputationProposals = proposals.filter((proposal) => !proposal.is_test_proposal && !proposal.excluded_from_reputation);
@@ -233,6 +245,16 @@ function ProposalAnalytics({ proposals }: { proposals: Proposal[] }) {
     .reduce((sum, proposal) => sum + proposal.requested_xp_wager, 0);
   const simulatedLost = reputationProposals.reduce((sum, proposal) => sum + proposal.simulated_xp_loss, 0);
   const qaSimulatedLost = qaProposals.reduce((sum, proposal) => sum + proposal.simulated_xp_loss, 0);
+  const decidedProposals = reputationProposals.filter((proposal) => Boolean(proposal.decision));
+  const decisionsWithNotes = decidedProposals.filter((proposal) => proposal.decision_note_provided).length;
+  const decisionsWithoutNotes = decidedProposals.length - decisionsWithNotes;
+  const revisedProposals = reputationProposals.filter((proposal) => proposal.decision === "revise" || proposal.status === "revise_requested");
+  const revisedWithUserContext = revisedProposals.filter((proposal) => proposal.decision_note_provided).length;
+  const revisedWithoutUserContext = revisedProposals.length - revisedWithUserContext;
+  const proposalsEnteringDialogue = reputationProposals.filter((proposal) =>
+    proposal.status === "revise_requested"
+    || (proposal.dialogue_messages ?? []).some((message) => message.message_type === "clarification_question")
+  ).length;
   const countsByType = countProposals(reputationProposals, (proposal) => proposal.proposal_type);
   const countsByDecision = countProposals(reputationProposals, (proposal) => proposal.decision ?? proposal.status);
   const countsByAgent = countProposals(reputationProposals, (proposal) => proposal.source_agent);
@@ -248,6 +270,11 @@ function ProposalAnalytics({ proposals }: { proposals: Proposal[] }) {
         <div><strong>{formatXp(simulatedAtRisk)}</strong><span>normal XP at risk</span></div>
         <div><strong>{formatXp(simulatedLost)}</strong><span>normal XP lost</span></div>
         <div><strong>{formatXp(qaSimulatedLost)}</strong><span>QA simulated XP lost</span></div>
+        <div><strong>{decisionsWithNotes}</strong><span>decisions with notes</span></div>
+        <div><strong>{decisionsWithoutNotes}</strong><span>decisions without notes</span></div>
+        <div><strong>{revisedWithUserContext}</strong><span>revised with context</span></div>
+        <div><strong>{revisedWithoutUserContext}</strong><span>revised without context</span></div>
+        <div><strong>{proposalsEnteringDialogue}</strong><span>entered dialogue</span></div>
       </div>
       <div className="proposal-breakdown-grid">
         <Breakdown title="Count By Type" counts={countsByType} />
@@ -330,6 +357,9 @@ function ProposalCard({
 }) {
   const hasDecisionNote = Boolean(proposal.decision_note);
   const canDecide = proposal.status === "pending";
+  const clarificationQuestions = (proposal.dialogue_messages ?? []).filter(
+    (message) => message.message_type === "clarification_question"
+  );
   return (
     <article className={`proposal-card risk-${proposal.risk_level}`} data-proposal-id={proposal.proposal_id}>
       <div className="proposal-card-header">
@@ -377,6 +407,18 @@ function ProposalCard({
         </div>
       )}
 
+      {proposal.status === "revise_requested" && (
+        <div className="proposal-clarification">
+          <span>Clarification needed</span>
+          <p>Revision starts a dialogue. The agent should ask follow-up questions before resubmitting.</p>
+          <ul>
+            {clarificationQuestions.length
+              ? clarificationQuestions.map((message) => <li key={message.message_id}>{message.message}</li>)
+              : <li>What would make this proposal acceptable?</li>}
+          </ul>
+        </div>
+      )}
+
       <div className="proposal-wager-row">
         <span>simulated gain {formatXp(proposal.simulated_xp_gain)} XP</span>
         <span>simulated loss {formatXp(proposal.simulated_xp_loss)} XP</span>
@@ -413,6 +455,68 @@ function ListBlock({ title, items }: { title: string; items: string[] }) {
       ) : (
         <p>None listed.</p>
       )}
+    </div>
+  );
+}
+
+function DecisionDialog({
+  proposal,
+  decision,
+  note,
+  onNoteChange,
+  onCancel,
+  onSubmit,
+  isSubmitting
+}: {
+  proposal: Proposal;
+  decision: ProposalDecision;
+  note: string;
+  onNoteChange: (value: string) => void;
+  onCancel: () => void;
+  onSubmit: () => void;
+  isSubmitting: boolean;
+}) {
+  const textareaId = `decision-note-${proposal.proposal_id}-${decision}`;
+  return (
+    <div className="dialog-backdrop" role="presentation">
+      <section className="decision-dialog" role="dialog" aria-modal="true" aria-labelledby="decision-dialog-title">
+        <div className="decision-dialog-header">
+          <div>
+            <p className="eyebrow">Proposal Desk Decision</p>
+            <h2 id="decision-dialog-title">{proposal.title}</h2>
+          </div>
+          <span className="badge">{decisionActionNames[decision]}</span>
+        </div>
+
+        <div className="proposal-facts decision-dialog-facts">
+          <div><span>requested wager</span><strong>{formatXp(proposal.requested_xp_wager)} XP</strong></div>
+          <div><span>confidence</span><strong>{formatPercent(proposal.confidence)}</strong></div>
+          <div><span>risk level</span><strong>{proposal.risk_level}</strong></div>
+        </div>
+
+        <p className="decision-local-only">
+          This records a local Proposal Desk decision only. It does not implement the proposal.
+        </p>
+
+        <label className="decision-note-field" htmlFor={textareaId}>
+          <span>{decisionTextareaLabels[decision]}</span>
+          <textarea
+            id={textareaId}
+            onChange={(event) => onNoteChange(event.target.value)}
+            placeholder="Notes are optional during Season 0.x."
+            rows={5}
+            value={note}
+          />
+        </label>
+        <p className="decision-helper">{decisionHelperText[decision]}</p>
+
+        <div className="dialog-actions">
+          <button onClick={onCancel} type="button">Cancel</button>
+          <button disabled={isSubmitting} onClick={onSubmit} type="button">
+            {decisionSubmitLabels[decision]}
+          </button>
+        </div>
+      </section>
     </div>
   );
 }
@@ -497,6 +601,8 @@ export default function App() {
   const [seasonSummaries, setSeasonSummaries] = useState<SeasonSummary[]>([]);
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [decisionPending, setDecisionPending] = useState<string | null>(null);
+  const [pendingDecision, setPendingDecision] = useState<{ proposal: Proposal; decision: ProposalDecision } | null>(null);
+  const [decisionNoteDraft, setDecisionNoteDraft] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -537,12 +643,27 @@ export default function App() {
       .finally(() => setLoading(false));
   }, []);
 
-  const handleProposalDecision = async (proposal: Proposal, decision: ProposalDecision) => {
+  const openDecisionDialog = (proposal: Proposal, decision: ProposalDecision) => {
+    setPendingDecision({ proposal, decision });
+    setDecisionNoteDraft("");
+  };
+
+  const closeDecisionDialog = () => {
+    if (decisionPending) return;
+    setPendingDecision(null);
+    setDecisionNoteDraft("");
+  };
+
+  const submitProposalDecision = async () => {
+    if (!pendingDecision) return;
+    const { proposal, decision } = pendingDecision;
     setDecisionPending(proposal.proposal_id);
     try {
-      const updated = await decideProposal(proposal.proposal_id, decision, decisionNoteFor(proposal, decision));
+      const updated = await decideProposal(proposal.proposal_id, decision, decisionNoteDraft.trim());
       setProposals((current) => current.map((item) => item.proposal_id === updated.proposal_id ? updated : item));
       setEvents(await getEvents());
+      setPendingDecision(null);
+      setDecisionNoteDraft("");
       setError(null);
     } catch (err) {
       setError(String(err));
@@ -721,8 +842,20 @@ export default function App() {
       {activeTab === "proposal-desk" && (
         <ProposalDeskView
           proposals={proposals}
-          onDecision={handleProposalDecision}
+          onDecision={openDecisionDialog}
           decisionPending={decisionPending}
+        />
+      )}
+
+      {pendingDecision && (
+        <DecisionDialog
+          proposal={pendingDecision.proposal}
+          decision={pendingDecision.decision}
+          note={decisionNoteDraft}
+          onNoteChange={setDecisionNoteDraft}
+          onCancel={closeDecisionDialog}
+          onSubmit={submitProposalDecision}
+          isSubmitting={decisionPending === pendingDecision.proposal.proposal_id}
         />
       )}
 

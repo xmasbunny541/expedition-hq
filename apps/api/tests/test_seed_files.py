@@ -203,6 +203,35 @@ def test_proposal_decisions_update_status_and_soft_wager_loss(seeded_client):
         assert proposal["simulated_xp_loss"] == simulated_loss
         assert proposal["simulated_xp_gain"] == 0
 
+def test_proposal_decisions_accept_missing_notes_and_store_defaults(seeded_client):
+    expected = {
+        "approve": ("approved", "Approved for planning. No implementation triggered."),
+        "deny": ("denied", "Denied during Season 0.x testing. No implementation triggered."),
+        "revise": ("revise_requested", "Revision requested during Season 0.x testing. Agent should ask follow-up questions before resubmitting."),
+        "defer": ("deferred", "Deferred during Season 0.x testing. No implementation triggered."),
+    }
+
+    for decision, (status, default_note) in expected.items():
+        proposal_id = f"proposal-default-note-{decision}"
+        create = seeded_client.post("/proposals", json=proposal_payload(proposal_id))
+        assert create.status_code == 200
+
+        response = seeded_client.patch(
+            f"/proposals/{proposal_id}/decision",
+            json={"decision": decision},
+        )
+        assert response.status_code == 200
+        proposal = response.json()
+        assert proposal["status"] == status
+        assert proposal["decision"] == decision
+        assert proposal["decision_note"] == default_note
+        assert proposal["decision_note_provided"] is False
+        assert proposal["simulated_xp_gain"] == 0
+        if decision == "deny":
+            assert proposal["simulated_xp_loss"] == proposal["requested_xp_wager"]
+        else:
+            assert proposal["simulated_xp_loss"] == 0
+
 def test_proposal_decision_creates_zero_xp_local_event(seeded_client):
     proposal_id = "proposal-decision-event"
     created = seeded_client.post("/proposals", json=proposal_payload(proposal_id))
@@ -231,6 +260,44 @@ def test_proposal_decision_creates_zero_xp_local_event(seeded_client):
     assert event["awarded_xp"] == 0
     assert event["total_multiplier_raw"] == 1
     assert event["tags"] == ["proposal", "soft-wager", "deny"]
+
+def test_revise_creates_revision_event_and_clarification_questions(seeded_client):
+    proposal_id = "proposal-revise-dialogue"
+    created = seeded_client.post("/proposals", json=proposal_payload(proposal_id))
+    assert created.status_code == 200
+
+    response = seeded_client.patch(
+        f"/proposals/{proposal_id}/decision",
+        json={"decision": "revise", "decision_note": ""},
+    )
+    assert response.status_code == 200
+    proposal = response.json()
+    assert proposal["status"] == "revise_requested"
+    assert proposal["decision"] == "revise"
+    assert proposal["simulated_xp_loss"] == 0
+    assert proposal["decision_note"] == "Revision requested during Season 0.x testing. Agent should ask follow-up questions before resubmitting."
+
+    messages = proposal["dialogue_messages"]
+    assert any(message["message_type"] == "decision_note" for message in messages)
+    questions = [
+        message["message"] for message in messages
+        if message["message_type"] == "clarification_question"
+    ]
+    assert "What did you not like about this proposal?" in questions
+    assert "What would make this proposal acceptable?" in questions
+
+    events = seeded_client.get("/events").json()
+    revision_events = [
+        event for event in events
+        if event["event_type"] == "proposal_revision_requested" and event.get("proposal_id") == proposal_id
+    ]
+    assert len(revision_events) == 1
+    event = revision_events[0]
+    assert event["active_minutes"] == 0
+    assert event["awarded_xp"] == 0
+    assert event["decision_note"] == proposal["decision_note"]
+    assert proposal["decision_note"] in event["summary"]
+    assert event["tags"] == ["proposal", "soft-wager", "revise", "clarification"]
 
 def test_qa_denial_seed_proposal_deny_path(seeded_client):
     proposal_id = "proposal-qa-deny-live-controls"
@@ -269,6 +336,31 @@ def test_qa_denial_seed_proposal_deny_path(seeded_client):
     assert event["awarded_xp"] == 0
     assert event["tags"] == ["proposal", "soft-wager", "deny"]
     assert "requested soft wager 1 XP" in event["summary"]
+
+def test_proposal_decision_backend_has_no_external_dispatch_terms():
+    checked_files = [
+        ROOT / "apps" / "api" / "expedition_hq_api" / "main.py",
+        ROOT / "apps" / "api" / "expedition_hq_api" / "db.py",
+        ROOT / "apps" / "api" / "expedition_hq_api" / "proposals.py",
+    ]
+    forbidden = [
+        "hooks/agent",
+        "codex exec",
+        "OpenClaw",
+        "Start-Process",
+        "subprocess",
+        "shell",
+        "dispatch",
+        "tunnel",
+        "token",
+        "memory mutation",
+        "Invoke-RestMethod",
+        "curl",
+        "requests.",
+        "httpx.",
+    ]
+    contents = "\n".join(path.read_text(encoding="utf-8") for path in checked_files)
+    assert not any(term in contents for term in forbidden)
 
 def test_proposal_decision_does_not_apply_real_xp_to_season_summary(seeded_client):
     proposal_id = "proposal-no-real-xp"

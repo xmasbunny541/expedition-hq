@@ -852,6 +852,7 @@ p {
 .proposal-metrics > div,
 .proposal-rollback,
 .proposal-decision-note,
+.proposal-clarification,
 .proposal-test-note,
 .proposal-list-block {
   border: 1px solid rgba(247, 239, 226, .1);
@@ -864,6 +865,7 @@ p {
 .proposal-metrics span,
 .proposal-rollback span,
 .proposal-decision-note span,
+.proposal-clarification span,
 .proposal-test-note span,
 .proposal-list-block span {
   display: block;
@@ -884,9 +886,26 @@ p {
 .proposal-reasoning,
 .proposal-rollback p,
 .proposal-decision-note p,
+.proposal-clarification p,
 .proposal-list-block p {
   color: #d8c8b4;
   margin: 0;
+}
+
+.proposal-clarification {
+  border-color: rgba(143, 168, 255, .48);
+  background: rgba(33, 48, 80, .24);
+}
+
+.proposal-clarification ul {
+  margin: 8px 0 0;
+  padding-left: 18px;
+}
+
+.proposal-clarification li {
+  color: #dfe6ff;
+  line-height: 1.38;
+  margin-bottom: 6px;
 }
 
 .proposal-test-note {
@@ -981,6 +1000,111 @@ p {
   text-transform: capitalize;
 }
 
+.dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 12;
+  display: grid;
+  place-items: center;
+  background: rgba(8, 9, 9, .72);
+  padding: 18px;
+}
+
+.decision-dialog {
+  display: grid;
+  gap: 14px;
+  width: min(620px, 100%);
+  max-height: calc(100vh - 36px);
+  overflow: auto;
+  border: 1px solid rgba(217, 170, 97, .34);
+  border-radius: 8px;
+  background: linear-gradient(160deg, rgba(37, 32, 26, .98), rgba(24, 34, 36, .96));
+  box-shadow: 0 26px 80px rgba(0, 0, 0, .55);
+  padding: 18px;
+}
+
+.decision-dialog-header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.decision-dialog-facts {
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+}
+
+.decision-local-only {
+  border: 1px solid rgba(118, 214, 157, .38);
+  border-radius: 8px;
+  background: rgba(34, 64, 46, .34);
+  color: #d7ffe7;
+  margin: 0;
+  padding: 10px;
+}
+
+.decision-note-field {
+  display: grid;
+  gap: 7px;
+}
+
+.decision-note-field span,
+.decision-helper {
+  color: #bbaea0;
+  font-size: .86rem;
+}
+
+.decision-note-field textarea {
+  width: 100%;
+  resize: vertical;
+  border: 1px solid rgba(247, 239, 226, .14);
+  border-radius: 8px;
+  background: rgba(10, 11, 11, .34);
+  color: #f7efe2;
+  font: inherit;
+  line-height: 1.4;
+  min-height: 120px;
+  padding: 10px;
+}
+
+.decision-note-field textarea:focus {
+  border-color: rgba(217, 170, 97, .72);
+  outline: none;
+}
+
+.decision-helper {
+  margin: 0;
+}
+
+.dialog-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: end;
+  gap: 8px;
+}
+
+.dialog-actions button {
+  min-height: 38px;
+  border: 1px solid rgba(247, 239, 226, .18);
+  border-radius: 8px;
+  background: rgba(247, 239, 226, .07);
+  color: #f7efe2;
+  cursor: pointer;
+  font-weight: 800;
+  padding: 8px 12px;
+}
+
+.dialog-actions button:last-child {
+  border-color: rgba(217, 170, 97, .66);
+  background: rgba(217, 170, 97, .18);
+  color: #ffe0a9;
+}
+
+.dialog-actions button:disabled {
+  cursor: wait;
+  opacity: .6;
+}
+
 .trophy-locked {
   filter: saturate(.65);
   opacity: .78;
@@ -1061,6 +1185,7 @@ p {
   }
 
   .section-heading,
+  .decision-dialog-header,
   .proposal-card-header,
   .field-report-header {
     align-items: start;

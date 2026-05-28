@@ -83,10 +83,10 @@ export function getProposals() {
 export function decideProposal(
   proposalId: string,
   decision: ProposalDecision,
-  decisionNote: string
+  decisionNote?: string
 ) {
   return patchJson<Proposal>(`/proposals/${proposalId}/decision`, {
     decision,
-    decision_note: decisionNote
+    decision_note: decisionNote ?? ""
   });
 }

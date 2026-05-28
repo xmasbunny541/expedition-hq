@@ -312,6 +312,7 @@
             "null"
           ]
         },
+        "decision_note_provided": { "type": "boolean" },
         "decided_at": {
           "type": [
             "string",
@@ -320,6 +321,41 @@
         },
         "simulated_xp_gain": { "type": "number", "minimum": 0 },
         "simulated_xp_loss": { "type": "number", "minimum": 0 },
+        "dialogue_messages": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "message_id",
+              "proposal_id",
+              "author_type",
+              "author_id",
+              "message",
+              "created_at",
+              "message_type"
+            ],
+            "properties": {
+              "message_id": { "type": "string" },
+              "proposal_id": { "type": "string" },
+              "author_type": {
+                "type": "string",
+                "enum": ["user", "agent", "system"]
+              },
+              "author_id": { "type": "string" },
+              "message": { "type": "string" },
+              "created_at": { "type": "string" },
+              "message_type": {
+                "type": "string",
+                "enum": [
+                  "decision_note",
+                  "clarification_question",
+                  "user_reply",
+                  "agent_revision_note"
+                ]
+              }
+            }
+          }
+        },
         "is_test_proposal": { "type": "boolean" },
         "expected_decision": {
           "type": [
