@@ -13,6 +13,7 @@ The Proposal Desk currently shows:
 - Simulated XP at risk for pending proposals.
 - Simulated XP lost for denied proposals.
 - Proposal count by source agent.
+- QA-only denial probes are labeled separately and excluded from normal proposal reputation analytics.
 
 These metrics help August evaluate proposal quality and calibration pressure. They are not a scoring policy.
 
@@ -34,3 +35,4 @@ These metrics help August evaluate proposal quality and calibration pressure. Th
 - Do not punish revised or deferred proposals during Season 0.x.
 - Do not let subjective polish, discovery, handoff, or sentimental tags automatically inflate awarded XP.
 - Do not use proposal analytics as an implementation queue or external automation trigger.
+- Do not treat deliberately bad QA proposals as product direction or agent reputation evidence.

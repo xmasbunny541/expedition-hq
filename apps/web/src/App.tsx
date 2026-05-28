@@ -196,30 +196,44 @@ const decisionNotes: Record<ProposalDecision, string> = {
   defer: "Deferred in local Proposal Desk for later review; no simulated XP loss recorded."
 };
 
+const qaDenialDecisionNote = "Denied because this violates the read-only Observatory posture. Expedition HQ must not add live tunnel controls, token rotation, OpenClaw config mutation, memory mutation, external sends, or production MCP controls during the MVP/calibration phase.";
+
+function decisionNoteFor(proposal: Proposal, decision: ProposalDecision) {
+  if (proposal.is_test_proposal && proposal.expected_decision === "deny" && decision === "deny") {
+    return qaDenialDecisionNote;
+  }
+  return decisionNotes[decision];
+}
+
 function ProposalAnalytics({ proposals }: { proposals: Proposal[] }) {
-  const averageWager = proposals.length
-    ? proposals.reduce((sum, proposal) => sum + proposal.requested_xp_wager, 0) / proposals.length
+  const reputationProposals = proposals.filter((proposal) => !proposal.is_test_proposal && !proposal.excluded_from_reputation);
+  const qaProposals = proposals.filter((proposal) => proposal.is_test_proposal || proposal.excluded_from_reputation);
+  const averageWager = reputationProposals.length
+    ? reputationProposals.reduce((sum, proposal) => sum + proposal.requested_xp_wager, 0) / reputationProposals.length
     : 0;
-  const averageConfidence = proposals.length
-    ? proposals.reduce((sum, proposal) => sum + proposal.confidence, 0) / proposals.length
+  const averageConfidence = reputationProposals.length
+    ? reputationProposals.reduce((sum, proposal) => sum + proposal.confidence, 0) / reputationProposals.length
     : 0;
-  const simulatedAtRisk = proposals
+  const simulatedAtRisk = reputationProposals
     .filter((proposal) => proposal.status === "pending")
     .reduce((sum, proposal) => sum + proposal.requested_xp_wager, 0);
-  const simulatedLost = proposals.reduce((sum, proposal) => sum + proposal.simulated_xp_loss, 0);
-  const countsByType = countProposals(proposals, (proposal) => proposal.proposal_type);
-  const countsByDecision = countProposals(proposals, (proposal) => proposal.decision ?? proposal.status);
-  const countsByAgent = countProposals(proposals, (proposal) => proposal.source_agent);
+  const simulatedLost = reputationProposals.reduce((sum, proposal) => sum + proposal.simulated_xp_loss, 0);
+  const qaSimulatedLost = qaProposals.reduce((sum, proposal) => sum + proposal.simulated_xp_loss, 0);
+  const countsByType = countProposals(reputationProposals, (proposal) => proposal.proposal_type);
+  const countsByDecision = countProposals(reputationProposals, (proposal) => proposal.decision ?? proposal.status);
+  const countsByAgent = countProposals(reputationProposals, (proposal) => proposal.source_agent);
 
   return (
     <section className="living-section proposal-analytics">
-      <SectionHeader eyebrow="Proposal Analytics" title="Soft Wager Calibration" note="Advisory only; not applied to Season 0.x XP." />
+      <SectionHeader eyebrow="Proposal Analytics" title="Soft Wager Calibration" note="Normal analytics exclude QA-only denial probes." />
       <div className="proposal-metrics">
-        <div><strong>{proposals.length}</strong><span>proposals</span></div>
-        <div><strong>{formatXp(averageWager)}</strong><span>avg requested wager</span></div>
-        <div><strong>{formatPercent(averageConfidence)}</strong><span>avg confidence</span></div>
-        <div><strong>{formatXp(simulatedAtRisk)}</strong><span>simulated XP at risk</span></div>
-        <div><strong>{formatXp(simulatedLost)}</strong><span>simulated XP lost</span></div>
+        <div><strong>{reputationProposals.length}</strong><span>normal proposals</span></div>
+        <div><strong>{qaProposals.length}</strong><span>QA test proposals</span></div>
+        <div><strong>{formatXp(averageWager)}</strong><span>normal avg wager</span></div>
+        <div><strong>{formatPercent(averageConfidence)}</strong><span>normal avg confidence</span></div>
+        <div><strong>{formatXp(simulatedAtRisk)}</strong><span>normal XP at risk</span></div>
+        <div><strong>{formatXp(simulatedLost)}</strong><span>normal XP lost</span></div>
+        <div><strong>{formatXp(qaSimulatedLost)}</strong><span>QA simulated XP lost</span></div>
       </div>
       <div className="proposal-breakdown-grid">
         <Breakdown title="Count By Type" counts={countsByType} />
@@ -303,7 +317,7 @@ function ProposalCard({
   const hasDecisionNote = Boolean(proposal.decision_note);
   const canDecide = proposal.status === "pending";
   return (
-    <article className={`proposal-card risk-${proposal.risk_level}`}>
+    <article className={`proposal-card risk-${proposal.risk_level}`} data-proposal-id={proposal.proposal_id}>
       <div className="proposal-card-header">
         <div>
           <p className="eyebrow">{labelize(proposal.proposal_type)}</p>
@@ -312,6 +326,15 @@ function ProposalCard({
         </div>
         <span className="badge">{labelize(proposal.status)}</span>
       </div>
+
+      {proposal.is_test_proposal && (
+        <div className="proposal-test-note">
+          <strong>QA test-only denial probe</strong>
+          <span>
+            Expected decision: {proposal.expected_decision ?? "deny"}. Excluded from normal proposal reputation analytics.
+          </span>
+        </div>
+      )}
 
       <div className="proposal-facts">
         <div><span>source agent</span><strong>{proposal.source_agent}</strong></div>
@@ -501,7 +524,7 @@ export default function App() {
   const handleProposalDecision = async (proposal: Proposal, decision: ProposalDecision) => {
     setDecisionPending(proposal.proposal_id);
     try {
-      const updated = await decideProposal(proposal.proposal_id, decision, decisionNotes[decision]);
+      const updated = await decideProposal(proposal.proposal_id, decision, decisionNoteFor(proposal, decision));
       setProposals((current) => current.map((item) => item.proposal_id === updated.proposal_id ? updated : item));
       setEvents(await getEvents());
       setError(null);

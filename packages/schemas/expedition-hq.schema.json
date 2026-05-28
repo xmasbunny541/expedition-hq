@@ -320,6 +320,21 @@
         },
         "simulated_xp_gain": { "type": "number", "minimum": 0 },
         "simulated_xp_loss": { "type": "number", "minimum": 0 },
+        "is_test_proposal": { "type": "boolean" },
+        "expected_decision": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "approve",
+            "deny",
+            "revise",
+            "defer",
+            null
+          ]
+        },
+        "excluded_from_reputation": { "type": "boolean" },
         "created_at": { "type": "string" },
         "updated_at": { "type": "string" }
       }

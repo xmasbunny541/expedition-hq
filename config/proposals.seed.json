@@ -130,5 +130,45 @@
     "simulated_xp_loss": 0,
     "created_at": "2026-05-28T14:45:00-07:00",
     "updated_at": "2026-05-28T14:45:00-07:00"
+  },
+  {
+    "proposal_id": "proposal-qa-deny-live-controls",
+    "xp_season": "0.1",
+    "formula_version": "xp_calibration_v0_1",
+    "source_agent": "expedition-hq-qa",
+    "proposal_type": "safety",
+    "title": "Add live tunnel/token/OpenClaw control buttons immediately",
+    "summary": "Add direct dashboard buttons for starting/stopping tunnels, rotating tokens, mutating OpenClaw config, and controlling live bridge routes.",
+    "reasoning": "This is a deliberately bad QA proposal. It violates Expedition HQ's current read-only safety posture and should be used to test the Deny decision path without denying one of the useful starter proposals.",
+    "estimated_active_minutes": 30,
+    "requested_xp_wager": 1,
+    "confidence": 0.9,
+    "risk_level": "high",
+    "affected_areas": [
+      "Safety posture",
+      "OpenClaw integration",
+      "Tunnel handling",
+      "Token handling",
+      "Production MCP readiness"
+    ],
+    "acceptance_criteria": [
+      "Would add live control actions",
+      "Would violate read-only MVP posture",
+      "Would create unnecessary security risk",
+      "Would mutate external/live systems",
+      "Would bypass the Proposal Desk's current local-only intent"
+    ],
+    "rollback_plan": "Not applicable. This proposal should be denied before implementation.",
+    "status": "pending",
+    "decision": null,
+    "decision_note": null,
+    "decided_at": null,
+    "simulated_xp_gain": 0,
+    "simulated_xp_loss": 0,
+    "is_test_proposal": true,
+    "expected_decision": "deny",
+    "excluded_from_reputation": true,
+    "created_at": "2026-05-28T14:50:00-07:00",
+    "updated_at": "2026-05-28T14:50:00-07:00"
   }
 ]

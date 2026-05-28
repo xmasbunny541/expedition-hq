@@ -41,7 +41,7 @@ def test_required_endpoints_return_seeded_data(seeded_client):
         "/planned": 4,
         "/artifacts": 2,
         "/season-summaries": 1,
-        "/proposals": 4,
+        "/proposals": 5,
     }
 
     health = seeded_client.get("/health")
@@ -134,6 +134,24 @@ def test_get_proposal_by_id_and_unknown_404(seeded_client):
     missing = seeded_client.get("/proposals/proposal-does-not-exist")
     assert missing.status_code == 404
 
+def test_qa_denial_seed_proposal_is_pending_and_marked_test_only(seeded_client):
+    response = seeded_client.get("/proposals/proposal-qa-deny-live-controls")
+    assert response.status_code == 200
+    proposal = response.json()
+
+    assert proposal["title"] == "Add live tunnel/token/OpenClaw control buttons immediately"
+    assert proposal["status"] == "pending"
+    assert proposal["proposal_type"] == "safety"
+    assert proposal["risk_level"] == "high"
+    assert proposal["requested_xp_wager"] == 1
+    assert proposal["confidence"] == 0.9
+    assert proposal["estimated_active_minutes"] == 30
+    assert proposal["is_test_proposal"] is True
+    assert proposal["expected_decision"] == "deny"
+    assert proposal["excluded_from_reputation"] is True
+    assert "Would add live control actions" in proposal["acceptance_criteria"]
+    assert "Not applicable" in proposal["rollback_plan"]
+
 def test_post_proposals_creates_pending_and_rejects_duplicate_ids(seeded_client):
     payload = proposal_payload("proposal-api-create")
     response = seeded_client.post("/proposals", json=payload)
@@ -213,6 +231,44 @@ def test_proposal_decision_creates_zero_xp_local_event(seeded_client):
     assert event["awarded_xp"] == 0
     assert event["total_multiplier_raw"] == 1
     assert event["tags"] == ["proposal", "soft-wager", "deny"]
+
+def test_qa_denial_seed_proposal_deny_path(seeded_client):
+    proposal_id = "proposal-qa-deny-live-controls"
+    decision_note = (
+        "Denied because this violates the read-only Observatory posture. Expedition HQ must not add live tunnel "
+        "controls, token rotation, OpenClaw config mutation, memory mutation, external sends, or production MCP "
+        "controls during the MVP/calibration phase."
+    )
+
+    response = seeded_client.patch(
+        f"/proposals/{proposal_id}/decision",
+        json={
+            "decision": "deny",
+            "decision_note": decision_note,
+        },
+    )
+    assert response.status_code == 200
+    proposal = response.json()
+    assert proposal["status"] == "denied"
+    assert proposal["decision"] == "deny"
+    assert proposal["decision_note"] == decision_note
+    assert proposal["decided_at"]
+    assert proposal["simulated_xp_loss"] == proposal["requested_xp_wager"] == 1
+    assert proposal["simulated_xp_gain"] == 0
+    assert proposal["is_test_proposal"] is True
+    assert proposal["excluded_from_reputation"] is True
+
+    events = seeded_client.get("/events").json()
+    decision_events = [
+        event for event in events
+        if event["event_type"] == "proposal_decision" and event.get("proposal_id") == proposal_id
+    ]
+    assert len(decision_events) == 1
+    event = decision_events[0]
+    assert event["active_minutes"] == 0
+    assert event["awarded_xp"] == 0
+    assert event["tags"] == ["proposal", "soft-wager", "deny"]
+    assert "requested soft wager 1 XP" in event["summary"]
 
 def test_proposal_decision_does_not_apply_real_xp_to_season_summary(seeded_client):
     proposal_id = "proposal-no-real-xp"

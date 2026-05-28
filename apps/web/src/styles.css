@@ -852,6 +852,7 @@ p {
 .proposal-metrics > div,
 .proposal-rollback,
 .proposal-decision-note,
+.proposal-test-note,
 .proposal-list-block {
   border: 1px solid rgba(247, 239, 226, .1);
   border-radius: 8px;
@@ -863,6 +864,7 @@ p {
 .proposal-metrics span,
 .proposal-rollback span,
 .proposal-decision-note span,
+.proposal-test-note span,
 .proposal-list-block span {
   display: block;
   color: #bbaea0;
@@ -885,6 +887,17 @@ p {
 .proposal-list-block p {
   color: #d8c8b4;
   margin: 0;
+}
+
+.proposal-test-note {
+  border-color: rgba(224, 120, 93, .58);
+  background: rgba(91, 35, 27, .28);
+}
+
+.proposal-test-note strong {
+  display: block;
+  color: #ffd2c4;
+  margin-bottom: 4px;
 }
 
 .proposal-detail-grid,

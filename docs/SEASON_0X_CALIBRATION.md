@@ -22,6 +22,7 @@ Proposal Desk wagers are simulated in Season 0.x.
 - Revised and deferred proposals record no simulated XP loss.
 - Future accepted implementations may record `simulated_xp_gain` equal to the requested wager.
 - Soft wager values never feed `base_xp`, `awarded_xp`, season summaries, or milestone XP.
+- QA-only proposals may exist to exercise decision paths. They should be labeled clearly and excluded from normal reputation interpretation.
 
 ## Record preservation
 

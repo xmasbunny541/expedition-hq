@@ -149,6 +149,9 @@ export interface Proposal {
   decided_at: string | null;
   simulated_xp_gain: number;
   simulated_xp_loss: number;
+  is_test_proposal?: boolean;
+  expected_decision?: ProposalDecision | null;
+  excluded_from_reputation?: boolean;
   created_at: string;
   updated_at: string;
 }
