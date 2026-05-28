@@ -11,6 +11,7 @@ sys.path.insert(0, str(ROOT / "apps" / "api"))
 
 from expedition_hq_api import db as db_module
 from expedition_hq_api.main import app
+from expedition_hq_api.xp import normalize_event_xp
 
 def test_seed_json_loads():
     for path in (ROOT / "config").glob("*.json"):
@@ -39,6 +40,7 @@ def test_required_endpoints_return_seeded_data(seeded_client):
         "/memory-stores": 6,
         "/planned": 4,
         "/artifacts": 2,
+        "/season-summaries": 1,
     }
 
     health = seeded_client.get("/health")
@@ -65,6 +67,14 @@ def test_post_events_creates_local_event(seeded_client):
         "event_type": "field_report",
         "title": "Test field report",
         "summary": "Verifies local SQLite event ingest without touching external systems.",
+        "active_minutes": 30,
+        "party_agents": ["openclaw-main"],
+        "scoring_multipliers": {
+            "artifact": 1.15,
+            "blocker_break": 1.0,
+            "reuse_leverage": 1.0,
+            "risk_control": 1.25,
+        },
         "tags": ["test"],
     }
 
@@ -73,6 +83,12 @@ def test_post_events_creates_local_event(seeded_client):
     created = response.json()
     assert created["id"] == payload["id"]
     assert created["timestamp"]
+    assert created["base_xp"] == 0.5
+    assert created["scoring_multipliers"]["grinding"] == 1.25
+    assert created["scoring_multipliers"]["party_size"] == 1.1
+    assert created["total_multiplier_raw"] == 1.976562
+    assert created["awarded_xp"] == 0.988281
+    assert created["xp"] == created["awarded_xp"]
 
     events = seeded_client.get("/events").json()
     assert any(event["id"] == payload["id"] for event in events)
@@ -88,3 +104,83 @@ def test_post_events_rejects_duplicate_ids(seeded_client):
 
     response = seeded_client.post("/events", json=payload)
     assert response.status_code == 409
+
+def test_xp_formula_party_cap_and_uncapped_total():
+    event = normalize_event_xp({
+        "id": "evt-xp-formula",
+        "timestamp": "2026-05-28T10:00:00-07:00",
+        "source_id": "openclaw-main",
+        "event_type": "calibration_probe",
+        "title": "Formula probe",
+        "summary": "Checks Season 0.x XP formulas.",
+        "status": "success",
+        "risk_level": "low",
+        "needs_review": False,
+        "active_minutes": 120,
+        "party_agents": ["a", "b", "c", "d", "e", "f"],
+        "scoring_multipliers": {
+            "artifact": 1.3,
+            "blocker_break": 1.5,
+            "reuse_leverage": 2.0,
+            "risk_control": 1.25,
+        },
+        "shadow_multipliers": {
+            "discovery": True,
+            "polish": True,
+        },
+    })
+
+    assert event["base_xp"] == 2
+    assert event["scoring_multipliers"]["grinding"] == 1.5
+    assert event["scoring_multipliers"]["party_size"] == 1.5
+    assert event["total_multiplier_raw"] == 10.96875
+    assert event["awarded_xp"] == 21.9375
+    assert event["multiplier_cap"] is None
+    assert event["scaling_flags"] == ["high_multiplier", "extreme_multiplier", "scaling_review"]
+
+def test_shadow_multipliers_do_not_change_xp():
+    base_payload = {
+        "id": "evt-shadow-base",
+        "timestamp": "2026-05-28T10:00:00-07:00",
+        "source_id": "openclaw-main",
+        "event_type": "calibration_probe",
+        "title": "Formula probe",
+        "summary": "Checks shadow tags.",
+        "status": "success",
+        "risk_level": "low",
+        "needs_review": False,
+        "active_minutes": 45,
+        "scoring_multipliers": {
+            "artifact": 1.15,
+            "blocker_break": 1.0,
+            "reuse_leverage": 1.3,
+            "risk_control": 1.0,
+        },
+    }
+    without_shadow = normalize_event_xp(base_payload)
+    with_shadow = normalize_event_xp({
+        **base_payload,
+        "id": "evt-shadow-candidate",
+        "shadow_multipliers": {
+            "discovery": True,
+            "handoff_chain": True,
+            "polish": True,
+            "sentimental_record": True,
+        },
+    })
+
+    assert with_shadow["awarded_xp"] == without_shadow["awarded_xp"]
+    assert with_shadow["total_multiplier_raw"] == without_shadow["total_multiplier_raw"]
+
+def test_season_summary_aggregates_seed_xp(seeded_client):
+    summaries = seeded_client.get("/season-summaries")
+    assert summaries.status_code == 200
+    season = summaries.json()[0]
+
+    assert season["season"] == "0.1"
+    assert season["formula_version"] == "xp_calibration_v0_1"
+    assert season["event_count"] >= 9
+    assert season["total_active_minutes"] >= 368
+    assert season["total_base_xp"] >= 6.133333
+    assert season["average_multiplier"] > 1
+    assert season["shadow_multiplier_counts"]["discovery"] >= 3

@@ -1,0 +1,137 @@
+[
+  {
+    "season": "0.1",
+    "formula_version": "xp_calibration_v0_1",
+    "xp_mode": "uncapped_calibration",
+    "label": "Season 0.x · Uncapped Calibration XP",
+    "started_at": "2026-05-27T19:55:33-07:00",
+    "ended_at": null,
+    "total_active_minutes": 368,
+    "total_base_xp": 6.133333,
+    "total_awarded_xp": 20.979568,
+    "average_multiplier": 3.420582,
+    "event_count": 9,
+    "field_report_count": 1,
+    "artifact_count": 4,
+    "review_item_count": 4,
+    "average_party_size": 1,
+    "average_party_multiplier": 1.1,
+    "average_grinding_multiplier": 1.227778,
+    "most_common_scoring_multiplier_sources": [
+      {
+        "source": "grinding",
+        "count": 8
+      },
+      {
+        "source": "risk_control",
+        "count": 6
+      },
+      {
+        "source": "reuse_leverage",
+        "count": 5
+      },
+      {
+        "source": "party_size",
+        "count": 5
+      },
+      {
+        "source": "artifact",
+        "count": 4
+      },
+      {
+        "source": "blocker_break",
+        "count": 3
+      }
+    ],
+    "shadow_multiplier_counts": {
+      "discovery": 3,
+      "handoff_chain": 0,
+      "polish": 2,
+      "sentimental_record": 2
+    },
+    "top_agents_by_base_xp": [
+      {
+        "agent_id": "openclaw-main",
+        "xp": 1.973611
+      },
+      {
+        "agent_id": "home-windows-codex",
+        "xp": 0.890277
+      },
+      {
+        "agent_id": "codex-headless-cli-runs",
+        "xp": 0.8625
+      },
+      {
+        "agent_id": "openclaw-gateway",
+        "xp": 0.525
+      },
+      {
+        "agent_id": "openclaw-to-codex-watcher",
+        "xp": 0.466667
+      }
+    ],
+    "top_agents_by_awarded_xp": [
+      {
+        "agent_id": "openclaw-main",
+        "xp": 6.352995
+      },
+      {
+        "agent_id": "home-windows-codex",
+        "xp": 4.028386
+      },
+      {
+        "agent_id": "codex-headless-cli-runs",
+        "xp": 3.499432
+      },
+      {
+        "agent_id": "expedition-hq-dashboard",
+        "xp": 2.508594
+      },
+      {
+        "agent_id": "manual",
+        "xp": 1.373125
+      }
+    ],
+    "top_expeditions_by_base_xp": [
+      {
+        "expedition_id": "expedition-hq-dashboard",
+        "xp": 4.016666
+      },
+      {
+        "expedition_id": "phone-openclaw-access",
+        "xp": 1.166667
+      },
+      {
+        "expedition_id": "public-mcp-bridge",
+        "xp": 0.583333
+      },
+      {
+        "expedition_id": "codex-memory-governance",
+        "xp": 0.366667
+      }
+    ],
+    "top_expeditions_by_awarded_xp": [
+      {
+        "expedition_id": "expedition-hq-dashboard",
+        "xp": 16.771693
+      },
+      {
+        "expedition_id": "phone-openclaw-access",
+        "xp": 2.550427
+      },
+      {
+        "expedition_id": "public-mcp-bridge",
+        "xp": 1.102865
+      },
+      {
+        "expedition_id": "codex-memory-governance",
+        "xp": 0.554583
+      }
+    ],
+    "notes": [
+      "Season 0.1 is an uncapped calibration baseline; formulas are frozen during the test window.",
+      "XP resets are display/current-season resets only; source events and summaries remain preserved."
+    ]
+  }
+]

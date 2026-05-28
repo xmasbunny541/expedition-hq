@@ -129,7 +129,7 @@ p {
 
 .metric-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 10px;
 }
 
@@ -696,6 +696,73 @@ p {
   font-size: .82rem;
   padding: 6px 9px;
   text-align: center;
+}
+
+.xp-breakdown {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(88px, 1fr));
+  gap: 8px;
+  margin: 10px 0;
+}
+
+.xp-breakdown > div,
+.multiplier-grid span,
+.calibration-grid p {
+  border: 1px solid rgba(247, 239, 226, .1);
+  border-radius: 8px;
+  background: rgba(10, 11, 11, .24);
+}
+
+.xp-breakdown > div {
+  display: grid;
+  gap: 3px;
+  padding: 8px;
+}
+
+.xp-breakdown span {
+  color: #bbaea0;
+  font-size: .72rem;
+  text-transform: uppercase;
+}
+
+.xp-breakdown strong {
+  color: #fff0cf;
+  font-size: .9rem;
+}
+
+.multiplier-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 0 10px;
+}
+
+.multiplier-grid span {
+  color: #d8c8b4;
+  font-size: .78rem;
+  padding: 5px 8px;
+  text-transform: capitalize;
+}
+
+.multiplier-grid strong {
+  color: #fff0cf;
+}
+
+.shadow {
+  border-color: rgba(143, 168, 255, .48);
+  color: #dfe6ff;
+}
+
+.calibration-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+}
+
+.calibration-grid p {
+  color: #d8c8b4;
+  margin: 0;
+  padding: 12px;
 }
 
 .full-feed {

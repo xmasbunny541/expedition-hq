@@ -10,5 +10,43 @@
     "archive/artifacts/bootstrap/deep-research-report.md"
   ],
   "sentimental_note": "This marks the transition from idea exploration into a buildable project.",
-  "xp": 25
+  "xp_season": "0.1",
+  "formula_version": "xp_calibration_v0_1",
+  "xp_mode": "uncapped_calibration",
+  "active_minutes": 65,
+  "base_xp": 1.083333,
+  "awarded_xp": 4.119375,
+  "xp": 4.119375,
+  "total_multiplier_raw": 3.8025,
+  "multiplier_cap": null,
+  "xp_source": "active_minutes",
+  "xp_confidence": "estimated",
+  "party_agents": [
+    "openclaw-main",
+    "home-windows-codex"
+  ],
+  "party_size": 2,
+  "scoring_multipliers": {
+    "grinding": 1.5,
+    "party_size": 1.2,
+    "artifact": 1.3,
+    "blocker_break": 1,
+    "reuse_leverage": 1.3,
+    "risk_control": 1.25
+  },
+  "shadow_multipliers": {
+    "discovery": false,
+    "handoff_chain": false,
+    "polish": false,
+    "sentimental_record": true
+  },
+  "shadow_multiplier_notes": [
+    "Sentimental tag preserves the transition from idea to buildable project without changing XP."
+  ],
+  "multiplier_notes": [
+    "Reusable scaffold and redacted archive artifacts improved the read-only project workflow."
+  ],
+  "scaling_flags": [
+    "high_multiplier"
+  ]
 }

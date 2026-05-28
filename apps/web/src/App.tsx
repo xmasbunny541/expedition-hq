@@ -9,7 +9,8 @@ import {
   getMemoryStores,
   getMilestones,
   getPlannedItems,
-  getRoutes
+  getRoutes,
+  getSeasonSummaries
 } from "./api";
 import type {
   Agent,
@@ -21,7 +22,8 @@ import type {
   MemoryStore,
   Milestone,
   PlannedItem,
-  Route
+  Route,
+  SeasonSummary
 } from "./types";
 import { AgentCard } from "./components/AgentCard";
 import { CurrentActivity } from "./components/CurrentActivity";
@@ -67,6 +69,17 @@ function SectionHeader({ eyebrow, title, note }: { eyebrow: string; title: strin
       {note && <span className="section-note">{note}</span>}
     </div>
   );
+}
+
+function formatXp(value = 0) {
+  return value.toLocaleString(undefined, { maximumFractionDigits: 1 });
+}
+
+function formatMinutes(value = 0) {
+  if (value < 60) return `${Math.round(value)}m`;
+  const hours = Math.floor(value / 60);
+  const minutes = Math.round(value % 60);
+  return minutes ? `${hours}h ${minutes}m` : `${hours}h`;
 }
 
 function SystemsView({
@@ -175,6 +188,7 @@ export default function App() {
   const [memoryStores, setMemoryStores] = useState<MemoryStore[]>([]);
   const [plannedItems, setPlannedItems] = useState<PlannedItem[]>([]);
   const [artifacts, setArtifacts] = useState<Artifact[]>([]);
+  const [seasonSummaries, setSeasonSummaries] = useState<SeasonSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -189,9 +203,10 @@ export default function App() {
       getRoutes(),
       getMemoryStores(),
       getPlannedItems(),
-      getArtifacts()
+      getArtifacts(),
+      getSeasonSummaries()
     ])
-      .then(([apiHealth, a, ex, ev, ms, inc, rt, mem, planned, art]) => {
+      .then(([apiHealth, a, ex, ev, ms, inc, rt, mem, planned, art, summaries]) => {
         setHealth(apiHealth);
         setAgents(a);
         setExpeditions(ex);
@@ -202,6 +217,7 @@ export default function App() {
         setMemoryStores(mem);
         setPlannedItems(planned);
         setArtifacts(art);
+        setSeasonSummaries(summaries);
         setError(null);
       })
       .catch((err) => {
@@ -236,7 +252,13 @@ export default function App() {
   const reviewEvents = sortedEvents.filter((event) => event.needs_review || ["medium", "high"].includes(event.risk_level) || event.status === "blocked");
   const openIncidents = incidents.filter((incident) => incident.status === "open");
   const stateCounts = countByState(agents, incidents);
-  const totalXp = events.reduce((sum, event) => sum + event.xp, 0);
+  const currentSeasonSummary = seasonSummaries.find((summary) => !summary.ended_at) ?? seasonSummaries[0];
+  const totalAwardedXp = currentSeasonSummary?.total_awarded_xp ?? events.reduce((sum, event) => sum + (event.awarded_xp ?? event.xp), 0);
+  const totalBaseXp = currentSeasonSummary?.total_base_xp ?? events.reduce((sum, event) => sum + (event.base_xp ?? 0), 0);
+  const totalActiveMinutes = currentSeasonSummary?.total_active_minutes ?? events.reduce((sum, event) => sum + (event.active_minutes ?? 0), 0);
+  const averageMultiplier = currentSeasonSummary?.average_multiplier ?? (totalBaseXp ? totalAwardedXp / totalBaseXp : 0);
+  const currentSeason = currentSeasonSummary?.season ?? health?.xp_season ?? "0.1";
+  const xpLabel = currentSeasonSummary?.label ?? health?.xp_label ?? "Season 0.x · Uncapped Calibration XP";
   const activeExpeditions = expeditions.filter((expedition) => expedition.progress_percent < 100 && expedition.status !== "complete");
   const recentFieldReports = sortedEvents.slice(0, 4);
 
@@ -261,14 +283,15 @@ export default function App() {
           <p className="eyebrow">Local-first / Read-only / Expedition HQ</p>
           <h1>Living Expedition HQ</h1>
           <p>
-            A cozy command room for watching specialists, constructs, routes, expeditions, field reports, and trophies without controlling live systems.
+            {xpLabel} keeps progress tied to active contribution time while the HQ remains a local read-only observatory.
           </p>
         </div>
         <div className="metric-grid" aria-label="Expedition HQ totals">
-          <div><strong>{spotlightLittleGuys.length}</strong><span>little specialists</span></div>
-          <div><strong>{activeExpeditions.length}</strong><span>active expeditions</span></div>
-          <div><strong>{reviewEvents.length + openIncidents.length}</strong><span>review items</span></div>
-          <div><strong>{totalXp}</strong><span>earned XP</span></div>
+          <div><strong>{currentSeason}</strong><span>current season</span></div>
+          <div><strong>{formatMinutes(totalActiveMinutes)}</strong><span>active time</span></div>
+          <div><strong>{formatXp(totalBaseXp)}</strong><span>base XP</span></div>
+          <div><strong>{formatXp(totalAwardedXp)}</strong><span>awarded XP</span></div>
+          <div><strong>{averageMultiplier.toFixed(1)}x</strong><span>average multiplier</span></div>
         </div>
       </header>
 
@@ -296,7 +319,7 @@ export default function App() {
               <h2>What are the little AI guys doing?</h2>
               <p>
                 {spotlightLittleGuys.length} specialists are visible in the base. {activeExpeditions.length} expeditions are still moving,{" "}
-                {reviewEvents.length + openIncidents.length} items need human review, and {totalXp} XP has been logged from real field reports.
+                {reviewEvents.length + openIncidents.length} items need human review, and {formatXp(totalAwardedXp)} uncapped calibration XP has been logged from {formatMinutes(totalActiveMinutes)} of active work.
               </p>
             </div>
             <div className="state-summary" aria-label="Current operational states">
@@ -332,6 +355,16 @@ export default function App() {
               {recentFieldReports.length
                 ? recentFieldReports.map((event) => <FieldReportCard key={event.id} event={event} source={agentById.get(event.source_id)} />)
                 : <EmptyState label="No field reports are available from the local event ledger." />}
+            </div>
+          </section>
+
+          <section className="living-section calibration-log">
+            <SectionHeader eyebrow="Season Log" title="Calibration Log" note={xpLabel} />
+            <div className="calibration-grid">
+              <p>XP resets are expected during Season 0.x; they reset current-season display, not the event ledger.</p>
+              <p>Historical events and season summaries are preserved so Season 0.1, 0.2, and later calibration windows can be compared.</p>
+              <p>The formulas are frozen during the test window unless August explicitly asks for a formula change.</p>
+              <p>Season 0.x data will be used to balance later scoring, including future proposal wager ranges.</p>
             </div>
           </section>
 

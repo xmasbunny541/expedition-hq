@@ -3,6 +3,6 @@
   "name": "Map Room Founded",
   "description": "Create the repo shell, charter, guardrails, and first redacted census import.",
   "status": "available",
-  "xp_reward": 50,
+  "xp_reward": 0,
   "unlock_condition": "Initial scaffold committed and seed data validated."
 }

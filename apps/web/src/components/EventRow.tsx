@@ -5,6 +5,7 @@ export function EventRow({ event }: { event: Event }) {
   const displayTime = Number.isNaN(timestamp.valueOf())
     ? event.timestamp
     : timestamp.toLocaleString();
+  const xp = (event.awarded_xp ?? event.xp).toLocaleString(undefined, { maximumFractionDigits: 1 });
 
   return (
     <li className={`event event-${event.status}`}>
@@ -20,7 +21,7 @@ export function EventRow({ event }: { event: Event }) {
       <div className="event-meta">
         <span>{event.source_id}</span>
         <span>{displayTime}</span>
-        <span>{event.xp} XP</span>
+        <span>{xp} XP</span>
       </div>
     </li>
   );

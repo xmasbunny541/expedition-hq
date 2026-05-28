@@ -10,7 +10,40 @@
     "status": "success",
     "risk_level": "low",
     "needs_review": false,
-    "xp": 25,
+    "xp_season": "0.1",
+    "formula_version": "xp_calibration_v0_1",
+    "xp_mode": "uncapped_calibration",
+    "active_minutes": 55,
+    "base_xp": 0.916667,
+    "awarded_xp": 2.141276,
+    "xp": 2.141276,
+    "total_multiplier_raw": 2.335938,
+    "multiplier_cap": null,
+    "xp_source": "active_minutes",
+    "xp_confidence": "estimated",
+    "party_agents": [],
+    "party_size": 0,
+    "scoring_multipliers": {
+      "grinding": 1.25,
+      "party_size": 1,
+      "artifact": 1.15,
+      "blocker_break": 1,
+      "reuse_leverage": 1.3,
+      "risk_control": 1.25
+    },
+    "shadow_multipliers": {
+      "discovery": true,
+      "handoff_chain": false,
+      "polish": false,
+      "sentimental_record": false
+    },
+    "shadow_multiplier_notes": [
+      "Discovery tag records the first useful redacted census import."
+    ],
+    "multiplier_notes": [
+      "Useful redacted artifact with reusable archive value and improved read-only safety posture."
+    ],
+    "scaling_flags": [],
     "tags": [
       "bootstrap",
       "census",
@@ -28,7 +61,40 @@
     "status": "success",
     "risk_level": "low",
     "needs_review": false,
-    "xp": 30,
+    "xp_season": "0.1",
+    "formula_version": "xp_calibration_v0_1",
+    "xp_mode": "uncapped_calibration",
+    "active_minutes": 18,
+    "base_xp": 0.3,
+    "awarded_xp": 0.33,
+    "xp": 0.33,
+    "total_multiplier_raw": 1.1,
+    "multiplier_cap": null,
+    "xp_source": "active_minutes",
+    "xp_confidence": "estimated",
+    "party_agents": [],
+    "party_size": 0,
+    "scoring_multipliers": {
+      "grinding": 1.1,
+      "party_size": 1,
+      "artifact": 1,
+      "blocker_break": 1,
+      "reuse_leverage": 1,
+      "risk_control": 1
+    },
+    "shadow_multipliers": {
+      "discovery": false,
+      "handoff_chain": false,
+      "polish": false,
+      "sentimental_record": true
+    },
+    "shadow_multiplier_notes": [
+      "Sentimental tag captures the project identity decision without changing XP."
+    ],
+    "multiplier_notes": [
+      "Theme selection is meaningful planning, but it is not a durable artifact by itself."
+    ],
+    "scaling_flags": [],
     "tags": [
       "theme",
       "milestone"
@@ -45,7 +111,40 @@
     "status": "warning",
     "risk_level": "medium",
     "needs_review": true,
-    "xp": 10,
+    "xp_season": "0.1",
+    "formula_version": "xp_calibration_v0_1",
+    "xp_mode": "uncapped_calibration",
+    "active_minutes": 22,
+    "base_xp": 0.366667,
+    "awarded_xp": 0.554583,
+    "xp": 0.554583,
+    "total_multiplier_raw": 1.5125,
+    "multiplier_cap": null,
+    "xp_source": "active_minutes",
+    "xp_confidence": "estimated",
+    "party_agents": [],
+    "party_size": 0,
+    "scoring_multipliers": {
+      "grinding": 1.1,
+      "party_size": 1,
+      "artifact": 1,
+      "blocker_break": 1.1,
+      "reuse_leverage": 1,
+      "risk_control": 1.25
+    },
+    "shadow_multipliers": {
+      "discovery": true,
+      "handoff_chain": false,
+      "polish": false,
+      "sentimental_record": false
+    },
+    "shadow_multiplier_notes": [
+      "Discovery tag marks a maturity gap found during review."
+    ],
+    "multiplier_notes": [
+      "Investigated a memory-governance blocker and improved review posture by keeping mutation gated."
+    ],
+    "scaling_flags": [],
     "tags": [
       "memory",
       "review",
@@ -63,7 +162,38 @@
     "status": "warning",
     "risk_level": "medium",
     "needs_review": true,
-    "xp": 10,
+    "xp_season": "0.1",
+    "formula_version": "xp_calibration_v0_1",
+    "xp_mode": "uncapped_calibration",
+    "active_minutes": 8,
+    "base_xp": 0.133333,
+    "awarded_xp": 0.146667,
+    "xp": 0.146667,
+    "total_multiplier_raw": 1.1,
+    "multiplier_cap": null,
+    "xp_source": "active_minutes",
+    "xp_confidence": "estimated",
+    "party_agents": [],
+    "party_size": 0,
+    "scoring_multipliers": {
+      "grinding": 1,
+      "party_size": 1,
+      "artifact": 1,
+      "blocker_break": 1.1,
+      "reuse_leverage": 1,
+      "risk_control": 1
+    },
+    "shadow_multipliers": {
+      "discovery": false,
+      "handoff_chain": false,
+      "polish": false,
+      "sentimental_record": false
+    },
+    "shadow_multiplier_notes": [],
+    "multiplier_notes": [
+      "Short blocker investigation; no resolution or artifact bonus."
+    ],
+    "scaling_flags": [],
     "tags": [
       "codex",
       "maturity",
@@ -81,7 +211,41 @@
     "status": "success",
     "risk_level": "medium",
     "needs_review": false,
-    "xp": 20,
+    "xp_season": "0.1",
+    "formula_version": "xp_calibration_v0_1",
+    "xp_mode": "uncapped_calibration",
+    "active_minutes": 42,
+    "base_xp": 0.7,
+    "awarded_xp": 1.70625,
+    "xp": 1.70625,
+    "total_multiplier_raw": 2.4375,
+    "multiplier_cap": null,
+    "xp_source": "active_minutes",
+    "xp_confidence": "estimated",
+    "party_agents": [
+      "codex-headless-cli-runs",
+      "openclaw-gateway"
+    ],
+    "party_size": 2,
+    "scoring_multipliers": {
+      "grinding": 1.25,
+      "party_size": 1.2,
+      "artifact": 1,
+      "blocker_break": 1,
+      "reuse_leverage": 1.3,
+      "risk_control": 1.25
+    },
+    "shadow_multipliers": {
+      "discovery": false,
+      "handoff_chain": false,
+      "polish": false,
+      "sentimental_record": false
+    },
+    "shadow_multiplier_notes": [],
+    "multiplier_notes": [
+      "Party event with reusable dispatch value and explicit review boundaries."
+    ],
+    "scaling_flags": [],
     "tags": [
       "watcher",
       "codex",
@@ -99,7 +263,42 @@
     "status": "blocked",
     "risk_level": "high",
     "needs_review": true,
-    "xp": 0,
+    "xp_season": "0.1",
+    "formula_version": "xp_calibration_v0_1",
+    "xp_mode": "uncapped_calibration",
+    "active_minutes": 35,
+    "base_xp": 0.583333,
+    "awarded_xp": 1.102865,
+    "xp": 1.102865,
+    "total_multiplier_raw": 1.890625,
+    "multiplier_cap": null,
+    "xp_source": "active_minutes",
+    "xp_confidence": "estimated",
+    "party_agents": [
+      "openclaw-gateway"
+    ],
+    "party_size": 1,
+    "scoring_multipliers": {
+      "grinding": 1.25,
+      "party_size": 1.1,
+      "artifact": 1,
+      "blocker_break": 1.1,
+      "reuse_leverage": 1,
+      "risk_control": 1.25
+    },
+    "shadow_multipliers": {
+      "discovery": true,
+      "handoff_chain": false,
+      "polish": false,
+      "sentimental_record": false
+    },
+    "shadow_multiplier_notes": [
+      "Discovery tag records public MCP readiness gaps."
+    ],
+    "multiplier_notes": [
+      "Touched the blocker but did not resolve it; safety posture improved by preserving no-production status."
+    ],
+    "scaling_flags": [],
     "tags": [
       "mcp",
       "security",
@@ -117,7 +316,42 @@
     "status": "success",
     "risk_level": "low",
     "needs_review": false,
-    "xp": 15,
+    "xp_season": "0.1",
+    "formula_version": "xp_calibration_v0_1",
+    "xp_mode": "uncapped_calibration",
+    "active_minutes": 28,
+    "base_xp": 0.466667,
+    "awarded_xp": 0.844177,
+    "xp": 0.844177,
+    "total_multiplier_raw": 1.80895,
+    "multiplier_cap": null,
+    "xp_source": "active_minutes",
+    "xp_confidence": "estimated",
+    "party_agents": [
+      "openclaw-to-codex-watcher"
+    ],
+    "party_size": 1,
+    "scoring_multipliers": {
+      "grinding": 1.1,
+      "party_size": 1.1,
+      "artifact": 1.15,
+      "blocker_break": 1,
+      "reuse_leverage": 1.3,
+      "risk_control": 1
+    },
+    "shadow_multipliers": {
+      "discovery": false,
+      "handoff_chain": false,
+      "polish": true,
+      "sentimental_record": false
+    },
+    "shadow_multiplier_notes": [
+      "Polish tag records clearer artifact provenance without affecting XP."
+    ],
+    "multiplier_notes": [
+      "Useful artifact trail with reusable history value."
+    ],
+    "scaling_flags": [],
     "tags": [
       "artifacts",
       "codex",
@@ -135,7 +369,48 @@
     "status": "success",
     "risk_level": "low",
     "needs_review": false,
-    "xp": 40,
+    "xp_season": "0.1",
+    "formula_version": "xp_calibration_v0_1",
+    "xp_mode": "uncapped_calibration",
+    "active_minutes": 95,
+    "base_xp": 1.583333,
+    "awarded_xp": 10.034375,
+    "xp": 10.034375,
+    "total_multiplier_raw": 6.3375,
+    "multiplier_cap": null,
+    "xp_source": "active_minutes",
+    "xp_confidence": "estimated",
+    "party_agents": [
+      "openclaw-main",
+      "home-windows-codex",
+      "codex-headless-cli-runs"
+    ],
+    "party_size": 3,
+    "scoring_multipliers": {
+      "grinding": 1.5,
+      "party_size": 1.3,
+      "artifact": 1.3,
+      "blocker_break": 1,
+      "reuse_leverage": 2,
+      "risk_control": 1.25
+    },
+    "shadow_multipliers": {
+      "discovery": false,
+      "handoff_chain": false,
+      "polish": true,
+      "sentimental_record": false
+    },
+    "shadow_multiplier_notes": [
+      "Polish tag records the dashboard moving from scaffold to usable observatory."
+    ],
+    "multiplier_notes": [
+      "Reusable dashboard/API output improved the standard read-only workflow."
+    ],
+    "scaling_flags": [
+      "high_multiplier",
+      "extreme_multiplier",
+      "scaling_review"
+    ],
     "tags": [
       "map-room",
       "mvp",

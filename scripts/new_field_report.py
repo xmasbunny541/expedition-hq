@@ -20,7 +20,26 @@ def main() -> None:
         "summary": "Replace this with what changed, what was learned, and what artifact proves progress.",
         "artifact_refs": [],
         "sentimental_note": "",
-        "xp": 0
+        "xp_season": "0.1",
+        "formula_version": "xp_calibration_v0_1",
+        "xp_mode": "uncapped_calibration",
+        "active_minutes": 0,
+        "xp_confidence": "estimated",
+        "party_agents": [],
+        "scoring_multipliers": {
+            "artifact": 1.0,
+            "blocker_break": 1.0,
+            "reuse_leverage": 1.0,
+            "risk_control": 1.0,
+        },
+        "shadow_multipliers": {
+            "discovery": False,
+            "handoff_chain": False,
+            "polish": False,
+            "sentimental_record": False,
+        },
+        "shadow_multiplier_notes": [],
+        "multiplier_notes": []
     }
     path = REPORT_DIR / f"{now.strftime('%Y-%m-%d')}-{report['id']}.json"
     path.write_text(json.dumps(report, indent=2), encoding="utf-8")

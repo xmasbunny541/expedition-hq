@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "build": "npm run web:build",
     "web:dev": "cd apps/web && npm run dev",
     "web:build": "cd apps/web && npm run build",
     "seed:validate": "python scripts/validate_seed.py",

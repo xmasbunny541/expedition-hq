@@ -14,7 +14,7 @@ export function TrophyShelf({
           <p className="eyebrow">Progress</p>
           <h2>Trophy Shelf</h2>
         </div>
-        <span className="section-note">{milestones.length} milestones, {artifacts.length} artifacts</span>
+        <span className="section-note">Milestones are badges during Season 0.x; XP comes from active time and multipliers.</span>
       </div>
       <div className="trophy-shelf">
         {milestones.map((milestone) => (
@@ -22,7 +22,7 @@ export function TrophyShelf({
             <span>{milestone.status}</span>
             <h3>{milestone.name}</h3>
             <p>{milestone.description}</p>
-            <strong>{milestone.xp_reward} XP</strong>
+            <strong>{milestone.xp_reward > 0 ? `${milestone.xp_reward} bonus XP` : "badge only"}</strong>
           </article>
         ))}
         {artifacts.map((artifact) => (

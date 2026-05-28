@@ -33,8 +33,75 @@ export interface Event {
   status: string;
   risk_level: string;
   needs_review: boolean;
+  xp_season: string;
+  formula_version: string;
+  xp_mode: string;
+  active_minutes: number;
+  base_xp: number;
+  awarded_xp: number;
   xp: number;
+  total_multiplier_raw: number;
+  multiplier_cap: number | null;
+  xp_source: string;
+  xp_confidence: string;
+  party_agents: string[];
+  party_size: number;
+  scoring_multipliers: ScoringMultipliers;
+  shadow_multipliers: ShadowMultipliers;
+  shadow_multiplier_notes: string[] | string;
+  multiplier_notes: string[] | string;
+  scaling_flags: string[];
   tags: string[];
+}
+
+export interface ScoringMultipliers {
+  grinding: number;
+  party_size: number;
+  artifact: number;
+  blocker_break: number;
+  reuse_leverage: number;
+  risk_control: number;
+}
+
+export interface ShadowMultipliers {
+  discovery: boolean;
+  handoff_chain: boolean;
+  polish: boolean;
+  sentimental_record: boolean;
+}
+
+export interface ShadowMultiplierCounts {
+  discovery: number;
+  handoff_chain: number;
+  polish: number;
+  sentimental_record: number;
+}
+
+export interface SeasonSummary {
+  season: string;
+  formula_version: string;
+  xp_mode: string;
+  label: string;
+  started_at: string;
+  ended_at: string | null;
+  total_active_minutes: number;
+  total_base_xp: number;
+  total_awarded_xp: number;
+  average_multiplier: number;
+  event_count: number;
+  field_report_count: number;
+  artifact_count: number;
+  review_item_count: number;
+  average_party_size: number;
+  average_party_multiplier: number;
+  average_grinding_multiplier: number;
+  most_common_scoring_multiplier_sources: { source: string; count: number }[];
+  shadow_multiplier_counts: ShadowMultiplierCounts;
+  top_agents_by_base_xp: { agent_id: string; xp: number }[];
+  top_agents_by_awarded_xp: { agent_id: string; xp: number }[];
+  top_expeditions_by_base_xp: { expedition_id: string; xp: number }[];
+  top_expeditions_by_awarded_xp: { expedition_id: string; xp: number }[];
+  notes: string[];
 }
 
 export interface Milestone {
@@ -88,4 +155,8 @@ export interface Health {
   service: string;
   mode: string;
   mutation_policy: string;
+  xp_season?: string;
+  formula_version?: string;
+  xp_mode?: string;
+  xp_label?: string;
 }

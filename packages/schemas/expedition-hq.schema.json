@@ -82,8 +82,94 @@
         "needs_review": {
           "type": "boolean"
         },
+        "xp_season": {
+          "type": "string"
+        },
+        "formula_version": {
+          "type": "string"
+        },
+        "xp_mode": {
+          "type": "string"
+        },
+        "active_minutes": {
+          "type": "number",
+          "minimum": 0
+        },
+        "base_xp": {
+          "type": "number",
+          "minimum": 0
+        },
+        "awarded_xp": {
+          "type": "number",
+          "minimum": 0
+        },
         "xp": {
-          "type": "integer"
+          "type": "number",
+          "minimum": 0
+        },
+        "total_multiplier_raw": {
+          "type": "number",
+          "minimum": 0
+        },
+        "multiplier_cap": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "xp_source": {
+          "type": "string"
+        },
+        "xp_confidence": {
+          "type": "string"
+        },
+        "party_agents": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "party_size": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "scoring_multipliers": {
+          "type": "object",
+          "properties": {
+            "grinding": { "type": "number" },
+            "party_size": { "type": "number" },
+            "artifact": { "type": "number" },
+            "blocker_break": { "type": "number" },
+            "reuse_leverage": { "type": "number" },
+            "risk_control": { "type": "number" }
+          }
+        },
+        "shadow_multipliers": {
+          "type": "object",
+          "properties": {
+            "discovery": { "type": "boolean" },
+            "handoff_chain": { "type": "boolean" },
+            "polish": { "type": "boolean" },
+            "sentimental_record": { "type": "boolean" }
+          }
+        },
+        "shadow_multiplier_notes": {
+          "type": [
+            "string",
+            "array"
+          ]
+        },
+        "multiplier_notes": {
+          "type": [
+            "string",
+            "array"
+          ]
+        },
+        "scaling_flags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "tags": {
           "type": "array",
@@ -91,6 +177,50 @@
             "type": "string"
           }
         }
+      }
+    },
+    "season_summary": {
+      "type": "object",
+      "required": [
+        "season",
+        "formula_version",
+        "started_at",
+        "total_active_minutes",
+        "total_base_xp",
+        "total_awarded_xp",
+        "average_multiplier",
+        "event_count"
+      ],
+      "properties": {
+        "season": { "type": "string" },
+        "formula_version": { "type": "string" },
+        "xp_mode": { "type": "string" },
+        "label": { "type": "string" },
+        "started_at": { "type": "string" },
+        "ended_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "total_active_minutes": { "type": "number" },
+        "total_base_xp": { "type": "number" },
+        "total_awarded_xp": { "type": "number" },
+        "average_multiplier": { "type": "number" },
+        "event_count": { "type": "integer" },
+        "field_report_count": { "type": "integer" },
+        "artifact_count": { "type": "integer" },
+        "review_item_count": { "type": "integer" },
+        "average_party_size": { "type": "number" },
+        "average_party_multiplier": { "type": "number" },
+        "average_grinding_multiplier": { "type": "number" },
+        "most_common_scoring_multiplier_sources": { "type": "array" },
+        "shadow_multiplier_counts": { "type": "object" },
+        "top_agents_by_base_xp": { "type": "array" },
+        "top_agents_by_awarded_xp": { "type": "array" },
+        "top_expeditions_by_base_xp": { "type": "array" },
+        "top_expeditions_by_awarded_xp": { "type": "array" },
+        "notes": { "type": "array" }
       }
     }
   }

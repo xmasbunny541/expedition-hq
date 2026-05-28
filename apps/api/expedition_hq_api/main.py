@@ -9,7 +9,8 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
-from .db import init_db, seed_db, rows, connect, insert_event, event_exists
+from .db import init_db, seed_db, rows, connect, insert_event, event_exists, season_summary_rows
+from .xp import CURRENT_XP_LABEL, CURRENT_XP_SEASON, FORMULA_VERSION, XP_MODE, normalize_event_xp
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -21,10 +22,18 @@ app = FastAPI(title="Expedition HQ API", version="0.1.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://127.0.0.1:5173", "http://localhost:5173"],
+    allow_origins=[
+        "http://127.0.0.1:5173",
+        "http://localhost:5173",
+        "http://127.0.0.1:5174",
+        "http://localhost:5174",
+        "http://127.0.0.1:5175",
+        "http://localhost:5175",
+    ],
     allow_credentials=False,
     allow_methods=["GET", "POST"],
     allow_headers=["*"],
+    allow_origin_regex=r"http://(127\.0\.0\.1|localhost):517[3-9]",
 )
 
 class EventIn(BaseModel):
@@ -38,7 +47,13 @@ class EventIn(BaseModel):
     status: str = Field(default="success", min_length=1)
     risk_level: str = Field(default="low", min_length=1)
     needs_review: bool = False
-    xp: int = Field(default=0, ge=0)
+    active_minutes: float = Field(default=0, ge=0)
+    xp_confidence: str = Field(default="estimated", min_length=1)
+    party_agents: list[str] = Field(default_factory=list)
+    scoring_multipliers: dict[str, float] = Field(default_factory=dict)
+    shadow_multipliers: dict[str, bool] = Field(default_factory=dict)
+    shadow_multiplier_notes: str | list[str] = Field(default_factory=list)
+    multiplier_notes: str | list[str] = Field(default_factory=list)
     tags: list[str] = Field(default_factory=list)
 
 @app.get("/health")
@@ -48,6 +63,10 @@ def health() -> dict[str, Any]:
         "service": "expedition-hq-api",
         "mode": "read_only_with_local_event_ingest",
         "mutation_policy": "local_sqlite_events_only",
+        "xp_season": CURRENT_XP_SEASON,
+        "formula_version": FORMULA_VERSION,
+        "xp_mode": XP_MODE,
+        "xp_label": CURRENT_XP_LABEL,
     }
 
 @app.get("/agents")
@@ -67,6 +86,7 @@ def create_event(event: EventIn) -> dict[str, Any]:
     payload = event.model_dump()
     payload["id"] = payload["id"] or f"evt-{uuid4().hex[:12]}"
     payload["timestamp"] = payload["timestamp"] or datetime.now(timezone.utc).isoformat()
+    payload = normalize_event_xp(payload)
     with connect() as conn:
         if event_exists(conn, payload["id"]):
             raise HTTPException(status_code=409, detail=f"Event already exists: {payload['id']}")
@@ -96,3 +116,7 @@ def planned() -> list[dict[str, Any]]:
 @app.get("/artifacts")
 def artifacts() -> list[dict[str, Any]]:
     return rows("artifacts")
+
+@app.get("/season-summaries")
+def season_summaries() -> list[dict[str, Any]]:
+    return season_summary_rows()

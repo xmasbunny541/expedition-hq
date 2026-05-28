@@ -6,6 +6,8 @@ import sqlite3
 from pathlib import Path
 from typing import Any
 
+from .xp import aggregate_season_summary, normalize_event_xp
+
 ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_DB_PATH = ROOT / "data" / "expedition-hq.db"
 MIGRATION_PATH = ROOT / "db" / "migrations" / "001_initial.sql"
@@ -19,8 +21,28 @@ SEED_TABLES = [
     "memory_stores",
     "planned_items",
     "artifacts",
+    "season_summaries",
 ]
 READ_TABLES = set(SEED_TABLES)
+EVENT_COMPAT_COLUMNS = {
+    "xp_season": "TEXT",
+    "formula_version": "TEXT",
+    "xp_mode": "TEXT",
+    "active_minutes": "REAL DEFAULT 0",
+    "base_xp": "REAL DEFAULT 0",
+    "awarded_xp": "REAL DEFAULT 0",
+    "total_multiplier_raw": "REAL DEFAULT 1",
+    "multiplier_cap": "REAL",
+    "xp_source": "TEXT",
+    "xp_confidence": "TEXT",
+    "party_agents_json": "TEXT DEFAULT '[]'",
+    "party_size": "INTEGER DEFAULT 0",
+    "scoring_multipliers_json": "TEXT DEFAULT '{}'",
+    "shadow_multipliers_json": "TEXT DEFAULT '{}'",
+    "shadow_multiplier_notes_json": "TEXT DEFAULT '[]'",
+    "multiplier_notes_json": "TEXT DEFAULT '[]'",
+    "scaling_flags_json": "TEXT DEFAULT '[]'",
+}
 
 def db_path() -> Path:
     return Path(os.environ.get("EXPEDITION_HQ_DB_PATH", DEFAULT_DB_PATH))
@@ -35,6 +57,7 @@ def connect() -> sqlite3.Connection:
 def init_db() -> None:
     with connect() as conn:
         conn.executescript(MIGRATION_PATH.read_text(encoding="utf-8"))
+        ensure_compatible_schema(conn)
 
 def load_json(path: Path) -> Any:
     return json.loads(path.read_text(encoding="utf-8"))
@@ -168,35 +191,62 @@ def seed_db(force: bool = False) -> None:
 
         insert_bootstrap_artifacts(conn)
 
+        season_summaries_path = seed_dir / "season-summaries.seed.json"
+        if season_summaries_path.exists():
+            for summary in load_json(season_summaries_path):
+                insert_season_summary(conn, summary)
+
 def insert_event(conn: sqlite3.Connection, event: dict[str, Any]) -> None:
+    event = normalize_event_xp(event)
     conn.execute(
         '''
         INSERT INTO events
         (id, timestamp, source_id, expedition_id, event_type, title, summary, status,
-         risk_level, needs_review, xp, tags_json, raw_json)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+         risk_level, needs_review, xp, xp_season, formula_version, xp_mode, active_minutes,
+         base_xp, awarded_xp, total_multiplier_raw, multiplier_cap, xp_source, xp_confidence,
+         party_agents_json, party_size, scoring_multipliers_json, shadow_multipliers_json,
+         shadow_multiplier_notes_json, multiplier_notes_json, scaling_flags_json, tags_json, raw_json)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''',
         (
             event["id"], event["timestamp"], event["source_id"], event.get("expedition_id"),
             event["event_type"], event["title"], event["summary"], event["status"],
             event.get("risk_level"), 1 if event.get("needs_review") else 0,
-            event.get("xp", 0), json.dumps(event.get("tags", [])), json.dumps(event)
+            event.get("xp", 0), event.get("xp_season"), event.get("formula_version"),
+            event.get("xp_mode"), event.get("active_minutes"), event.get("base_xp"),
+            event.get("awarded_xp"), event.get("total_multiplier_raw"), event.get("multiplier_cap"),
+            event.get("xp_source"), event.get("xp_confidence"), json.dumps(event.get("party_agents", [])),
+            event.get("party_size", 0), json.dumps(event.get("scoring_multipliers", {})),
+            json.dumps(event.get("shadow_multipliers", {})), json.dumps(event.get("shadow_multiplier_notes", [])),
+            json.dumps(event.get("multiplier_notes", [])), json.dumps(event.get("scaling_flags", [])),
+            json.dumps(event.get("tags", [])), json.dumps(event)
         )
     )
 
 def insert_seed_event(conn: sqlite3.Connection, event: dict[str, Any]) -> None:
+    event = normalize_event_xp(event)
     conn.execute(
         '''
-        INSERT OR IGNORE INTO events
+        INSERT OR REPLACE INTO events
         (id, timestamp, source_id, expedition_id, event_type, title, summary, status,
-         risk_level, needs_review, xp, tags_json, raw_json)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+         risk_level, needs_review, xp, xp_season, formula_version, xp_mode, active_minutes,
+         base_xp, awarded_xp, total_multiplier_raw, multiplier_cap, xp_source, xp_confidence,
+         party_agents_json, party_size, scoring_multipliers_json, shadow_multipliers_json,
+         shadow_multiplier_notes_json, multiplier_notes_json, scaling_flags_json, tags_json, raw_json)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''',
         (
             event["id"], event["timestamp"], event["source_id"], event.get("expedition_id"),
             event["event_type"], event["title"], event["summary"], event["status"],
             event.get("risk_level"), 1 if event.get("needs_review") else 0,
-            event.get("xp", 0), json.dumps(event.get("tags", [])), json.dumps(event)
+            event.get("xp", 0), event.get("xp_season"), event.get("formula_version"),
+            event.get("xp_mode"), event.get("active_minutes"), event.get("base_xp"),
+            event.get("awarded_xp"), event.get("total_multiplier_raw"), event.get("multiplier_cap"),
+            event.get("xp_source"), event.get("xp_confidence"), json.dumps(event.get("party_agents", [])),
+            event.get("party_size", 0), json.dumps(event.get("scoring_multipliers", {})),
+            json.dumps(event.get("shadow_multipliers", {})), json.dumps(event.get("shadow_multiplier_notes", [])),
+            json.dumps(event.get("multiplier_notes", [])), json.dumps(event.get("scaling_flags", [])),
+            json.dumps(event.get("tags", [])), json.dumps(event)
         )
     )
 
@@ -212,7 +262,13 @@ def field_report_to_event(report: dict[str, Any], report_path: Path) -> dict[str
         "status": "success",
         "risk_level": "low",
         "needs_review": False,
-        "xp": report.get("xp", 0),
+        "active_minutes": report.get("active_minutes", 0),
+        "xp_confidence": report.get("xp_confidence", "estimated"),
+        "party_agents": report.get("party_agents", []),
+        "scoring_multipliers": report.get("scoring_multipliers", {}),
+        "shadow_multipliers": report.get("shadow_multipliers", {}),
+        "shadow_multiplier_notes": report.get("shadow_multiplier_notes", []),
+        "multiplier_notes": report.get("multiplier_notes", []),
         "tags": ["field-report", "bootstrap"],
         "artifact_refs": report.get("artifact_refs", []),
         "field_report_path": str(report_path.relative_to(ROOT)).replace("\\", "/"),
@@ -262,3 +318,36 @@ def rows(table: str) -> list[dict[str, Any]]:
         for row in conn.execute(f"SELECT raw_json FROM {table}"):
             out.append(json.loads(row["raw_json"]))
         return out
+
+def season_summary_rows() -> list[dict[str, Any]]:
+    seed_summaries = {summary["season"]: summary for summary in rows("season_summaries")}
+    events_by_season: dict[str, list[dict[str, Any]]] = {}
+    for event in rows("events"):
+        event = normalize_event_xp(event)
+        events_by_season.setdefault(event["xp_season"], []).append(event)
+
+    summaries = []
+    for season in sorted(set(seed_summaries) | set(events_by_season)):
+        summaries.append(aggregate_season_summary(events_by_season.get(season, []), seed_summaries.get(season)))
+    return summaries
+
+def insert_season_summary(conn: sqlite3.Connection, summary: dict[str, Any]) -> None:
+    conn.execute(
+        '''
+        INSERT OR REPLACE INTO season_summaries
+        (season, formula_version, started_at, ended_at, raw_json)
+        VALUES (?, ?, ?, ?, ?)
+        ''',
+        (
+            summary["season"], summary.get("formula_version"),
+            summary.get("started_at"), summary.get("ended_at"), json.dumps(summary)
+        )
+    )
+
+def ensure_compatible_schema(conn: sqlite3.Connection) -> None:
+    event_columns = {
+        row["name"] for row in conn.execute("PRAGMA table_info(events)").fetchall()
+    }
+    for column, definition in EVENT_COMPAT_COLUMNS.items():
+        if column not in event_columns:
+            conn.execute(f"ALTER TABLE events ADD COLUMN {column} {definition}")

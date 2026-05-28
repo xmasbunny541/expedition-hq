@@ -42,7 +42,24 @@ CREATE TABLE IF NOT EXISTS events (
   status TEXT NOT NULL,
   risk_level TEXT,
   needs_review INTEGER DEFAULT 0,
-  xp INTEGER DEFAULT 0,
+  xp REAL DEFAULT 0,
+  xp_season TEXT,
+  formula_version TEXT,
+  xp_mode TEXT,
+  active_minutes REAL DEFAULT 0,
+  base_xp REAL DEFAULT 0,
+  awarded_xp REAL DEFAULT 0,
+  total_multiplier_raw REAL DEFAULT 1,
+  multiplier_cap REAL,
+  xp_source TEXT,
+  xp_confidence TEXT,
+  party_agents_json TEXT DEFAULT '[]',
+  party_size INTEGER DEFAULT 0,
+  scoring_multipliers_json TEXT DEFAULT '{}',
+  shadow_multipliers_json TEXT DEFAULT '{}',
+  shadow_multiplier_notes_json TEXT DEFAULT '[]',
+  multiplier_notes_json TEXT DEFAULT '[]',
+  scaling_flags_json TEXT DEFAULT '[]',
   tags_json TEXT DEFAULT '[]',
   raw_json TEXT NOT NULL
 );
@@ -94,5 +111,13 @@ CREATE TABLE IF NOT EXISTS artifacts (
   artifact_type TEXT NOT NULL,
   path TEXT NOT NULL,
   summary TEXT,
+  raw_json TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS season_summaries (
+  season TEXT PRIMARY KEY,
+  formula_version TEXT,
+  started_at TEXT,
+  ended_at TEXT,
   raw_json TEXT NOT NULL
 );

@@ -1,12 +1,24 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 CONFIG = ROOT / "config"
 BOOTSTRAP = ROOT / "archive" / "artifacts" / "bootstrap"
-EXCLUDED_DIRS = {".git", ".venv", "node_modules", "dist", ".vite", "__pycache__", "data"}
+EXCLUDED_DIRS = {
+    ".git",
+    ".venv",
+    "node_modules",
+    "dist",
+    ".vite",
+    "__pycache__",
+    ".pytest_cache",
+    "data",
+    "logs",
+    "runtime",
+}
 
 required = [
     CONFIG / "agent-roster.seed.json",
@@ -33,10 +45,11 @@ def main() -> None:
     print("Seed validation complete.")
 
 def iter_json_files():
-    for path in ROOT.rglob("*.json"):
-        if any(part in EXCLUDED_DIRS for part in path.relative_to(ROOT).parts):
-            continue
-        yield path
+    for root, dirs, files in os.walk(ROOT):
+        dirs[:] = [d for d in dirs if d not in EXCLUDED_DIRS]
+        for name in files:
+            if name.endswith(".json"):
+                yield Path(root) / name
 
 if __name__ == "__main__":
     main()

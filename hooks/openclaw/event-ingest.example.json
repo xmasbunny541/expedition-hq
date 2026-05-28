@@ -7,6 +7,24 @@
   "status": "success",
   "risk_level": "low",
   "needs_review": false,
-  "xp": 10,
+  "active_minutes": 12,
+  "xp_confidence": "estimated",
+  "party_agents": [],
+  "scoring_multipliers": {
+    "artifact": 1,
+    "blocker_break": 1,
+    "reuse_leverage": 1,
+    "risk_control": 1
+  },
+  "shadow_multipliers": {
+    "discovery": false,
+    "handoff_chain": false,
+    "polish": false,
+    "sentimental_record": false
+  },
+  "shadow_multiplier_notes": [],
+  "multiplier_notes": [
+    "API computes base_xp, awarded_xp, and total_multiplier_raw from active_minutes and allowed multipliers."
+  ],
   "tags": ["example", "openclaw"]
 }
