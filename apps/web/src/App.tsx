@@ -24,19 +24,25 @@ import type {
   Route
 } from "./types";
 import { AgentCard } from "./components/AgentCard";
+import { CurrentActivity } from "./components/CurrentActivity";
 import { ExpeditionCard } from "./components/ExpeditionCard";
-import { EventRow } from "./components/EventRow";
+import { FieldReportCard } from "./components/FieldReportCard";
+import { HQRooms } from "./components/HQRooms";
+import { ReviewDesk } from "./components/ReviewDesk";
+import { TrophyShelf } from "./components/TrophyShelf";
+import { VisualToken } from "./components/VisualToken";
+
+type TabId = "hq" | "expeditions" | "field-reports" | "roster" | "systems";
+
+const tabs: { id: TabId; label: string }[] = [
+  { id: "hq", label: "HQ" },
+  { id: "expeditions", label: "Expeditions" },
+  { id: "field-reports", label: "Field Reports" },
+  { id: "roster", label: "Roster" },
+  { id: "systems", label: "Systems" }
+];
 
 const visibleStates = ["awake", "on_call", "dormant", "blocked", "test_mode", "temporary_route"];
-const roomOrder = ["central-desk", "archive-vault", "engineering-bay", "comms-wing", "systems-deck", "map-room"];
-const roomLabel: Record<string, string> = {
-  "central-desk": "Central Desk",
-  "archive-vault": "Archive Vault",
-  "engineering-bay": "Engineering Bay",
-  "comms-wing": "Comms Wing",
-  "systems-deck": "Systems Deck",
-  "map-room": "Map Room"
-};
 
 function countByState(agents: Agent[], incidents: Incident[]) {
   return visibleStates.map((state) => ({
@@ -51,7 +57,114 @@ function EmptyState({ label }: { label: string }) {
   return <p className="empty">{label}</p>;
 }
 
+function SectionHeader({ eyebrow, title, note }: { eyebrow: string; title: string; note?: string }) {
+  return (
+    <div className="section-heading">
+      <div>
+        <p className="eyebrow">{eyebrow}</p>
+        <h2>{title}</h2>
+      </div>
+      {note && <span className="section-note">{note}</span>}
+    </div>
+  );
+}
+
+function SystemsView({
+  routes,
+  memoryStores,
+  incidents,
+  plannedItems,
+  artifacts
+}: {
+  routes: Route[];
+  memoryStores: MemoryStore[];
+  incidents: Incident[];
+  plannedItems: PlannedItem[];
+  artifacts: Artifact[];
+}) {
+  return (
+    <div className="tab-page">
+      <SectionHeader eyebrow="Secondary Inventory" title="Systems, Routes, Archives" note="Visible here so the HQ page can stay readable." />
+      <div className="split-grid">
+        <section className="panel">
+          <h3>Route Watch</h3>
+          <div className="stack">
+            {routes.map((route) => (
+              <article className={`system-row route-${route.status}`} key={route.id}>
+                <VisualToken label="RT" kind="system" size="small" state={route.status} />
+                <div>
+                  <h4>{route.id}</h4>
+                  <p>{route.route}</p>
+                  <span>{route.status}</span>
+                  {route.risk && <p className="risk">{route.risk}</p>}
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+        <section className="panel">
+          <h3>Archive Vault</h3>
+          <div className="stack">
+            {memoryStores.map((store) => (
+              <article className="system-row" key={store.id}>
+                <VisualToken label="AR" kind="system" size="small" state="stable" />
+                <div>
+                  <h4>{store.id}</h4>
+                  <p>{store.classification}</p>
+                  {store.path && <span>{store.path}</span>}
+                  {store.notes && <p className="risk">{store.notes}</p>}
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+        <section className="panel">
+          <h3>Incidents</h3>
+          <div className="stack">
+            {incidents.map((incident) => (
+              <article className="system-row" key={incident.id}>
+                <VisualToken label="IN" kind="system" size="small" state="blocked" />
+                <div>
+                  <h4>{incident.id}</h4>
+                  <p>{incident.summary}</p>
+                  {incident.impact && <p className="risk">{incident.impact}</p>}
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+        <section className="panel">
+          <h3>Blueprints And Artifacts</h3>
+          <div className="stack">
+            {plannedItems.map((item) => (
+              <article className="system-row" key={item.id}>
+                <VisualToken label="BP" kind="system" size="small" state={item.status} />
+                <div>
+                  <h4>{item.id}</h4>
+                  <p>{item.classification}</p>
+                  <span>{item.status}</span>
+                </div>
+              </article>
+            ))}
+            {artifacts.map((artifact) => (
+              <article className="system-row" key={artifact.id}>
+                <VisualToken label="AF" kind="system" size="small" state="stable" />
+                <div>
+                  <h4>{artifact.title}</h4>
+                  <p>{artifact.summary}</p>
+                  <span>{artifact.path}</span>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
+  const [activeTab, setActiveTab] = useState<TabId>("hq");
   const [health, setHealth] = useState<Health | null>(null);
   const [agents, setAgents] = useState<Agent[]>([]);
   const [expeditions, setExpeditions] = useState<Expedition[]>([]);
@@ -105,20 +218,24 @@ export default function App() {
       latestEventBySource.set(event.source_id, event);
     }
   }
+  const agentById = new Map(agents.map((agent) => [agent.id, agent]));
 
   const latestEventForAgent = (agent: Agent) => {
     return latestEventBySource.get(agent.id)
       ?? sortedEvents.find((event) => event.expedition_id === agent.current_assignment);
   };
 
-  const littleGuys = agents;
+  const littleGuys = agents.filter((agent) => agent.allowed_as_little_guy);
   const operationalSystems = agents.filter((agent) => !agent.allowed_as_little_guy);
+  const reviewEvents = sortedEvents.filter((event) => event.needs_review || ["medium", "high"].includes(event.risk_level) || event.status === "blocked");
   const openIncidents = incidents.filter((incident) => incident.status === "open");
   const stateCounts = countByState(agents, incidents);
   const totalXp = events.reduce((sum, event) => sum + event.xp, 0);
+  const activeExpeditions = expeditions.filter((expedition) => expedition.progress_percent < 100 && expedition.status !== "complete");
+  const recentFieldReports = sortedEvents.slice(0, 4);
 
   return (
-    <main>
+    <main className="app-shell">
       <section className="observatory-banner">
         <div>
           <strong>Read-only Observatory Mode</strong>
@@ -133,164 +250,131 @@ export default function App() {
         </div>
       </section>
 
-      <header className="page-header">
+      <header className="page-header living-header">
         <div>
           <p className="eyebrow">Local-first / Read-only / Expedition HQ</p>
-          <h1>What are the little AI guys doing?</h1>
+          <h1>Living Expedition HQ</h1>
           <p>
-            Observe specialists, constructs, routes, expeditions, field reports, and milestones without controlling live systems.
+            A cozy command room for watching specialists, constructs, routes, expeditions, field reports, and trophies without controlling live systems.
           </p>
         </div>
         <div className="metric-grid" aria-label="Expedition HQ totals">
-          <div><strong>{agents.length}</strong><span>systems</span></div>
-          <div><strong>{expeditions.length}</strong><span>expeditions</span></div>
-          <div><strong>{events.length}</strong><span>field reports</span></div>
+          <div><strong>{littleGuys.length}</strong><span>little specialists</span></div>
+          <div><strong>{activeExpeditions.length}</strong><span>active expeditions</span></div>
+          <div><strong>{reviewEvents.length + openIncidents.length}</strong><span>review items</span></div>
           <div><strong>{totalXp}</strong><span>earned XP</span></div>
         </div>
       </header>
 
+      <nav className="tabs" aria-label="Expedition HQ sections">
+        {tabs.map((tab) => (
+          <button
+            className={activeTab === tab.id ? "active" : ""}
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            type="button"
+          >
+            {tab.label}
+          </button>
+        ))}
+      </nav>
+
       {loading && <section className="notice">Loading local Expedition HQ data.</section>}
       {error && <section className="alert">API not reachable: {error}</section>}
 
-      <section>
-        <h2>Bureau HQ</h2>
-        <div className="state-summary" aria-label="Current operational states">
-          {stateCounts.map(({ state, count }) => (
-            <div className={`state-chip state-${state}`} key={state}>
-              <span className="state-dot" />
-              <strong>{count}</strong>
-              <span>{state.replace("_", " ")}</span>
+      {activeTab === "hq" && (
+        <div className="tab-page">
+          <section className="today-panel">
+            <div>
+              <p className="eyebrow">Today at Expedition HQ</p>
+              <h2>What are the little AI guys doing?</h2>
+              <p>
+                {littleGuys.length} specialists are visible in the base. {activeExpeditions.length} expeditions are still moving,
+                {reviewEvents.length + openIncidents.length} items need human review, and {totalXp} XP has been logged from real field reports.
+              </p>
             </div>
-          ))}
-        </div>
-        <div className="room-grid">
-          {roomOrder.map((room) => {
-            const roomAgents = littleGuys.filter((agent) => agent.room === room);
-            return (
-              <article className="room-band" key={room}>
-                <header>
-                  <h3>{roomLabel[room]}</h3>
-                  <span>{roomAgents.length} assigned</span>
-                </header>
-                <div className="room-agents">
-                  {roomAgents.length
-                    ? roomAgents.map((agent) => <AgentCard key={agent.id} agent={agent} latestEvent={latestEventForAgent(agent)} />)
-                    : <EmptyState label="No little AI guy assigned to this room." />}
+            <div className="state-summary" aria-label="Current operational states">
+              {stateCounts.map(({ state, count }) => (
+                <div className={`state-chip state-${state}`} key={state}>
+                  <span className="state-dot" />
+                  <strong>{count}</strong>
+                  <span>{state.replace("_", " ")}</span>
                 </div>
-              </article>
-            );
-          })}
-        </div>
-      </section>
-
-      <section>
-        <h2>Expedition Board</h2>
-        <div className="grid">
-          {expeditions.length
-            ? expeditions.map((expedition) => <ExpeditionCard key={expedition.id} expedition={expedition} />)
-            : <EmptyState label="No expeditions are available from the local API." />}
-        </div>
-      </section>
-
-      <section>
-        <h2>Specialist Roster</h2>
-        <div className="grid compact">
-          {operationalSystems.length
-            ? operationalSystems.map((agent) => <AgentCard key={agent.id} agent={agent} latestEvent={latestEventForAgent(agent)} />)
-            : <EmptyState label="No constructs, routes, stations, or interfaces are available." />}
-        </div>
-      </section>
-
-      <section>
-        <h2>Field Reports</h2>
-        <ul className="events">
-          {events.length
-            ? sortedEvents.map((event) => <EventRow key={event.id} event={event} />)
-            : <EmptyState label="No field reports are available from the local event ledger." />}
-        </ul>
-      </section>
-
-      <section>
-        <h2>Milestone Gallery</h2>
-        <div className="grid compact">
-          {milestones.map((milestone) => (
-            <article className="card" key={milestone.id}>
-              <h3>{milestone.name}</h3>
-              <p>{milestone.description}</p>
-              <p className="muted">{milestone.status} / {milestone.xp_reward} XP</p>
-            </article>
-          ))}
-          {artifacts.map((artifact) => (
-            <article className="card artifact" key={artifact.id}>
-              <h3>{artifact.title}</h3>
-              <p>{artifact.summary}</p>
-              <p className="muted">{artifact.artifact_type} / {artifact.path}</p>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section>
-        <h2>Routes And Archives</h2>
-        <div className="split-grid">
-          <div>
-            <h3>Route Watch</h3>
-            <div className="stack">
-              {routes.map((route) => (
-                <article className={`card route route-${route.status}`} key={route.id}>
-                  <h4>{route.id}</h4>
-                  <p>{route.route}</p>
-                  <p className="muted">{route.status}</p>
-                  {route.risk && <p className="risk">{route.risk}</p>}
-                </article>
               ))}
             </div>
-          </div>
-          <div>
-            <h3>Archive Vault</h3>
-            <div className="stack">
-              {memoryStores.map((store) => (
-                <article className="card archive" key={store.id}>
-                  <h4>{store.id}</h4>
-                  <p>{store.classification}</p>
-                  {store.path && <p className="muted">{store.path}</p>}
-                  {store.notes && <p className="risk">{store.notes}</p>}
-                </article>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
+          </section>
 
-      <section>
-        <h2>Incidents And Blueprints</h2>
-        <div className="split-grid">
-          <div>
-            <h3>Open Incidents</h3>
-            <div className="stack">
-              {openIncidents.map((incident) => (
-                <article className="card incident" key={incident.id}>
-                  <h4>{incident.id}</h4>
-                  <p>{incident.summary}</p>
-                  {incident.impact && <p className="risk">{incident.impact}</p>}
-                </article>
-              ))}
-            </div>
+          <HQRooms agents={agents} incidents={incidents} latestEventForAgent={latestEventForAgent} reviewEvents={reviewEvents} />
+
+          <div className="living-grid">
+            <CurrentActivity agents={agents} latestEventForAgent={latestEventForAgent} />
+            <ReviewDesk events={sortedEvents} incidents={incidents} agentById={agentById} />
           </div>
-          <div>
-            <h3>Planned Work</h3>
-            <div className="stack">
-              {plannedItems.map((item) => (
-                <article className="card blueprint" key={item.id}>
-                  <h4>{item.id}</h4>
-                  <p>{item.classification}</p>
-                  <p className="muted">{item.status}</p>
-                </article>
-              ))}
+
+          <section className="living-section">
+            <SectionHeader eyebrow="Expedition Board" title="Active Expeditions" note="Compact view; full list lives in the Expeditions tab." />
+            <div className="grid compact">
+              {activeExpeditions.length
+                ? activeExpeditions.slice(0, 3).map((expedition) => <ExpeditionCard key={expedition.id} expedition={expedition} />)
+                : <EmptyState label="No active expeditions are available from the local API." />}
             </div>
+          </section>
+
+          <section className="living-section">
+            <SectionHeader eyebrow="Story Feed" title="Recent Field Reports" note="Newest reports from the local event ledger." />
+            <div className="field-report-feed">
+              {recentFieldReports.length
+                ? recentFieldReports.map((event) => <FieldReportCard key={event.id} event={event} source={agentById.get(event.source_id)} />)
+                : <EmptyState label="No field reports are available from the local event ledger." />}
+            </div>
+          </section>
+
+          <TrophyShelf milestones={milestones} artifacts={artifacts} />
+        </div>
+      )}
+
+      {activeTab === "expeditions" && (
+        <div className="tab-page">
+          <SectionHeader eyebrow="Expedition Board" title="All Expeditions" note={`${expeditions.length} local records`} />
+          <div className="grid">
+            {expeditions.length
+              ? expeditions.map((expedition) => <ExpeditionCard key={expedition.id} expedition={expedition} />)
+              : <EmptyState label="No expeditions are available from the local API." />}
           </div>
         </div>
-      </section>
+      )}
+
+      {activeTab === "field-reports" && (
+        <div className="tab-page">
+          <SectionHeader eyebrow="Local Event Ledger" title="Field Reports" note={`${events.length} reports`} />
+          <div className="field-report-feed full-feed">
+            {sortedEvents.length
+              ? sortedEvents.map((event) => <FieldReportCard key={event.id} event={event} source={agentById.get(event.source_id)} />)
+              : <EmptyState label="No field reports are available from the local event ledger." />}
+          </div>
+        </div>
+      )}
+
+      {activeTab === "roster" && (
+        <div className="tab-page">
+          <SectionHeader eyebrow="Roster" title="Specialists And Constructs" note="Full roster moved off the main HQ floor." />
+          <div className="grid compact">
+            {[...littleGuys, ...operationalSystems].map((agent) => (
+              <AgentCard key={agent.id} agent={agent} latestEvent={latestEventForAgent(agent)} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {activeTab === "systems" && (
+        <SystemsView
+          routes={routes}
+          memoryStores={memoryStores}
+          incidents={incidents}
+          plannedItems={plannedItems}
+          artifacts={artifacts}
+        />
+      )}
     </main>
   );
 }
