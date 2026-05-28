@@ -1,0 +1,46 @@
+[
+  {
+    "id": "production-chatgpt-mcp-connector",
+    "classification": "Candidate agent",
+    "status": "planned",
+    "required_before_activation": [
+      "identity-aware ingress",
+      "production token_REDACTED_FIELD_NAME plan",
+      "public connector schema review",
+      "gateway-direct route resolved or classified private/authenticated",
+      "bridge persistence",
+      "idempotency ledger pruning"
+    ]
+  },
+  {
+    "id": "private-authenticated-phone-dashboard-route",
+    "classification": "Route/bridge",
+    "status": "planned",
+    "required_before_activation": [
+      "replace or harden gateway-direct quick tunnel",
+      "avoid wildcard allowedOrigins",
+      "preserve phone/WebChat continuity during cutover"
+    ]
+  },
+  {
+    "id": "expedition-hq-visual-dashboard",
+    "classification": "Interface",
+    "status": "planned",
+    "required_before_activation": [
+      "choose dashboard stack",
+      "define refresh source",
+      "keep secret_REDACTED_FIELD_NAMEs/tunnel URLs redacted",
+      "start read-only before adding controls"
+    ]
+  },
+  {
+    "id": "heartbeat-proactive-checks",
+    "classification": "Automation/standing order",
+    "status": "candidate",
+    "required_before_activation": [
+      "add small HEARTBEAT.md checklist",
+      "define quiet hours and useful checks",
+      "avoid unnecessary chatter"
+    ]
+  }
+]

@@ -1,0 +1,11 @@
+{
+  "app_name": "Expedition HQ",
+  "mode": "read_only",
+  "theme": "living-expedition-hq",
+  "api_base_url": "http://127.0.0.1:8789",
+  "refresh_seconds": 15,
+  "show_little_guys": true,
+  "show_constructs": true,
+  "show_routes": true,
+  "redaction_required": true
+}

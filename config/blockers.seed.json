@@ -1,0 +1,37 @@
+[
+  {
+    "id": "gateway-direct-public-by-url",
+    "summary": "Cloudflare tunnel to 127.0.0.1:18789 is active and classified TEMPORARY_GATEWAY_DIRECT.",
+    "impact": "Blocks public MCP readiness."
+  },
+  {
+    "id": "phase-1-8-disconnect",
+    "summary": "Stopping the previous gateway Cloudflared tunnel disconnected August mid-stream.",
+    "impact": "Active tunnels must not be stopped/replaced without explicit approval."
+  },
+  {
+    "id": "tailscale-cert-unavailable",
+    "summary": "Tailscale HTTPS certificate flow was unavailable for this account during setup.",
+    "impact": "Forced temporary Cloudflare fallback for iPhone secure context."
+  },
+  {
+    "id": "public-mcp-not-ready",
+    "summary": "Bridge-facing route works, but production public MCP still lacks approved ingress, token_REDACTED_FIELD_NAME rotation plan execution, bridge persistence, ledger pruning, and gateway exposure resolution.",
+    "impact": "Do not configure production ChatGPT MCP yet."
+  },
+  {
+    "id": "openclaw-control-truncation",
+    "summary": "Long OpenClaw Control messages can end with ...(truncated)...",
+    "impact": "Reports should be split into numbered chunks."
+  },
+  {
+    "id": "paired-nodes-empty",
+    "summary": "OpenClaw nodes status returned no paired nodes.",
+    "impact": "Device automation/camera/screen/location routes are not currently available."
+  },
+  {
+    "id": "codex-memory-operator-identity-unfilled",
+    "summary": "codex-memory-operator workspace exists, but its IDENTITY.md is still the template.",
+    "impact": "Dashboard should mark it as experimental until identity/capability docs are completed."
+  }
+]

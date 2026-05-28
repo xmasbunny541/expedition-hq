@@ -1,0 +1,145 @@
+[
+  {
+    "id": "evt-bootstrap-001",
+    "timestamp": "2026-05-27T19:55:33-07:00",
+    "source_id": "openclaw-main",
+    "expedition_id": "expedition-hq-dashboard",
+    "event_type": "census_imported",
+    "title": "Agent census captured",
+    "summary": "Imported a redacted census of current agents, routes, tools, memory stores, workflows, and blockers.",
+    "status": "success",
+    "risk_level": "low",
+    "needs_review": false,
+    "xp": 25,
+    "tags": [
+      "bootstrap",
+      "census",
+      "archive"
+    ]
+  },
+  {
+    "id": "evt-bootstrap-002",
+    "timestamp": "2026-05-27T20:05:00-07:00",
+    "source_id": "openclaw-main",
+    "expedition_id": "expedition-hq-dashboard",
+    "event_type": "theme_selected",
+    "title": "Expedition HQ direction selected",
+    "summary": "Narrowed the dashboard concept toward a living read-only Expedition HQ focused on visible little AI specialists and proof of progression.",
+    "status": "success",
+    "risk_level": "low",
+    "needs_review": false,
+    "xp": 30,
+    "tags": [
+      "theme",
+      "milestone"
+    ]
+  },
+  {
+    "id": "evt-bootstrap-003",
+    "timestamp": "2026-05-27T20:10:00-07:00",
+    "source_id": "codex-memory-operator",
+    "expedition_id": "codex-memory-governance",
+    "event_type": "candidate_agent_identified",
+    "title": "Archivist marked experimental",
+    "summary": "Codex Memory Operator is useful as an Archivist archetype, but remains experimental and review-gated for memory mutation.",
+    "status": "warning",
+    "risk_level": "medium",
+    "needs_review": true,
+    "xp": 10,
+    "tags": [
+      "memory",
+      "review",
+      "maturity"
+    ]
+  },
+  {
+    "id": "evt-bootstrap-004",
+    "timestamp": "2026-05-27T20:15:00-07:00",
+    "source_id": "home-windows-codex",
+    "expedition_id": "expedition-hq-dashboard",
+    "event_type": "dormant_agent_identified",
+    "title": "Dormant Engineer identified",
+    "summary": "Home Windows Codex is configured as a hook/bridge target but was not observed as an active workspace.",
+    "status": "warning",
+    "risk_level": "medium",
+    "needs_review": true,
+    "xp": 10,
+    "tags": [
+      "codex",
+      "maturity",
+      "dormant"
+    ]
+  },
+  {
+    "id": "evt-bootstrap-005",
+    "timestamp": "2026-05-27T20:20:00-07:00",
+    "source_id": "openclaw-to-codex-watcher",
+    "expedition_id": "phone-openclaw-access",
+    "event_type": "standing_order_active",
+    "title": "Signal Mast watching transcript flow",
+    "summary": "The watcher can dispatch OpenClaw/WebChat messages into headless Codex runs and produce artifacts.",
+    "status": "success",
+    "risk_level": "medium",
+    "needs_review": false,
+    "xp": 20,
+    "tags": [
+      "watcher",
+      "codex",
+      "automation"
+    ]
+  },
+  {
+    "id": "evt-bootstrap-006",
+    "timestamp": "2026-05-27T20:30:00-07:00",
+    "source_id": "chatgpt-openclaw-bridge",
+    "expedition_id": "public-mcp-bridge",
+    "event_type": "gate_blocked",
+    "title": "Public MCP remains blocked",
+    "summary": "Local bridge hardening exists, but public ingress, token rotation, persistence, and gateway exposure posture are not production-ready.",
+    "status": "blocked",
+    "risk_level": "high",
+    "needs_review": true,
+    "xp": 0,
+    "tags": [
+      "mcp",
+      "security",
+      "blocked"
+    ]
+  },
+  {
+    "id": "evt-bootstrap-007",
+    "timestamp": "2026-05-27T20:40:00-07:00",
+    "source_id": "codex-headless-cli-runs",
+    "expedition_id": "phone-openclaw-access",
+    "event_type": "artifact_path_identified",
+    "title": "Rover artifact trail identified",
+    "summary": "Headless Codex CLI runs can produce prompt, stdout, stderr, reply, and result artifacts suitable for Expedition HQ history.",
+    "status": "success",
+    "risk_level": "low",
+    "needs_review": false,
+    "xp": 15,
+    "tags": [
+      "artifacts",
+      "codex",
+      "history"
+    ]
+  },
+  {
+    "id": "evt-map-room-online-2026-05-28",
+    "timestamp": "2026-05-28T00:10:00-07:00",
+    "source_id": "expedition-hq-dashboard",
+    "expedition_id": "expedition-hq-dashboard",
+    "event_type": "map_room_online",
+    "title": "Map Room Online",
+    "summary": "Expedition HQ now serves the read-only dashboard and local API with seed-driven rooms, field reports, milestones, and observatory status.",
+    "status": "success",
+    "risk_level": "low",
+    "needs_review": false,
+    "xp": 40,
+    "tags": [
+      "map-room",
+      "mvp",
+      "read-only"
+    ]
+  }
+]

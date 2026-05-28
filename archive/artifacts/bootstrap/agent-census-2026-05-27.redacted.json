@@ -1,0 +1,918 @@
+{
+  "schema": "expedition_hq.agent_census.v1",
+  "owner": "August",
+  "observed_at": "2026-05-27T19:55:33-07:00",
+  "privacy": {
+    "token_REDACTED_FIELD_NAMEs_included": false,
+    "tunnel_urls_included": false,
+    "redaction_note": "Cloudflare tunnel URLs, dashboard token_REDACTED_FIELD_NAMEs, hook token_REDACTED_FIELD_NAMEs, bridge token_REDACTED_FIELD_NAMEs, and OAuth credentials are intentionally redacted."
+  },
+  "source_evidence": [
+    "OpenClaw agents_list: only main is currently exposed for subagent spawning.",
+    "OpenClaw sessions_list: one running webchat session for main.",
+    "OpenClaw cron list: no configured jobs.",
+    "OpenClaw nodes status: no paired nodes currently listed.",
+    "OpenClaw config lists agents main, home-windows-codex, and codex-memory-operator; hooks allow home-windows-codex and codex-memory-operator.",
+    "Windows process table shows gateway-direct cloudflared PID 18368, bridge-facing cloudflared PID 3308, bridge node PID 11292, and OpenClaw-to-Codex watcher PID 18056.",
+    "Bridge rescue status reports TEMPORARY_GATEWAY_DIRECT plus BRIDGE_FACING route flags; publicMcpReady=false."
+  ],
+  "items": [
+    {
+      "id": "openclaw-main",
+      "stable_name": "OpenClaw Main",
+      "classification": "Agent",
+      "status": "active",
+      "what_it_can_do": [
+        "Operate as August's main OpenClaw agent.",
+        "Use the OpenAI Codex runtime.",
+        "Read and modify local workspace files when requested.",
+        "Run local commands and use OpenClaw messaging/tools.",
+        "Coordinate project work, reporting, and recovery workflows."
+      ],
+      "triggers": [
+        "Direct WebChat/OpenClaw Control messages.",
+        "OpenClaw gateway session events.",
+        "Future heartbeat/system events when configured."
+      ],
+      "tools_or_systems": [
+        "OpenAI Codex runtime",
+        "OpenClaw gateway",
+        "message tool",
+        "shell/PowerShell through Codex",
+        "OpenClaw dynamic tools",
+        "local workspace files"
+      ],
+      "can_read": [
+        "/home/augus/.openclaw/workspace",
+        "OpenClaw runtime context",
+        "project files August asks it to inspect",
+        "selected local configs with secret_REDACTED_FIELD_NAMEs redacted in reports"
+      ],
+      "can_write_or_change": [
+        "local project files",
+        "workspace memory files",
+        "local scripts/configs when asked",
+        "messages back to the current WebChat"
+      ],
+      "decision_mode": "Makes bounded operational decisions, but asks or refuses for external/public/destructive actions.",
+      "logs_history": true,
+      "log_locations": [
+        "/home/augus/.openclaw/agents/main/sessions",
+        "/home/augus/.openclaw/workspace/memory"
+      ],
+      "needs_august_review": "Yes for external sends, security exposure, token_REDACTED_FIELD_NAME rotation, destructive changes, or public bridge/MCP approval.",
+      "current_maturity": "working",
+      "visual_archetype": "Command center operator"
+    },
+    {
+      "id": "codex-memory-operator",
+      "stable_name": "Codex Memory Operator",
+      "classification": "Candidate agent",
+      "status": "semi-active",
+      "what_it_can_do": [
+        "Intended target for governed memory review and Codex-memory tasks.",
+        "Has an OpenClaw agent workspace and many historical session artifacts.",
+        "Allowed as an OpenClaw hook target and bridge target."
+      ],
+      "triggers": [
+        "OpenClaw /hooks/agent when agentId is codex-memory-operator.",
+        "ChatGPT OpenClaw Bridge governed tool calls.",
+        "Future MCP connector calls after approval."
+      ],
+      "tools_or_systems": [
+        "OpenClaw hooks",
+        "Codex runtime sessions",
+        "ChatGPT OpenClaw Bridge",
+        "script-manifest-governed memory scripts"
+      ],
+      "can_read": [
+        "its own workspace at /home/augus/.openclaw/workspace-codex-memory-operator",
+        "its session history at /home/augus/.openclaw/agents/codex-memory-operator/sessions",
+        "bridge-forwarded task text"
+      ],
+      "can_write_or_change": [
+        "its own workspace and session logs",
+        "governed memory outputs only when routed through approved workflows"
+      ],
+      "decision_mode": "Candidate decision-maker for memory operations; destructive or mutating memory work requires review/approval.",
+      "logs_history": true,
+      "log_locations": [
+        "/home/augus/.openclaw/agents/codex-memory-operator/sessions"
+      ],
+      "needs_august_review": "Yes for memory mutation, restore, prune, delete, promotion, or cloud recall.",
+      "current_maturity": "experimental",
+      "visual_archetype": "Archivist cartographer"
+    },
+    {
+      "id": "home-windows-codex",
+      "stable_name": "Home Windows Codex",
+      "classification": "Candidate agent",
+      "status": "configured-but-not-observed-active",
+      "what_it_can_do": [
+        "Named as a future or alternate governed Codex target for home Windows work.",
+        "Allowed by OpenClaw hooks and the bridge config.",
+        "No matching workspace was found in the inspected OpenClaw agent directories."
+      ],
+      "triggers": [
+        "OpenClaw /hooks/agent when agentId is home-windows-codex.",
+        "ChatGPT OpenClaw Bridge target_agent home-windows-codex."
+      ],
+      "tools_or_systems": [
+        "OpenClaw hooks",
+        "ChatGPT OpenClaw Bridge",
+        "future Windows/Codex runtime wiring"
+      ],
+      "can_read": [
+        "unknown until workspace/runtime is created or located"
+      ],
+      "can_write_or_change": [
+        "unknown until workspace/runtime is created or located"
+      ],
+      "decision_mode": "Unknown; currently a configured target more than an observed active agent.",
+      "logs_history": "unknown",
+      "log_locations": [],
+      "needs_august_review": "Yes before treating it as production-capable.",
+      "current_maturity": "unknown",
+      "visual_archetype": "Dormant field engineer"
+    },
+    {
+      "id": "codex-headless-cli-runs",
+      "stable_name": "Headless Codex CLI Runs",
+      "classification": "Tool",
+      "status": "semi-active",
+      "what_it_can_do": [
+        "Run Codex non-interactively from Windows/WSL workflows.",
+        "Resume the latest CLI session or start a new run depending on dispatch rules.",
+        "Produce prompt, stdout, stderr, reply, and result artifacts."
+      ],
+      "triggers": [
+        "OpenClaw-to-Codex watcher dispatch.",
+        "Manual Codex CLI commands.",
+        "Future OpenClaw hook or bridge workflows."
+      ],
+      "tools_or_systems": [
+        "codex exec resume --last --all",
+        "local filesystem",
+        "OpenAI Codex OAuth"
+      ],
+      "can_read": [
+        "task prompts",
+        "local project files according to runtime permissions"
+      ],
+      "can_write_or_change": [
+        "local files when commanded through Codex",
+        "artifact logs"
+      ],
+      "decision_mode": "Follows prompts but can make implementation decisions inside the requested task.",
+      "logs_history": true,
+      "log_locations": [
+        "iPhone bridge artifacts directory",
+        "Codex/OpenClaw session stores"
+      ],
+      "needs_august_review": "Yes for destructive/external/security-sensitive actions.",
+      "current_maturity": "working",
+      "visual_archetype": "Remote expedition rover"
+    },
+    {
+      "id": "openclaw-to-codex-watcher",
+      "stable_name": "OpenClaw-to-Codex Watcher",
+      "classification": "Automation/standing order",
+      "status": "active",
+      "what_it_can_do": [
+        "Poll OpenClaw webchat transcripts.",
+        "Dispatch future iPhone/WebChat messages into Codex CLI runs.",
+        "Route normal messages to resume latest Codex session.",
+        "Route planning briefs or new project messages to a new headless Codex run."
+      ],
+      "triggers": [
+        "New OpenClaw webchat/iPhone transcript messages.",
+        "Windows logon task named OpenClaw Codex Bridge."
+      ],
+      "tools_or_systems": [
+        "Watch-OpenClawToCodex.ps1",
+        "Windows PowerShell",
+        "Windows Task Scheduler",
+        "Codex CLI",
+        "OpenClaw session transcript files"
+      ],
+      "can_read": [
+        "OpenClaw main session transcript files",
+        "watcher state file",
+        "message attachments routed through the workflow"
+      ],
+      "can_write_or_change": [
+        "openclaw-codex-inbox.jsonl",
+        "openclaw-codex-dispatch.jsonl",
+        "openclaw-codex-results.md",
+        "per-run prompt/stdout/stderr/reply artifacts"
+      ],
+      "decision_mode": "Rule-based routing; does not independently decide broader task scope.",
+      "logs_history": true,
+      "log_locations": [
+        "C:\\Users\\augus\\Documents\\Codex\\2026-05-26\\can-you-do-as-much-without\\artifacts"
+      ],
+      "needs_august_review": "Yes before changing dispatch policy or making it send external replies.",
+      "current_maturity": "working",
+      "visual_archetype": "Signal relay mast"
+    },
+    {
+      "id": "chatgpt-openclaw-bridge",
+      "stable_name": "ChatGPT OpenClaw Bridge MVP",
+      "classification": "Route/bridge",
+      "status": "active-local-test",
+      "what_it_can_do": [
+        "Expose a narrow local HTTP API on 127.0.0.1:8787.",
+        "Authenticate tool calls with bridge token_REDACTED_FIELD_NAME headers.",
+        "Require provenance, replay timestamp, and nonce.",
+        "Forward governed tasks to OpenClaw /hooks/agent.",
+        "Reject arbitrary shell, direct memory mutation, destructive requests, vector memory, and cloud active recall."
+      ],
+      "triggers": [
+        "Local HTTP requests to /tools/*.",
+        "Bridge-facing test Cloudflare tunnel during Phase 1.9."
+      ],
+      "tools_or_systems": [
+        "Node.js",
+        "OpenClaw /hooks/agent",
+        "bridge-config.json",
+        "MCP tool definitions",
+        "idempotency ledger",
+        "audit log"
+      ],
+      "can_read": [
+        "bridge configuration",
+        "HTTP request metadata and governed payloads",
+        "bridge audit/idempotency logs"
+      ],
+      "can_write_or_change": [
+        "bridge audit logs",
+        "idempotency ledger",
+        "forwarded OpenClaw hook tasks"
+      ],
+      "decision_mode": "Policy gatekeeper; validates and rejects, but does not autonomously plan.",
+      "logs_history": true,
+      "log_locations": [
+        "C:\\Users\\August\\Projects\\chatgpt-openclaw-bridge\\server\\logs"
+      ],
+      "needs_august_review": "Yes before public exposure or production MCP approval.",
+      "current_maturity": "working",
+      "visual_archetype": "Checkpoint gate"
+    },
+    {
+      "id": "openclaw-gateway",
+      "stable_name": "OpenClaw Gateway",
+      "classification": "Route/bridge",
+      "status": "active",
+      "what_it_can_do": [
+        "Serve OpenClaw Control/WebChat locally.",
+        "Host /hooks/agent for governed agent dispatch.",
+        "Manage sessions and runtime context."
+      ],
+      "triggers": [
+        "Local dashboard/WebChat access.",
+        "OpenClaw hook requests.",
+        "Cloudflare/Tailscale/browser access paths."
+      ],
+      "tools_or_systems": [
+        "OpenClaw 2026.5.22",
+        "WSL Ubuntu",
+        "OpenClaw config",
+        "agent session store"
+      ],
+      "can_read": [
+        "OpenClaw config",
+        "agent workspaces",
+        "session transcripts"
+      ],
+      "can_write_or_change": [
+        "session logs",
+        "agent wake events",
+        "hook dispatches"
+      ],
+      "decision_mode": "Infrastructure router; executes configured policy.",
+      "logs_history": true,
+      "log_locations": [
+        "/home/augus/.openclaw/agents/*/sessions"
+      ],
+      "needs_august_review": "Yes before public exposure, token_REDACTED_FIELD_NAME rotation, or allowedOrigins changes.",
+      "current_maturity": "working",
+      "visual_archetype": "Harbor master"
+    },
+    {
+      "id": "gateway-direct-cloudflare-tunnel",
+      "stable_name": "Gateway-Direct Cloudflare Recovery Tunnel",
+      "classification": "Route/bridge",
+      "status": "active-temporary",
+      "what_it_can_do": [
+        "Provide HTTPS access from phone/WebChat to OpenClaw gateway.",
+        "Target 127.0.0.1:18789 directly."
+      ],
+      "triggers": [
+        "Manual cloudflared quick tunnel start.",
+        "Phone/OpenClaw dashboard access through redacted trycloudflare origin."
+      ],
+      "tools_or_systems": [
+        "cloudflared.exe",
+        "OpenClaw gateway",
+        "gateway.controlUi.allowedOrigins"
+      ],
+      "can_read": [
+        "none directly; it transports HTTP/WebSocket traffic"
+      ],
+      "can_write_or_change": [
+        "none directly; it can expose the gateway route while running"
+      ],
+      "decision_mode": "Transport only.",
+      "logs_history": true,
+      "log_locations": [
+        "cloudflared process output/logs when captured"
+      ],
+      "needs_august_review": "Yes before stopping, replacing, or treating as production.",
+      "current_maturity": "experimental",
+      "visual_archetype": "Emergency rope bridge"
+    },
+    {
+      "id": "bridge-facing-cloudflare-test-tunnel",
+      "stable_name": "BRIDGE_FACING_TEST_ONLY Cloudflare Tunnel",
+      "classification": "Route/bridge",
+      "status": "active-test-only",
+      "what_it_can_do": [
+        "Expose the local bridge through a temporary public-style HTTPS route.",
+        "Target 127.0.0.1:8787 for Phase 1.9 testing."
+      ],
+      "triggers": [
+        "Manual cloudflared quick tunnel start for Phase 1.9.",
+        "Bridge-facing tunnel validation requests."
+      ],
+      "tools_or_systems": [
+        "cloudflared.exe",
+        "ChatGPT OpenClaw Bridge",
+        "process-only preflight config"
+      ],
+      "can_read": [
+        "none directly; it transports HTTP traffic"
+      ],
+      "can_write_or_change": [
+        "none directly; it can expose the bridge test route while running"
+      ],
+      "decision_mode": "Transport only.",
+      "logs_history": true,
+      "log_locations": [
+        "C:\\Users\\August\\Projects\\chatgpt-openclaw-bridge\\artifacts\\phase-1.9"
+      ],
+      "needs_august_review": "Yes before production use; current route is test-only.",
+      "current_maturity": "experimental",
+      "visual_archetype": "Test bridge with barricades"
+    },
+    {
+      "id": "rescue-operator-panel",
+      "stable_name": "OpenClaw Bridge Rescue UI / Operator Panel",
+      "classification": "Interface",
+      "status": "working-local-only",
+      "what_it_can_do": [
+        "Show OpenClaw gateway, bridge, Cloudflared, tunnel, WebSocket, allowed-origin, and route-classification status.",
+        "Document local commands for recovery operations.",
+        "Warn when public MCP is not ready."
+      ],
+      "triggers": [
+        "Manual opening of rescue-panel.html.",
+        "Manual run of OpenClaw-Bridge-Rescue.ps1."
+      ],
+      "tools_or_systems": [
+        "Windows PowerShell",
+        "local HTML",
+        "status.json"
+      ],
+      "can_read": [
+        "Windows process state",
+        "local TCP listener state",
+        "OpenClaw config allowedOrigins",
+        "Cloudflared logs/output when available"
+      ],
+      "can_write_or_change": [
+        "status.json only; other actions are documented/manual"
+      ],
+      "decision_mode": "Displays recommendations; does not autonomously change state.",
+      "logs_history": true,
+      "log_locations": [
+        "C:\\Users\\August\\Projects\\chatgpt-openclaw-bridge\\rescue-ui\\status.json"
+      ],
+      "needs_august_review": "Yes before following disruptive commands.",
+      "current_maturity": "working",
+      "visual_archetype": "Flight operations console"
+    },
+    {
+      "id": "openclaw-control-webchat",
+      "stable_name": "OpenClaw Control / WebChat",
+      "classification": "Interface",
+      "status": "active",
+      "what_it_can_do": [
+        "Let August interact with OpenClaw Main.",
+        "Deliver visible messages through the message tool.",
+        "Carry runtime context and session state."
+      ],
+      "triggers": [
+        "Browser/WebChat user messages.",
+        "OpenClaw Control dashboard access."
+      ],
+      "tools_or_systems": [
+        "OpenClaw gateway",
+        "WebChat provider",
+        "message delivery tool"
+      ],
+      "can_read": [
+        "current chat messages",
+        "runtime context"
+      ],
+      "can_write_or_change": [
+        "visible chat messages"
+      ],
+      "decision_mode": "Interface only.",
+      "logs_history": true,
+      "log_locations": [
+        "/home/augus/.openclaw/agents/main/sessions"
+      ],
+      "needs_august_review": "No for normal direct responses; yes for external/public messages.",
+      "current_maturity": "working",
+      "visual_archetype": "Comms terminal"
+    },
+    {
+      "id": "iphone-13-mini-safari",
+      "stable_name": "August iPhone 13 mini Safari",
+      "classification": "Host/device",
+      "status": "semi-active",
+      "what_it_can_do": [
+        "Access OpenClaw Control through an HTTPS browser route.",
+        "Serve as a mobile operator console."
+      ],
+      "triggers": [
+        "August opens the current private dashboard URL/QR.",
+        "Cloudflare or future Tailscale/private route is available."
+      ],
+      "tools_or_systems": [
+        "iOS Safari",
+        "OpenClaw Control UI",
+        "Cloudflare quick tunnel",
+        "future Tailscale/private route"
+      ],
+      "can_read": [
+        "OpenClaw Control UI content shown in browser"
+      ],
+      "can_write_or_change": [
+        "messages sent through WebChat",
+        "operator actions in Control UI"
+      ],
+      "decision_mode": "Human-operated device.",
+      "logs_history": "browser/session dependent",
+      "log_locations": [
+        "OpenClaw session history"
+      ],
+      "needs_august_review": "August is the reviewer/operator.",
+      "current_maturity": "working-but-route-fragile",
+      "visual_archetype": "Field handset"
+    },
+    {
+      "id": "windows-workstation",
+      "stable_name": "August Windows Workstation",
+      "classification": "Host/device",
+      "status": "active",
+      "what_it_can_do": [
+        "Run Windows PowerShell, Node bridge, Cloudflared, watcher, Codex CLI, and project files.",
+        "Host the Windows side of OpenClaw/Codex workflows."
+      ],
+      "triggers": [
+        "Manual commands.",
+        "Windows Task Scheduler.",
+        "OpenClaw/Codex bridge workflows."
+      ],
+      "tools_or_systems": [
+        "Windows PowerShell",
+        "Node.js",
+        "cloudflared.exe",
+        "Task Scheduler",
+        "Codex CLI"
+      ],
+      "can_read": [
+        "Windows project folders",
+        "bridge artifacts",
+        "iPhone bridge artifacts"
+      ],
+      "can_write_or_change": [
+        "project files",
+        "artifacts",
+        "processes",
+        "scheduled tasks when explicitly changed"
+      ],
+      "decision_mode": "Host only; decisions come from user or agents.",
+      "logs_history": true,
+      "log_locations": [
+        "C:\\Users\\August\\Projects",
+        "C:\\Users\\augus\\Documents\\Codex"
+      ],
+      "needs_august_review": "Yes for system/security settings.",
+      "current_maturity": "stable",
+      "visual_archetype": "Base camp workstation"
+    },
+    {
+      "id": "wsl-ubuntu-host",
+      "stable_name": "WSL Ubuntu OpenClaw Host",
+      "classification": "Host/device",
+      "status": "active",
+      "what_it_can_do": [
+        "Run OpenClaw gateway and agent workspaces.",
+        "Store OpenClaw configs, sessions, and workspace memory.",
+        "Provide Linux tooling for Codex work."
+      ],
+      "triggers": [
+        "OpenClaw gateway startup.",
+        "Codex runtime commands.",
+        "WSL filesystem access from Windows scripts."
+      ],
+      "tools_or_systems": [
+        "OpenClaw Node runtime",
+        "WSL filesystem",
+        "Codex shell"
+      ],
+      "can_read": [
+        "/home/augus/.openclaw",
+        "mounted Windows files under /mnt/c"
+      ],
+      "can_write_or_change": [
+        "OpenClaw configs and session files",
+        "workspace memory files",
+        "mounted project files when commanded"
+      ],
+      "decision_mode": "Host only.",
+      "logs_history": true,
+      "log_locations": [
+        "/home/augus/.openclaw"
+      ],
+      "needs_august_review": "Yes for config/security changes.",
+      "current_maturity": "stable",
+      "visual_archetype": "Local server rack"
+    },
+    {
+      "id": "openclaw-cron-heartbeat",
+      "stable_name": "OpenClaw Cron / Heartbeat Layer",
+      "classification": "Automation/standing order",
+      "status": "candidate-inactive",
+      "what_it_can_do": [
+        "Schedule recurring or one-shot OpenClaw jobs.",
+        "Wake agents through main, isolated, current, or session-bound targets.",
+        "Support proactive checks when configured."
+      ],
+      "triggers": [
+        "Configured cron jobs.",
+        "Heartbeat polls.",
+        "Manual cron wake."
+      ],
+      "tools_or_systems": [
+        "OpenClaw cron scheduler",
+        "HEARTBEAT.md",
+        "memory/heartbeat-state.json when used"
+      ],
+      "can_read": [
+        "job payloads",
+        "heartbeat checklist files"
+      ],
+      "can_write_or_change": [
+        "cron job state",
+        "heartbeat state",
+        "agent wake events"
+      ],
+      "decision_mode": "Automation only unless a scheduled agent turn runs.",
+      "logs_history": true,
+      "log_locations": [
+        "OpenClaw cron run history"
+      ],
+      "needs_august_review": "Yes before creating recurring external-facing automations.",
+      "current_maturity": "working-but-unused",
+      "visual_archetype": "Clock tower"
+    },
+    {
+      "id": "openclaw-node-connect-layer",
+      "stable_name": "OpenClaw Paired Node Layer",
+      "classification": "Tool",
+      "status": "candidate-inactive",
+      "what_it_can_do": [
+        "Pair and control Android, iOS, macOS, or browser nodes when configured.",
+        "Fetch files, capture screen/camera/location/notifications with permission."
+      ],
+      "triggers": [
+        "OpenClaw nodes tool calls.",
+        "Node pairing approval."
+      ],
+      "tools_or_systems": [
+        "OpenClaw nodes tool",
+        "file_fetch",
+        "dir_fetch"
+      ],
+      "can_read": [
+        "paired-node data only after policy allows it"
+      ],
+      "can_write_or_change": [
+        "node notifications/actions only when approved and available"
+      ],
+      "decision_mode": "Tool layer only.",
+      "logs_history": "unknown",
+      "log_locations": [],
+      "needs_august_review": "Yes for pairing and sensitive device permissions.",
+      "current_maturity": "unknown",
+      "visual_archetype": "Device dock"
+    },
+    {
+      "id": "chatgpt-custom-mcp-connector",
+      "stable_name": "Future ChatGPT Custom MCP Connector",
+      "classification": "Candidate agent",
+      "status": "planned-not-built",
+      "what_it_can_do": [
+        "Eventually call the bridge's narrow MCP-style tools from ChatGPT.",
+        "Provide governed task/file/status/audit access to home Codex agents."
+      ],
+      "triggers": [
+        "Manual ChatGPT tool call after connector setup.",
+        "Future Expedition HQ or ChatGPT workflow."
+      ],
+      "tools_or_systems": [
+        "MCP tool definitions",
+        "identity-aware ingress",
+        "ChatGPT/OpenAI connector configuration",
+        "ChatGPT OpenClaw Bridge"
+      ],
+      "can_read": [
+        "only bridge-exposed status/audit metadata after approval"
+      ],
+      "can_write_or_change": [
+        "only bridge-forwarded governed tasks after approval"
+      ],
+      "decision_mode": "Would follow ChatGPT/user/tool-call intent; bridge remains policy gate.",
+      "logs_history": true,
+      "log_locations": [
+        "bridge audit log",
+        "future connector logs"
+      ],
+      "needs_august_review": "Yes; not approved for public MCP yet.",
+      "current_maturity": "experimental",
+      "visual_archetype": "Diplomatic courier"
+    },
+    {
+      "id": "expedition-hq-dashboard",
+      "stable_name": "Expedition HQ Dashboard",
+      "classification": "Interface",
+      "status": "planned",
+      "what_it_can_do": [
+        "Visually represent agents, tools, routes, devices, memory stores, blockers, and workflows.",
+        "Potentially become the operator overview for this ecosystem."
+      ],
+      "triggers": [
+        "Future dashboard app usage.",
+        "Local JSON census data refreshes."
+      ],
+      "tools_or_systems": [
+        "agent census JSON",
+        "rescue-ui status",
+        "OpenClaw status APIs",
+        "bridge status APIs"
+      ],
+      "can_read": [
+        "curated non-secret_REDACTED_FIELD_NAME status data"
+      ],
+      "can_write_or_change": [
+        "unknown; should start read-only"
+      ],
+      "decision_mode": "Interface only at first.",
+      "logs_history": false,
+      "log_locations": [],
+      "needs_august_review": "Yes before adding control actions.",
+      "current_maturity": "planned",
+      "visual_archetype": "Expedition map room"
+    }
+  ],
+  "known_routes": [
+    {
+      "id": "current-webchat",
+      "route": "August -> OpenClaw Control/WebChat -> OpenClaw Gateway -> OpenClaw Main",
+      "status": "active",
+      "risk": "Depends on current gateway/WebChat access path."
+    },
+    {
+      "id": "phone-gateway-direct",
+      "route": "iPhone/Safari or WebChat -> redacted Cloudflare quick tunnel -> 127.0.0.1:18789 -> OpenClaw Gateway",
+      "status": "active-temporary",
+      "risk": "Public-by-URL gateway-direct exposure; do not treat as approved public MCP."
+    },
+    {
+      "id": "bridge-facing-test",
+      "route": "redacted Cloudflare quick tunnel -> 127.0.0.1:8787 -> ChatGPT OpenClaw Bridge -> OpenClaw /hooks/agent -> codex-memory-operator",
+      "status": "active-test-only",
+      "risk": "Proved for governance testing, not production ingress approval."
+    },
+    {
+      "id": "future-chatgpt-mcp",
+      "route": "ChatGPT MCP client -> TLS endpoint -> identity-aware ingress -> localhost/private bridge -> OpenClaw /hooks/agent -> target agent",
+      "status": "planned",
+      "risk": "Blocked until ingress, token_REDACTED_FIELD_NAME, persistence, pruning, and gateway exposure posture are resolved."
+    },
+    {
+      "id": "watcher-dispatch",
+      "route": "OpenClaw transcript -> Watch-OpenClawToCodex.ps1 -> codex exec resume/new -> local Codex artifacts",
+      "status": "active",
+      "risk": "Currently machine-level and headless; replies are artifact/log oriented, not a normal outbound chat channel."
+    },
+    {
+      "id": "tailscale-dashboard",
+      "route": "iPhone/desktop -> Tailscale HTTPS/Serve -> OpenClaw Gateway",
+      "status": "candidate-failed",
+      "risk": "Tailscale cert support was unavailable for this account during setup."
+    }
+  ],
+  "memory_stores_and_archives": [
+    {
+      "id": "main-workspace-memory",
+      "classification": "Memory/archive",
+      "path": "/home/augus/.openclaw/workspace",
+      "contents": [
+        "AGENTS.md",
+        "SOUL.md",
+        "IDENTITY.md",
+        "USER.md",
+        "TOOLS.md",
+        "HEARTBEAT.md",
+        "memory/2026-05-27.md"
+      ],
+      "notes": "No MEMORY.md file was present in this workspace at inspection time."
+    },
+    {
+      "id": "main-session-history",
+      "classification": "Memory/archive",
+      "path": "/home/augus/.openclaw/agents/main/sessions",
+      "contents": [
+        "OpenClaw Main session transcripts and current webchat session history"
+      ]
+    },
+    {
+      "id": "codex-memory-operator-history",
+      "classification": "Memory/archive",
+      "path": "/home/augus/.openclaw/agents/codex-memory-operator/sessions",
+      "contents": [
+        "Historical jsonl sessions and trajectory files"
+      ]
+    },
+    {
+      "id": "bridge-project",
+      "classification": "Memory/archive",
+      "path": "C:\\Users\\August\\Projects\\chatgpt-openclaw-bridge",
+      "contents": [
+        "bridge config",
+        "MCP docs",
+        "public preflight docs",
+        "tests",
+        "rescue UI",
+        "audit/idempotency logs"
+      ]
+    },
+    {
+      "id": "iphone-bridge-artifacts",
+      "classification": "Memory/archive",
+      "path": "C:\\Users\\augus\\Documents\\Codex\\2026-05-26\\can-you-do-as-much-without\\artifacts",
+      "contents": [
+        "watcher state",
+        "dispatch logs",
+        "result summaries",
+        "private QR/URL artifacts"
+      ],
+      "notes": "Private QR/URL artifacts are token_REDACTED_FIELD_NAME-bearing and should not be surfaced in Expedition HQ except as redacted status."
+    },
+    {
+      "id": "inbound-media-store",
+      "classification": "Data source",
+      "path": "/home/augus/.openclaw/media/inbound",
+      "contents": [
+        "openclaw_webhook_activation_handoff text",
+        "revised_two_skill_openclaw_codex_memory_plan text"
+      ]
+    }
+  ],
+  "active_projects_or_workflows": [
+    {
+      "id": "phase-1-8-5-rescue-ui",
+      "name": "Recovery UI / Operator Panel",
+      "status": "working",
+      "summary": "Local-only rescue panel detects gateway, bridge, Cloudflared, allowed origins, WebSocket URL, and route classification."
+    },
+    {
+      "id": "phase-1-9-bridge-facing-preflight",
+      "name": "Bridge-facing route preflight",
+      "status": "complete-but-not-production",
+      "summary": "Bridge-facing test route works and bad requests are rejected; public MCP remains not ready."
+    },
+    {
+      "id": "phone-openclaw-access",
+      "name": "iPhone/OpenClaw dashboard access",
+      "status": "working-but-temporary",
+      "summary": "Currently depends on gateway-direct Cloudflare quick tunnel; do not interrupt without approval."
+    },
+    {
+      "id": "public-mcp-bridge",
+      "name": "Public MCP bridge hardening",
+      "status": "blocked-pre-production",
+      "summary": "Local bridge is hardened, but public ingress and approval steps remain incomplete."
+    },
+    {
+      "id": "codex-memory-governance",
+      "name": "Codex memory governance MVP",
+      "status": "experimental",
+      "summary": "Script manifest exists with read-only, mutating, and destructive memory script policy tiers."
+    },
+    {
+      "id": "expedition-hq-dashboard",
+      "name": "Expedition HQ dashboard",
+      "status": "planning",
+      "summary": "Needs visual model of agents, routes, tools, devices, memory stores, workflows, and blockers."
+    }
+  ],
+  "recurring_blockers_or_failed_routes": [
+    {
+      "id": "gateway-direct-public-by-url",
+      "summary": "Cloudflare tunnel to 127.0.0.1:18789 is active and classified TEMPORARY_GATEWAY_DIRECT.",
+      "impact": "Blocks public MCP readiness."
+    },
+    {
+      "id": "phase-1-8-disconnect",
+      "summary": "Stopping the previous gateway Cloudflared tunnel disconnected August mid-stream.",
+      "impact": "Active tunnels must not be stopped/replaced without explicit approval."
+    },
+    {
+      "id": "tailscale-cert-unavailable",
+      "summary": "Tailscale HTTPS certificate flow was unavailable for this account during setup.",
+      "impact": "Forced temporary Cloudflare fallback for iPhone secure context."
+    },
+    {
+      "id": "public-mcp-not-ready",
+      "summary": "Bridge-facing route works, but production public MCP still lacks approved ingress, token_REDACTED_FIELD_NAME rotation plan execution, bridge persistence, ledger pruning, and gateway exposure resolution.",
+      "impact": "Do not configure production ChatGPT MCP yet."
+    },
+    {
+      "id": "openclaw-control-truncation",
+      "summary": "Long OpenClaw Control messages can end with ...(truncated)...",
+      "impact": "Reports should be split into numbered chunks."
+    },
+    {
+      "id": "paired-nodes-empty",
+      "summary": "OpenClaw nodes status returned no paired nodes.",
+      "impact": "Device automation/camera/screen/location routes are not currently available."
+    },
+    {
+      "id": "codex-memory-operator-identity-unfilled",
+      "summary": "codex-memory-operator workspace exists, but its IDENTITY.md is still the template.",
+      "impact": "Dashboard should mark it as experimental until identity/capability docs are completed."
+    }
+  ],
+  "planned_not_built_agents_or_routes": [
+    {
+      "id": "production-chatgpt-mcp-connector",
+      "classification": "Candidate agent",
+      "status": "planned",
+      "required_before_activation": [
+        "identity-aware ingress",
+        "production token_REDACTED_FIELD_NAME plan",
+        "public connector schema review",
+        "gateway-direct route resolved or classified private/authenticated",
+        "bridge persistence",
+        "idempotency ledger pruning"
+      ]
+    },
+    {
+      "id": "private-authenticated-phone-dashboard-route",
+      "classification": "Route/bridge",
+      "status": "planned",
+      "required_before_activation": [
+        "replace or harden gateway-direct quick tunnel",
+        "avoid wildcard allowedOrigins",
+        "preserve phone/WebChat continuity during cutover"
+      ]
+    },
+    {
+      "id": "expedition-hq-visual-dashboard",
+      "classification": "Interface",
+      "status": "planned",
+      "required_before_activation": [
+        "choose dashboard stack",
+        "define refresh source",
+        "keep secret_REDACTED_FIELD_NAMEs/tunnel URLs redacted",
+        "start read-only before adding controls"
+      ]
+    },
+    {
+      "id": "heartbeat-proactive-checks",
+      "classification": "Automation/standing order",
+      "status": "candidate",
+      "required_before_activation": [
+        "add small HEARTBEAT.md checklist",
+        "define quiet hours and useful checks",
+        "avoid unnecessary chatter"
+      ]
+    }
+  ],
+  "short_human_summary": "The ecosystem currently has one active primary agent, OpenClaw Main. Codex Memory Operator and Home Windows Codex are configured hook/bridge targets, but Codex Memory Operator is still experimental and Home Windows Codex was not observed as an active workspace. The active infrastructure includes OpenClaw gateway on 18789, the local bridge on 8787, a gateway-direct Cloudflare recovery tunnel, a bridge-facing test tunnel, and a watcher that dispatches OpenClaw WebChat messages into headless Codex runs. Public MCP is not ready: the gateway-direct public-by-URL route, bridge persistence, token_REDACTED_FIELD_NAME rotation finalization, idempotency ledger pruning, and production ingress policy remain blockers."
+}

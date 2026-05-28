@@ -1,0 +1,42 @@
+[
+  {
+    "id": "milestone-map-room-founded",
+    "name": "Map Room Founded",
+    "description": "Create the repo shell, charter, guardrails, and first redacted census import.",
+    "status": "available",
+    "xp_reward": 50,
+    "unlock_condition": "Initial scaffold committed and seed data validated."
+  },
+  {
+    "id": "milestone-first-roster-rendered",
+    "name": "First Roster Rendered",
+    "description": "Display the imported specialists, constructs, routes, and stations in the Specialist Roster.",
+    "status": "locked",
+    "xp_reward": 40,
+    "unlock_condition": "GET /agents returns seed data and the web app renders it."
+  },
+  {
+    "id": "milestone-first-field-report",
+    "name": "First Field Report",
+    "description": "Store and display a manually created field report from the event ledger.",
+    "status": "locked",
+    "xp_reward": 35,
+    "unlock_condition": "POST /events persists to SQLite and Field Reports shows the entry."
+  },
+  {
+    "id": "milestone-first-little-guys",
+    "name": "First Little Guys",
+    "description": "Render at least three visual states: awake, dormant, and blocked/review-needed.",
+    "status": "locked",
+    "xp_reward": 60,
+    "unlock_condition": "Bureau HQ shows animated/stateful specialist cards from real event state."
+  },
+  {
+    "id": "milestone-map-room-online",
+    "name": "Map Room Online",
+    "description": "Run the local read-only API and dashboard together so Expedition HQ can answer what the little AI guys are doing.",
+    "status": "unlocked",
+    "xp_reward": 75,
+    "unlock_condition": "Dashboard loads from the local API and shows the Map Room Online field report."
+  }
+]

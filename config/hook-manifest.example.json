@@ -1,0 +1,18 @@
+{
+  "version": "0.1.0",
+  "mode": "read_only",
+  "allowed_ingest": [
+    "event",
+    "field_report",
+    "artifact_metadata"
+  ],
+  "blocked_actions": [
+    "start_tunnel",
+    "stop_tunnel",
+    "rotate_token",
+    "mutate_openclaw_config",
+    "send_external_message",
+    "mutate_memory_store",
+    "configure_public_mcp"
+  ]
+}

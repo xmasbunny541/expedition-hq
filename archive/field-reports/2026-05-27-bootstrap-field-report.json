@@ -1,0 +1,14 @@
+{
+  "id": "field-report-bootstrap-2026-05-27",
+  "timestamp": "2026-05-27T20:45:00-07:00",
+  "expedition_id": "expedition-hq-dashboard",
+  "source_id": "manual",
+  "title": "Expedition HQ starter scaffold created",
+  "summary": "Created a starter repo package to jumpstart the Expedition HQ MVP from the redacted census and planning report.",
+  "artifact_refs": [
+    "archive/artifacts/bootstrap/agent-census-2026-05-27.redacted.json",
+    "archive/artifacts/bootstrap/deep-research-report.md"
+  ],
+  "sentimental_note": "This marks the transition from idea exploration into a buildable project.",
+  "xp": 25
+}

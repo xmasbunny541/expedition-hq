@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local/expedition-hq.schema.json",
+  "title": "Expedition HQ Core Schema",
+  "type": "object",
+  "properties": {
+    "agent": {
+      "type": "object",
+      "required": [
+        "id",
+        "display_name",
+        "visual_class",
+        "status",
+        "ui_state"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "display_name": {
+          "type": "string"
+        },
+        "visual_name": {
+          "type": "string"
+        },
+        "visual_class": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "ui_state": {
+          "type": "string"
+        },
+        "room": {
+          "type": "string"
+        },
+        "summary": {
+          "type": "string"
+        }
+      }
+    },
+    "event": {
+      "type": "object",
+      "required": [
+        "id",
+        "timestamp",
+        "source_id",
+        "event_type",
+        "title",
+        "summary",
+        "status"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "string"
+        },
+        "source_id": {
+          "type": "string"
+        },
+        "expedition_id": {
+          "type": "string"
+        },
+        "event_type": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "summary": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "risk_level": {
+          "type": "string"
+        },
+        "needs_review": {
+          "type": "boolean"
+        },
+        "xp": {
+          "type": "integer"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

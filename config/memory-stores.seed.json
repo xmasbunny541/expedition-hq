@@ -1,0 +1,67 @@
+[
+  {
+    "id": "main-workspace-memory",
+    "classification": "Memory/archive",
+    "path": "/home/augus/.openclaw/workspace",
+    "contents": [
+      "AGENTS.md",
+      "SOUL.md",
+      "IDENTITY.md",
+      "USER.md",
+      "TOOLS.md",
+      "HEARTBEAT.md",
+      "memory/2026-05-27.md"
+    ],
+    "notes": "No MEMORY.md file was present in this workspace at inspection time."
+  },
+  {
+    "id": "main-session-history",
+    "classification": "Memory/archive",
+    "path": "/home/augus/.openclaw/agents/main/sessions",
+    "contents": [
+      "OpenClaw Main session transcripts and current webchat session history"
+    ]
+  },
+  {
+    "id": "codex-memory-operator-history",
+    "classification": "Memory/archive",
+    "path": "/home/augus/.openclaw/agents/codex-memory-operator/sessions",
+    "contents": [
+      "Historical jsonl sessions and trajectory files"
+    ]
+  },
+  {
+    "id": "bridge-project",
+    "classification": "Memory/archive",
+    "path": "C:\\Users\\August\\Projects\\chatgpt-openclaw-bridge",
+    "contents": [
+      "bridge config",
+      "MCP docs",
+      "public preflight docs",
+      "tests",
+      "rescue UI",
+      "audit/idempotency logs"
+    ]
+  },
+  {
+    "id": "iphone-bridge-artifacts",
+    "classification": "Memory/archive",
+    "path": "C:\\Users\\augus\\Documents\\Codex\\2026-05-26\\can-you-do-as-much-without\\artifacts",
+    "contents": [
+      "watcher state",
+      "dispatch logs",
+      "result summaries",
+      "private QR/URL artifacts"
+    ],
+    "notes": "Private QR/URL artifacts are token_REDACTED_FIELD_NAME-bearing and should not be surfaced in Expedition HQ except as redacted status."
+  },
+  {
+    "id": "inbound-media-store",
+    "classification": "Data source",
+    "path": "/home/augus/.openclaw/media/inbound",
+    "contents": [
+      "openclaw_webhook_activation_handoff text",
+      "revised_two_skill_openclaw_codex_memory_plan text"
+    ]
+  }
+]

@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.env
+
+# Node
+node_modules/
+dist/
+.vite/
+
+# Local database/runtime
+*.db
+*.db-shm
+*.db-wal
+/data/
+/runtime/
+/logs/
+
+# Secrets and live tunnel material
+*.secret.*
+*.token.*
+*tunnel-url*
+*qr*
+.env.local
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

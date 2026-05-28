@@ -1,0 +1,580 @@
+[
+  {
+    "id": "openclaw-main",
+    "display_name": "OpenClaw Main",
+    "visual_name": "The Coordinator",
+    "source_classification": "Agent",
+    "visual_class": "specialist",
+    "status": "active",
+    "ui_state": "awake",
+    "visual_archetype": "Command center operator",
+    "room": "central-desk",
+    "current_assignment": "expedition-hq-dashboard",
+    "summary": "Operate as August's main OpenClaw agent.",
+    "decision_mode": "Makes bounded operational decisions, but asks or refuses for external/public/destructive actions.",
+    "needs_august_review": "Yes for external sends, security exposure, token_REDACTED_FIELD_NAME rotation, destructive changes, or public bridge/MCP approval.",
+    "logs_history": true,
+    "allowed_as_little_guy": true,
+    "capabilities": [
+      "Operate as August's main OpenClaw agent.",
+      "Use the OpenAI Codex runtime.",
+      "Read and modify local workspace files when requested.",
+      "Run local commands and use OpenClaw messaging/tools.",
+      "Coordinate project work, reporting, and recovery workflows."
+    ],
+    "triggers": [
+      "Direct WebChat/OpenClaw Control messages.",
+      "OpenClaw gateway session events.",
+      "Future heartbeat/system events when configured."
+    ],
+    "tools_or_systems": [
+      "OpenAI Codex runtime",
+      "OpenClaw gateway",
+      "message tool",
+      "shell/PowerShell through Codex",
+      "OpenClaw dynamic tools",
+      "local workspace files"
+    ]
+  },
+  {
+    "id": "codex-memory-operator",
+    "display_name": "Codex Memory Operator",
+    "visual_name": "The Archivist",
+    "source_classification": "Candidate agent",
+    "visual_class": "candidate_specialist",
+    "status": "semi-active",
+    "ui_state": "on_call",
+    "visual_archetype": "Archivist cartographer",
+    "room": "archive-vault",
+    "current_assignment": "codex-memory-governance",
+    "summary": "Intended target for governed memory review and Codex-memory tasks.",
+    "decision_mode": "Candidate decision-maker for memory operations; destructive or mutating memory work requires review/approval.",
+    "needs_august_review": "Yes for memory mutation, restore, prune, delete, promotion, or cloud recall.",
+    "logs_history": true,
+    "allowed_as_little_guy": true,
+    "capabilities": [
+      "Intended target for governed memory review and Codex-memory tasks.",
+      "Has an OpenClaw agent workspace and many historical session artifacts.",
+      "Allowed as an OpenClaw hook target and bridge target."
+    ],
+    "triggers": [
+      "OpenClaw /hooks/agent when agentId is codex-memory-operator.",
+      "ChatGPT OpenClaw Bridge governed tool calls.",
+      "Future MCP connector calls after approval."
+    ],
+    "tools_or_systems": [
+      "OpenClaw hooks",
+      "Codex runtime sessions",
+      "ChatGPT OpenClaw Bridge",
+      "script-manifest-governed memory scripts"
+    ]
+  },
+  {
+    "id": "home-windows-codex",
+    "display_name": "Home Windows Codex",
+    "visual_name": "The Dormant Engineer",
+    "source_classification": "Candidate agent",
+    "visual_class": "candidate_specialist",
+    "status": "configured-but-not-observed-active",
+    "ui_state": "dormant",
+    "visual_archetype": "Dormant field engineer",
+    "room": "engineering-bay",
+    "current_assignment": "expedition-hq-dashboard",
+    "summary": "Named as a future or alternate governed Codex target for home Windows work.",
+    "decision_mode": "Unknown; currently a configured target more than an observed active agent.",
+    "needs_august_review": "Yes before treating it as production-capable.",
+    "logs_history": "unknown",
+    "allowed_as_little_guy": true,
+    "capabilities": [
+      "Named as a future or alternate governed Codex target for home Windows work.",
+      "Allowed by OpenClaw hooks and the bridge config.",
+      "No matching workspace was found in the inspected OpenClaw agent directories."
+    ],
+    "triggers": [
+      "OpenClaw /hooks/agent when agentId is home-windows-codex.",
+      "ChatGPT OpenClaw Bridge target_agent home-windows-codex."
+    ],
+    "tools_or_systems": [
+      "OpenClaw hooks",
+      "ChatGPT OpenClaw Bridge",
+      "future Windows/Codex runtime wiring"
+    ]
+  },
+  {
+    "id": "codex-headless-cli-runs",
+    "display_name": "Headless Codex CLI Runs",
+    "visual_name": "The Rover",
+    "source_classification": "Tool",
+    "visual_class": "construct",
+    "status": "semi-active",
+    "ui_state": "on_call",
+    "visual_archetype": "Remote expedition rover",
+    "room": "engineering-bay",
+    "current_assignment": "phone-openclaw-access",
+    "summary": "Run Codex non-interactively from Windows/WSL workflows.",
+    "decision_mode": "Follows prompts but can make implementation decisions inside the requested task.",
+    "needs_august_review": "Yes for destructive/external/security-sensitive actions.",
+    "logs_history": true,
+    "allowed_as_little_guy": true,
+    "capabilities": [
+      "Run Codex non-interactively from Windows/WSL workflows.",
+      "Resume the latest CLI session or start a new run depending on dispatch rules.",
+      "Produce prompt, stdout, stderr, reply, and result artifacts."
+    ],
+    "triggers": [
+      "OpenClaw-to-Codex watcher dispatch.",
+      "Manual Codex CLI commands.",
+      "Future OpenClaw hook or bridge workflows."
+    ],
+    "tools_or_systems": [
+      "codex exec resume --last --all",
+      "local filesystem",
+      "OpenAI Codex OAuth"
+    ]
+  },
+  {
+    "id": "openclaw-to-codex-watcher",
+    "display_name": "OpenClaw-to-Codex Watcher",
+    "visual_name": "The Signal Mast",
+    "source_classification": "Automation/standing order",
+    "visual_class": "automation",
+    "status": "active",
+    "ui_state": "awake",
+    "visual_archetype": "Signal relay mast",
+    "room": "comms-wing",
+    "current_assignment": "phone-openclaw-access",
+    "summary": "Poll OpenClaw webchat transcripts.",
+    "decision_mode": "Rule-based routing; does not independently decide broader task scope.",
+    "needs_august_review": "Yes before changing dispatch policy or making it send external replies.",
+    "logs_history": true,
+    "allowed_as_little_guy": false,
+    "capabilities": [
+      "Poll OpenClaw webchat transcripts.",
+      "Dispatch future iPhone/WebChat messages into Codex CLI runs.",
+      "Route normal messages to resume latest Codex session.",
+      "Route planning briefs or new project messages to a new headless Codex run."
+    ],
+    "triggers": [
+      "New OpenClaw webchat/iPhone transcript messages.",
+      "Windows logon task named OpenClaw Codex Bridge."
+    ],
+    "tools_or_systems": [
+      "Watch-OpenClawToCodex.ps1",
+      "Windows PowerShell",
+      "Windows Task Scheduler",
+      "Codex CLI",
+      "OpenClaw session transcript files"
+    ]
+  },
+  {
+    "id": "chatgpt-openclaw-bridge",
+    "display_name": "ChatGPT OpenClaw Bridge MVP",
+    "visual_name": "The Checkpoint",
+    "source_classification": "Route/bridge",
+    "visual_class": "route_bridge",
+    "status": "active-local-test",
+    "ui_state": "test_mode",
+    "visual_archetype": "Checkpoint gate",
+    "room": "comms-wing",
+    "current_assignment": "public-mcp-bridge",
+    "summary": "Expose a narrow local HTTP API on 127.0.0.1:8787.",
+    "decision_mode": "Policy gatekeeper; validates and rejects, but does not autonomously plan.",
+    "needs_august_review": "Yes before public exposure or production MCP approval.",
+    "logs_history": true,
+    "allowed_as_little_guy": false,
+    "capabilities": [
+      "Expose a narrow local HTTP API on 127.0.0.1:8787.",
+      "Authenticate tool calls with bridge token_REDACTED_FIELD_NAME headers.",
+      "Require provenance, replay timestamp, and nonce.",
+      "Forward governed tasks to OpenClaw /hooks/agent.",
+      "Reject arbitrary shell, direct memory mutation, destructive requests, vector memory, and cloud active recall."
+    ],
+    "triggers": [
+      "Local HTTP requests to /tools/*.",
+      "Bridge-facing test Cloudflare tunnel during Phase 1.9."
+    ],
+    "tools_or_systems": [
+      "Node.js",
+      "OpenClaw /hooks/agent",
+      "bridge-config.json",
+      "MCP tool definitions",
+      "idempotency ledger",
+      "audit log"
+    ]
+  },
+  {
+    "id": "openclaw-gateway",
+    "display_name": "OpenClaw Gateway",
+    "visual_name": "The Harbor Gate",
+    "source_classification": "Route/bridge",
+    "visual_class": "route_bridge",
+    "status": "active",
+    "ui_state": "awake",
+    "visual_archetype": "Harbor master",
+    "room": "comms-wing",
+    "current_assignment": "phone-openclaw-access",
+    "summary": "Serve OpenClaw Control/WebChat locally.",
+    "decision_mode": "Infrastructure router; executes configured policy.",
+    "needs_august_review": "Yes before public exposure, token_REDACTED_FIELD_NAME rotation, or allowedOrigins changes.",
+    "logs_history": true,
+    "allowed_as_little_guy": false,
+    "capabilities": [
+      "Serve OpenClaw Control/WebChat locally.",
+      "Host /hooks/agent for governed agent dispatch.",
+      "Manage sessions and runtime context."
+    ],
+    "triggers": [
+      "Local dashboard/WebChat access.",
+      "OpenClaw hook requests.",
+      "Cloudflare/Tailscale/browser access paths."
+    ],
+    "tools_or_systems": [
+      "OpenClaw 2026.5.22",
+      "WSL Ubuntu",
+      "OpenClaw config",
+      "agent session store"
+    ]
+  },
+  {
+    "id": "gateway-direct-cloudflare-tunnel",
+    "display_name": "Gateway-Direct Cloudflare Recovery Tunnel",
+    "visual_name": "The Emergency Rope Bridge",
+    "source_classification": "Route/bridge",
+    "visual_class": "route_bridge",
+    "status": "active-temporary",
+    "ui_state": "temporary_route",
+    "visual_archetype": "Emergency rope bridge",
+    "room": "comms-wing",
+    "current_assignment": null,
+    "summary": "Provide HTTPS access from phone/WebChat to OpenClaw gateway.",
+    "decision_mode": "Transport only.",
+    "needs_august_review": "Yes before stopping, replacing, or treating as production.",
+    "logs_history": true,
+    "allowed_as_little_guy": false,
+    "capabilities": [
+      "Provide HTTPS access from phone/WebChat to OpenClaw gateway.",
+      "Target 127.0.0.1:18789 directly."
+    ],
+    "triggers": [
+      "Manual cloudflared quick tunnel start.",
+      "Phone/OpenClaw dashboard access through redacted trycloudflare origin."
+    ],
+    "tools_or_systems": [
+      "cloudflared.exe",
+      "OpenClaw gateway",
+      "gateway.controlUi.allowedOrigins"
+    ]
+  },
+  {
+    "id": "bridge-facing-cloudflare-test-tunnel",
+    "display_name": "BRIDGE_FACING_TEST_ONLY Cloudflare Tunnel",
+    "visual_name": "The Test Bridge",
+    "source_classification": "Route/bridge",
+    "visual_class": "route_bridge",
+    "status": "active-test-only",
+    "ui_state": "test_mode",
+    "visual_archetype": "Test bridge with barricades",
+    "room": "comms-wing",
+    "current_assignment": null,
+    "summary": "Expose the local bridge through a temporary public-style HTTPS route.",
+    "decision_mode": "Transport only.",
+    "needs_august_review": "Yes before production use; current route is test-only.",
+    "logs_history": true,
+    "allowed_as_little_guy": false,
+    "capabilities": [
+      "Expose the local bridge through a temporary public-style HTTPS route.",
+      "Target 127.0.0.1:8787 for Phase 1.9 testing."
+    ],
+    "triggers": [
+      "Manual cloudflared quick tunnel start for Phase 1.9.",
+      "Bridge-facing tunnel validation requests."
+    ],
+    "tools_or_systems": [
+      "cloudflared.exe",
+      "ChatGPT OpenClaw Bridge",
+      "process-only preflight config"
+    ]
+  },
+  {
+    "id": "rescue-operator-panel",
+    "display_name": "OpenClaw Bridge Rescue UI / Operator Panel",
+    "visual_name": "The Flight Console",
+    "source_classification": "Interface",
+    "visual_class": "interface",
+    "status": "working-local-only",
+    "ui_state": "working_local",
+    "visual_archetype": "Flight operations console",
+    "room": "staging-area",
+    "current_assignment": null,
+    "summary": "Show OpenClaw gateway, bridge, Cloudflared, tunnel, WebSocket, allowed-origin, and route-classification status.",
+    "decision_mode": "Displays recommendations; does not autonomously change state.",
+    "needs_august_review": "Yes before following disruptive commands.",
+    "logs_history": true,
+    "allowed_as_little_guy": false,
+    "capabilities": [
+      "Show OpenClaw gateway, bridge, Cloudflared, tunnel, WebSocket, allowed-origin, and route-classification status.",
+      "Document local commands for recovery operations.",
+      "Warn when public MCP is not ready."
+    ],
+    "triggers": [
+      "Manual opening of rescue-panel.html.",
+      "Manual run of OpenClaw-Bridge-Rescue.ps1."
+    ],
+    "tools_or_systems": [
+      "Windows PowerShell",
+      "local HTML",
+      "status.json"
+    ]
+  },
+  {
+    "id": "openclaw-control-webchat",
+    "display_name": "OpenClaw Control / WebChat",
+    "visual_name": "The Comms Terminal",
+    "source_classification": "Interface",
+    "visual_class": "interface",
+    "status": "active",
+    "ui_state": "awake",
+    "visual_archetype": "Comms terminal",
+    "room": "comms-wing",
+    "current_assignment": null,
+    "summary": "Let August interact with OpenClaw Main.",
+    "decision_mode": "Interface only.",
+    "needs_august_review": "No for normal direct responses; yes for external/public messages.",
+    "logs_history": true,
+    "allowed_as_little_guy": false,
+    "capabilities": [
+      "Let August interact with OpenClaw Main.",
+      "Deliver visible messages through the message tool.",
+      "Carry runtime context and session state."
+    ],
+    "triggers": [
+      "Browser/WebChat user messages.",
+      "OpenClaw Control dashboard access."
+    ],
+    "tools_or_systems": [
+      "OpenClaw gateway",
+      "WebChat provider",
+      "message delivery tool"
+    ]
+  },
+  {
+    "id": "iphone-13-mini-safari",
+    "display_name": "August iPhone 13 mini Safari",
+    "visual_name": "The Field Handset",
+    "source_classification": "Host/device",
+    "visual_class": "station",
+    "status": "semi-active",
+    "ui_state": "on_call",
+    "visual_archetype": "Field handset",
+    "room": "systems-deck",
+    "current_assignment": null,
+    "summary": "Access OpenClaw Control through an HTTPS browser route.",
+    "decision_mode": "Human-operated device.",
+    "needs_august_review": "August is the reviewer/operator.",
+    "logs_history": "browser/session dependent",
+    "allowed_as_little_guy": false,
+    "capabilities": [
+      "Access OpenClaw Control through an HTTPS browser route.",
+      "Serve as a mobile operator console."
+    ],
+    "triggers": [
+      "August opens the current private dashboard URL/QR.",
+      "Cloudflare or future Tailscale/private route is available."
+    ],
+    "tools_or_systems": [
+      "iOS Safari",
+      "OpenClaw Control UI",
+      "Cloudflare quick tunnel",
+      "future Tailscale/private route"
+    ]
+  },
+  {
+    "id": "windows-workstation",
+    "display_name": "August Windows Workstation",
+    "visual_name": "Base Camp Workstation",
+    "source_classification": "Host/device",
+    "visual_class": "station",
+    "status": "active",
+    "ui_state": "awake",
+    "visual_archetype": "Base camp workstation",
+    "room": "systems-deck",
+    "current_assignment": null,
+    "summary": "Run Windows PowerShell, Node bridge, Cloudflared, watcher, Codex CLI, and project files.",
+    "decision_mode": "Host only; decisions come from user or agents.",
+    "needs_august_review": "Yes for system/security settings.",
+    "logs_history": true,
+    "allowed_as_little_guy": false,
+    "capabilities": [
+      "Run Windows PowerShell, Node bridge, Cloudflared, watcher, Codex CLI, and project files.",
+      "Host the Windows side of OpenClaw/Codex workflows."
+    ],
+    "triggers": [
+      "Manual commands.",
+      "Windows Task Scheduler.",
+      "OpenClaw/Codex bridge workflows."
+    ],
+    "tools_or_systems": [
+      "Windows PowerShell",
+      "Node.js",
+      "cloudflared.exe",
+      "Task Scheduler",
+      "Codex CLI"
+    ]
+  },
+  {
+    "id": "wsl-ubuntu-host",
+    "display_name": "WSL Ubuntu OpenClaw Host",
+    "visual_name": "The Server Rack",
+    "source_classification": "Host/device",
+    "visual_class": "station",
+    "status": "active",
+    "ui_state": "awake",
+    "visual_archetype": "Local server rack",
+    "room": "systems-deck",
+    "current_assignment": null,
+    "summary": "Run OpenClaw gateway and agent workspaces.",
+    "decision_mode": "Host only.",
+    "needs_august_review": "Yes for config/security changes.",
+    "logs_history": true,
+    "allowed_as_little_guy": false,
+    "capabilities": [
+      "Run OpenClaw gateway and agent workspaces.",
+      "Store OpenClaw configs, sessions, and workspace memory.",
+      "Provide Linux tooling for Codex work."
+    ],
+    "triggers": [
+      "OpenClaw gateway startup.",
+      "Codex runtime commands.",
+      "WSL filesystem access from Windows scripts."
+    ],
+    "tools_or_systems": [
+      "OpenClaw Node runtime",
+      "WSL filesystem",
+      "Codex shell"
+    ]
+  },
+  {
+    "id": "openclaw-cron-heartbeat",
+    "display_name": "OpenClaw Cron / Heartbeat Layer",
+    "visual_name": "The Clock Tower",
+    "source_classification": "Automation/standing order",
+    "visual_class": "automation",
+    "status": "candidate-inactive",
+    "ui_state": "sleeping",
+    "visual_archetype": "Clock tower",
+    "room": "staging-area",
+    "current_assignment": null,
+    "summary": "Schedule recurring or one-shot OpenClaw jobs.",
+    "decision_mode": "Automation only unless a scheduled agent turn runs.",
+    "needs_august_review": "Yes before creating recurring external-facing automations.",
+    "logs_history": true,
+    "allowed_as_little_guy": false,
+    "capabilities": [
+      "Schedule recurring or one-shot OpenClaw jobs.",
+      "Wake agents through main, isolated, current, or session-bound targets.",
+      "Support proactive checks when configured."
+    ],
+    "triggers": [
+      "Configured cron jobs.",
+      "Heartbeat polls.",
+      "Manual cron wake."
+    ],
+    "tools_or_systems": [
+      "OpenClaw cron scheduler",
+      "HEARTBEAT.md",
+      "memory/heartbeat-state.json when used"
+    ]
+  },
+  {
+    "id": "openclaw-node-connect-layer",
+    "display_name": "OpenClaw Paired Node Layer",
+    "visual_name": "The Device Dock",
+    "source_classification": "Tool",
+    "visual_class": "construct",
+    "status": "candidate-inactive",
+    "ui_state": "sleeping",
+    "visual_archetype": "Device dock",
+    "room": "staging-area",
+    "current_assignment": null,
+    "summary": "Pair and control Android, iOS, macOS, or browser nodes when configured.",
+    "decision_mode": "Tool layer only.",
+    "needs_august_review": "Yes for pairing and sensitive device permissions.",
+    "logs_history": "unknown",
+    "allowed_as_little_guy": false,
+    "capabilities": [
+      "Pair and control Android, iOS, macOS, or browser nodes when configured.",
+      "Fetch files, capture screen/camera/location/notifications with permission."
+    ],
+    "triggers": [
+      "OpenClaw nodes tool calls.",
+      "Node pairing approval."
+    ],
+    "tools_or_systems": [
+      "OpenClaw nodes tool",
+      "file_fetch",
+      "dir_fetch"
+    ]
+  },
+  {
+    "id": "chatgpt-custom-mcp-connector",
+    "display_name": "Future ChatGPT Custom MCP Connector",
+    "visual_name": "The Diplomatic Courier",
+    "source_classification": "Candidate agent",
+    "visual_class": "candidate_specialist",
+    "status": "planned-not-built",
+    "ui_state": "blueprint",
+    "visual_archetype": "Diplomatic courier",
+    "room": "staging-area",
+    "current_assignment": null,
+    "summary": "Eventually call the bridge's narrow MCP-style tools from ChatGPT.",
+    "decision_mode": "Would follow ChatGPT/user/tool-call intent; bridge remains policy gate.",
+    "needs_august_review": "Yes; not approved for public MCP yet.",
+    "logs_history": true,
+    "allowed_as_little_guy": true,
+    "capabilities": [
+      "Eventually call the bridge's narrow MCP-style tools from ChatGPT.",
+      "Provide governed task/file/status/audit access to home Codex agents."
+    ],
+    "triggers": [
+      "Manual ChatGPT tool call after connector setup.",
+      "Future Expedition HQ or ChatGPT workflow."
+    ],
+    "tools_or_systems": [
+      "MCP tool definitions",
+      "identity-aware ingress",
+      "ChatGPT/OpenAI connector configuration",
+      "ChatGPT OpenClaw Bridge"
+    ]
+  },
+  {
+    "id": "expedition-hq-dashboard",
+    "display_name": "Expedition HQ Dashboard",
+    "visual_name": "The Map Room",
+    "source_classification": "Interface",
+    "visual_class": "interface",
+    "status": "planned",
+    "ui_state": "blueprint",
+    "visual_archetype": "Expedition map room",
+    "room": "map-room",
+    "current_assignment": null,
+    "summary": "Visually represent agents, tools, routes, devices, memory stores, blockers, and workflows.",
+    "decision_mode": "Interface only at first.",
+    "needs_august_review": "Yes before adding control actions.",
+    "logs_history": false,
+    "allowed_as_little_guy": false,
+    "capabilities": [
+      "Visually represent agents, tools, routes, devices, memory stores, blockers, and workflows.",
+      "Potentially become the operator overview for this ecosystem."
+    ],
+    "triggers": [
+      "Future dashboard app usage.",
+      "Local JSON census data refreshes."
+    ],
+    "tools_or_systems": [
+      "agent census JSON",
+      "rescue-ui status",
+      "OpenClaw status APIs",
+      "bridge status APIs"
+    ]
+  }
+]

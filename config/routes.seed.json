@@ -1,0 +1,38 @@
+[
+  {
+    "id": "current-webchat",
+    "route": "August -> OpenClaw Control/WebChat -> OpenClaw Gateway -> OpenClaw Main",
+    "status": "active",
+    "risk": "Depends on current gateway/WebChat access path."
+  },
+  {
+    "id": "phone-gateway-direct",
+    "route": "iPhone/Safari or WebChat -> redacted Cloudflare quick tunnel -> 127.0.0.1:18789 -> OpenClaw Gateway",
+    "status": "active-temporary",
+    "risk": "Public-by-URL gateway-direct exposure; do not treat as approved public MCP."
+  },
+  {
+    "id": "bridge-facing-test",
+    "route": "redacted Cloudflare quick tunnel -> 127.0.0.1:8787 -> ChatGPT OpenClaw Bridge -> OpenClaw /hooks/agent -> codex-memory-operator",
+    "status": "active-test-only",
+    "risk": "Proved for governance testing, not production ingress approval."
+  },
+  {
+    "id": "future-chatgpt-mcp",
+    "route": "ChatGPT MCP client -> TLS endpoint -> identity-aware ingress -> localhost/private bridge -> OpenClaw /hooks/agent -> target agent",
+    "status": "planned",
+    "risk": "Blocked until ingress, token_REDACTED_FIELD_NAME, persistence, pruning, and gateway exposure posture are resolved."
+  },
+  {
+    "id": "watcher-dispatch",
+    "route": "OpenClaw transcript -> Watch-OpenClawToCodex.ps1 -> codex exec resume/new -> local Codex artifacts",
+    "status": "active",
+    "risk": "Currently machine-level and headless; replies are artifact/log oriented, not a normal outbound chat channel."
+  },
+  {
+    "id": "tailscale-dashboard",
+    "route": "iPhone/desktop -> Tailscale HTTPS/Serve -> OpenClaw Gateway",
+    "status": "candidate-failed",
+    "risk": "Tailscale cert support was unavailable for this account during setup."
+  }
+]

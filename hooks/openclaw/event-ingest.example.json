@@ -1,0 +1,12 @@
+{
+  "source_id": "openclaw-main",
+  "expedition_id": "expedition-hq-dashboard",
+  "event_type": "field_report_created",
+  "title": "Example OpenClaw field report",
+  "summary": "This is a redacted example of a future event ingest payload.",
+  "status": "success",
+  "risk_level": "low",
+  "needs_review": false,
+  "xp": 10,
+  "tags": ["example", "openclaw"]
+}

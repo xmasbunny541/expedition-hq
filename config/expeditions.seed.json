@@ -1,0 +1,79 @@
+[
+  {
+    "id": "phase-1-8-5-rescue-ui",
+    "name": "Recovery UI / Operator Panel",
+    "status": "working",
+    "summary": "Local-only rescue panel detects gateway, bridge, Cloudflared, allowed origins, WebSocket URL, and route classification.",
+    "campaign": "ai-ecosystem-expansion",
+    "priority": "p1",
+    "progress_percent": 70,
+    "assigned_specialists": [],
+    "next_objective": "Confirm current state, create field report, and identify the next safe read-only increment."
+  },
+  {
+    "id": "phase-1-9-bridge-facing-preflight",
+    "name": "Bridge-facing route preflight",
+    "status": "complete-but-not-production",
+    "summary": "Bridge-facing test route works and bad requests are rejected; public MCP remains not ready.",
+    "campaign": "ai-ecosystem-expansion",
+    "priority": "p1",
+    "progress_percent": 80,
+    "assigned_specialists": [],
+    "next_objective": "Confirm current state, create field report, and identify the next safe read-only increment."
+  },
+  {
+    "id": "phone-openclaw-access",
+    "name": "iPhone/OpenClaw dashboard access",
+    "status": "working-but-temporary",
+    "summary": "Currently depends on gateway-direct Cloudflare quick tunnel; do not interrupt without approval.",
+    "campaign": "ai-ecosystem-expansion",
+    "priority": "p1",
+    "progress_percent": 55,
+    "assigned_specialists": [
+      "codex-headless-cli-runs",
+      "openclaw-to-codex-watcher",
+      "openclaw-gateway"
+    ],
+    "next_objective": "Confirm current state, create field report, and identify the next safe read-only increment."
+  },
+  {
+    "id": "public-mcp-bridge",
+    "name": "Public MCP bridge hardening",
+    "status": "blocked-pre-production",
+    "summary": "Local bridge is hardened, but public ingress and approval steps remain incomplete.",
+    "campaign": "ai-ecosystem-expansion",
+    "priority": "p0",
+    "progress_percent": 35,
+    "assigned_specialists": [
+      "chatgpt-openclaw-bridge"
+    ],
+    "next_objective": "Confirm current state, create field report, and identify the next safe read-only increment."
+  },
+  {
+    "id": "codex-memory-governance",
+    "name": "Codex memory governance MVP",
+    "status": "experimental",
+    "summary": "Script manifest exists with read-only, mutating, and destructive memory script policy tiers.",
+    "campaign": "ai-ecosystem-expansion",
+    "priority": "p1",
+    "progress_percent": 25,
+    "assigned_specialists": [
+      "codex-memory-operator"
+    ],
+    "next_objective": "Confirm current state, create field report, and identify the next safe read-only increment."
+  },
+  {
+    "id": "expedition-hq-dashboard",
+    "name": "Expedition HQ dashboard",
+    "status": "planning",
+    "summary": "Needs visual model of agents, routes, tools, devices, memory stores, workflows, and blockers.",
+    "campaign": "ai-ecosystem-expansion",
+    "priority": "p0",
+    "progress_percent": 10,
+    "assigned_specialists": [
+      "openclaw-main",
+      "home-windows-codex"
+    ],
+    "next_objective": "Confirm current state, create field report, and identify the next safe read-only increment."
+  }
+]
