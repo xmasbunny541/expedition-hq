@@ -8,9 +8,18 @@ export function CurrentActivity({
   agents: Agent[];
   latestEventForAgent: (agent: Agent) => Event | undefined;
 }) {
-  const activityAgents = agents
-    .filter((agent) => agent.allowed_as_little_guy || ["openclaw-to-codex-watcher", "chatgpt-openclaw-bridge", "openclaw-gateway"].includes(agent.id))
-    .slice(0, 7);
+  const importantIds = [
+    "openclaw-main",
+    "codex-memory-operator",
+    "home-windows-codex",
+    "codex-headless-cli-runs",
+    "openclaw-to-codex-watcher",
+    "chatgpt-openclaw-bridge",
+    "openclaw-gateway"
+  ];
+  const activityAgents = importantIds
+    .map((id) => agents.find((agent) => agent.id === id))
+    .filter((agent): agent is Agent => Boolean(agent));
 
   return (
     <section className="panel activity-panel">

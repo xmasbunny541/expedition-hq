@@ -226,6 +226,12 @@ export default function App() {
   };
 
   const littleGuys = agents.filter((agent) => agent.allowed_as_little_guy);
+  const spotlightLittleGuys = littleGuys.filter((agent) => [
+    "openclaw-main",
+    "codex-memory-operator",
+    "home-windows-codex",
+    "codex-headless-cli-runs"
+  ].includes(agent.id));
   const operationalSystems = agents.filter((agent) => !agent.allowed_as_little_guy);
   const reviewEvents = sortedEvents.filter((event) => event.needs_review || ["medium", "high"].includes(event.risk_level) || event.status === "blocked");
   const openIncidents = incidents.filter((incident) => incident.status === "open");
@@ -259,7 +265,7 @@ export default function App() {
           </p>
         </div>
         <div className="metric-grid" aria-label="Expedition HQ totals">
-          <div><strong>{littleGuys.length}</strong><span>little specialists</span></div>
+          <div><strong>{spotlightLittleGuys.length}</strong><span>little specialists</span></div>
           <div><strong>{activeExpeditions.length}</strong><span>active expeditions</span></div>
           <div><strong>{reviewEvents.length + openIncidents.length}</strong><span>review items</span></div>
           <div><strong>{totalXp}</strong><span>earned XP</span></div>
@@ -289,7 +295,7 @@ export default function App() {
               <p className="eyebrow">Today at Expedition HQ</p>
               <h2>What are the little AI guys doing?</h2>
               <p>
-                {littleGuys.length} specialists are visible in the base. {activeExpeditions.length} expeditions are still moving,
+                {spotlightLittleGuys.length} specialists are visible in the base. {activeExpeditions.length} expeditions are still moving,{" "}
                 {reviewEvents.length + openIncidents.length} items need human review, and {totalXp} XP has been logged from real field reports.
               </p>
             </div>
