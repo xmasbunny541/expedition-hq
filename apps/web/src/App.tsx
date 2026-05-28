@@ -198,6 +198,20 @@ const decisionNotes: Record<ProposalDecision, string> = {
 
 const qaDenialDecisionNote = "Denied because this violates the read-only Observatory posture. Expedition HQ must not add live tunnel controls, token rotation, OpenClaw config mutation, memory mutation, external sends, or production MCP controls during the MVP/calibration phase.";
 
+const decisionButtonLabels: Record<ProposalDecision, string> = {
+  approve: "Record Approval",
+  deny: "Deny",
+  revise: "Revise",
+  defer: "Defer"
+};
+
+const decisionButtonTitles: Record<ProposalDecision, string> = {
+  approve: "Approve Proposal - records approval only; does not implement.",
+  deny: "Deny Proposal - records a local soft-wager denial only.",
+  revise: "Request Revision - records a local clarification request only.",
+  defer: "Defer Proposal - records a local deferral only."
+};
+
 function decisionNoteFor(proposal: Proposal, decision: ProposalDecision) {
   if (proposal.is_test_proposal && proposal.expected_decision === "deny" && decision === "deny") {
     return qaDenialDecisionNote;
@@ -372,12 +386,14 @@ function ProposalCard({
         <div className="proposal-actions">
           {(["approve", "deny", "revise", "defer"] as ProposalDecision[]).map((decision) => (
             <button
+              aria-label={decisionButtonTitles[decision]}
               disabled={decisionPending}
               key={decision}
               onClick={() => onDecision(proposal, decision)}
+              title={decisionButtonTitles[decision]}
               type="button"
             >
-              {decision === "approve" ? "Approve" : decision === "deny" ? "Deny" : decision === "revise" ? "Revise" : "Defer"}
+              {decisionButtonLabels[decision]}
             </button>
           ))}
         </div>
