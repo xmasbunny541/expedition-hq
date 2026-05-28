@@ -1,0 +1,134 @@
+[
+  {
+    "proposal_id": "proposal-hq-rooms-inhabited",
+    "xp_season": "0.1",
+    "formula_version": "xp_calibration_v0_1",
+    "source_agent": "openclaw-main",
+    "proposal_type": "polish",
+    "title": "Make HQ rooms more visually inhabited",
+    "summary": "Add denser room-level signs of occupancy so the dashboard feels like a living HQ without faking autonomous activity.",
+    "reasoning": "The room map works as a structure, but it can look static. Small seed-driven visual cues would make specialists and constructs feel present while still reflecting real records.",
+    "estimated_active_minutes": 90,
+    "requested_xp_wager": 2.5,
+    "confidence": 0.78,
+    "risk_level": "low",
+    "affected_areas": [
+      "hq_rooms",
+      "visual_system",
+      "dashboard_readability"
+    ],
+    "acceptance_criteria": [
+      "Rooms show richer occupant/state cues from seed or event data only.",
+      "No fake activity loops or invented agent autonomy are introduced.",
+      "Mobile layout remains readable."
+    ],
+    "rollback_plan": "Revert the visual room components and CSS without changing event or proposal data.",
+    "status": "pending",
+    "decision": null,
+    "decision_note": null,
+    "decided_at": null,
+    "simulated_xp_gain": 0,
+    "simulated_xp_loss": 0,
+    "created_at": "2026-05-28T14:30:00-07:00",
+    "updated_at": "2026-05-28T14:30:00-07:00"
+  },
+  {
+    "proposal_id": "proposal-xp-calibration-analytics",
+    "xp_season": "0.1",
+    "formula_version": "xp_calibration_v0_1",
+    "source_agent": "expedition-hq-dashboard",
+    "proposal_type": "gamification",
+    "title": "Add Season 0.x XP calibration analytics",
+    "summary": "Expose calibration views that make the current soft XP economy easier to inspect and rebalance later.",
+    "reasoning": "Season 0.x data is only useful if August can see where multipliers and active time are driving outcomes.",
+    "estimated_active_minutes": 120,
+    "requested_xp_wager": 3,
+    "confidence": 0.72,
+    "risk_level": "medium",
+    "affected_areas": [
+      "xp_calibration",
+      "season_summaries",
+      "analytics"
+    ],
+    "acceptance_criteria": [
+      "Analytics read from existing events and season summaries.",
+      "No XP formula changes are made.",
+      "Charts or tables clearly separate base XP from awarded XP."
+    ],
+    "rollback_plan": "Remove the analytics view while preserving seed events and season summaries.",
+    "status": "pending",
+    "decision": null,
+    "decision_note": null,
+    "decided_at": null,
+    "simulated_xp_gain": 0,
+    "simulated_xp_loss": 0,
+    "created_at": "2026-05-28T14:35:00-07:00",
+    "updated_at": "2026-05-28T14:35:00-07:00"
+  },
+  {
+    "proposal_id": "proposal-first-week-archive",
+    "xp_season": "0.1",
+    "formula_version": "xp_calibration_v0_1",
+    "source_agent": "codex-memory-operator",
+    "proposal_type": "sentimental_record",
+    "title": "Create First Week of Expedition HQ archive page",
+    "summary": "Create a local archive page that preserves the first week of Expedition HQ decisions, reports, and milestones.",
+    "reasoning": "Sentimental records can be valuable, but they are subjective. A proposal keeps the idea visible without quietly turning nostalgia into XP.",
+    "estimated_active_minutes": 75,
+    "requested_xp_wager": 2,
+    "confidence": 0.66,
+    "risk_level": "low",
+    "affected_areas": [
+      "archive",
+      "field_reports",
+      "milestones"
+    ],
+    "acceptance_criteria": [
+      "Archive content is local and redacted.",
+      "The page references existing reports and artifacts instead of raw transcripts.",
+      "The feature does not mutate memory stores."
+    ],
+    "rollback_plan": "Remove the archive page and route; keep underlying field reports and artifacts unchanged.",
+    "status": "pending",
+    "decision": null,
+    "decision_note": null,
+    "decided_at": null,
+    "simulated_xp_gain": 0,
+    "simulated_xp_loss": 0,
+    "created_at": "2026-05-28T14:40:00-07:00",
+    "updated_at": "2026-05-28T14:40:00-07:00"
+  },
+  {
+    "proposal_id": "proposal-codex-handoff-templates",
+    "xp_season": "0.1",
+    "formula_version": "xp_calibration_v0_1",
+    "source_agent": "codex-headless-cli-runs",
+    "proposal_type": "handoff_workflow",
+    "title": "Add proposal-to-Codex implementation handoff templates",
+    "summary": "Create local templates that turn approved proposals into clear implementation briefs without automatically starting work.",
+    "reasoning": "Approved proposals need a practical path to implementation, but the handoff must not become hidden automation.",
+    "estimated_active_minutes": 105,
+    "requested_xp_wager": 2.75,
+    "confidence": 0.74,
+    "risk_level": "medium",
+    "affected_areas": [
+      "proposal_desk",
+      "codex_handoff",
+      "runbooks"
+    ],
+    "acceptance_criteria": [
+      "Templates are local markdown or JSON only.",
+      "Approved proposals do not trigger Codex automatically.",
+      "Each template includes scope, acceptance criteria, rollback plan, and safety boundaries."
+    ],
+    "rollback_plan": "Delete the handoff templates and keep proposal records intact.",
+    "status": "pending",
+    "decision": null,
+    "decision_note": null,
+    "decided_at": null,
+    "simulated_xp_gain": 0,
+    "simulated_xp_loss": 0,
+    "created_at": "2026-05-28T14:45:00-07:00",
+    "updated_at": "2026-05-28T14:45:00-07:00"
+  }
+]

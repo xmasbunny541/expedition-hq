@@ -140,3 +140,50 @@ export interface SeasonSummarySeed {
   top_expeditions_by_awarded_xp: { expedition_id: string; xp: number }[];
   notes: string[];
 }
+
+export type ProposalStatus =
+  | "draft"
+  | "pending"
+  | "approved"
+  | "denied"
+  | "revise_requested"
+  | "deferred"
+  | "implemented"
+  | "accepted"
+  | "rejected"
+  | "archived";
+
+export type ProposalType =
+  | "polish"
+  | "discovery"
+  | "sentimental_record"
+  | "handoff_workflow"
+  | "gamification"
+  | "safety"
+  | "architecture";
+
+export interface ProposalSeed {
+  proposal_id: string;
+  xp_season: string;
+  formula_version: string;
+  source_agent: string;
+  proposal_type: ProposalType;
+  title: string;
+  summary: string;
+  reasoning: string;
+  estimated_active_minutes: number;
+  requested_xp_wager: number;
+  confidence: number;
+  risk_level: string;
+  affected_areas: string[];
+  acceptance_criteria: string[];
+  rollback_plan: string;
+  status: ProposalStatus;
+  decision: "approve" | "deny" | "revise" | "defer" | null;
+  decision_note: string | null;
+  decided_at: string | null;
+  simulated_xp_gain: number;
+  simulated_xp_loss: number;
+  created_at: string;
+  updated_at: string;
+}

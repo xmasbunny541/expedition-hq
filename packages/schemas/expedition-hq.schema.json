@@ -222,6 +222,107 @@
         "top_expeditions_by_awarded_xp": { "type": "array" },
         "notes": { "type": "array" }
       }
+    },
+    "proposal": {
+      "type": "object",
+      "required": [
+        "proposal_id",
+        "xp_season",
+        "formula_version",
+        "source_agent",
+        "proposal_type",
+        "title",
+        "summary",
+        "reasoning",
+        "estimated_active_minutes",
+        "requested_xp_wager",
+        "confidence",
+        "risk_level",
+        "affected_areas",
+        "acceptance_criteria",
+        "rollback_plan",
+        "status",
+        "created_at",
+        "updated_at"
+      ],
+      "properties": {
+        "proposal_id": { "type": "string" },
+        "xp_season": { "type": "string" },
+        "formula_version": { "type": "string" },
+        "source_agent": { "type": "string" },
+        "proposal_type": {
+          "type": "string",
+          "enum": [
+            "polish",
+            "discovery",
+            "sentimental_record",
+            "handoff_workflow",
+            "gamification",
+            "safety",
+            "architecture"
+          ]
+        },
+        "title": { "type": "string" },
+        "summary": { "type": "string" },
+        "reasoning": { "type": "string" },
+        "estimated_active_minutes": { "type": "number", "minimum": 0 },
+        "requested_xp_wager": { "type": "number", "minimum": 0 },
+        "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+        "risk_level": { "type": "string" },
+        "affected_areas": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "acceptance_criteria": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "rollback_plan": { "type": "string" },
+        "status": {
+          "type": "string",
+          "enum": [
+            "draft",
+            "pending",
+            "approved",
+            "denied",
+            "revise_requested",
+            "deferred",
+            "implemented",
+            "accepted",
+            "rejected",
+            "archived"
+          ]
+        },
+        "decision": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "approve",
+            "deny",
+            "revise",
+            "defer",
+            null
+          ]
+        },
+        "decision_note": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "decided_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "simulated_xp_gain": { "type": "number", "minimum": 0 },
+        "simulated_xp_loss": { "type": "number", "minimum": 0 },
+        "created_at": { "type": "string" },
+        "updated_at": { "type": "string" }
+      }
     }
   }
 }

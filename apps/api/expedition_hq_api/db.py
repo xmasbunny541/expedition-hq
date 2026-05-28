@@ -6,6 +6,7 @@ import sqlite3
 from pathlib import Path
 from typing import Any
 
+from .proposals import apply_decision, normalize_proposal, proposal_decision_event
 from .xp import aggregate_season_summary, normalize_event_xp
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -22,6 +23,7 @@ SEED_TABLES = [
     "planned_items",
     "artifacts",
     "season_summaries",
+    "proposals",
 ]
 READ_TABLES = set(SEED_TABLES)
 EVENT_COMPAT_COLUMNS = {
@@ -196,6 +198,11 @@ def seed_db(force: bool = False) -> None:
             for summary in load_json(season_summaries_path):
                 insert_season_summary(conn, summary)
 
+        proposals_path = seed_dir / "proposals.seed.json"
+        if proposals_path.exists():
+            for proposal in load_json(proposals_path):
+                insert_seed_proposal(conn, proposal)
+
 def insert_event(conn: sqlite3.Connection, event: dict[str, Any]) -> None:
     event = normalize_event_xp(event)
     conn.execute(
@@ -343,6 +350,94 @@ def insert_season_summary(conn: sqlite3.Connection, summary: dict[str, Any]) -> 
             summary.get("started_at"), summary.get("ended_at"), json.dumps(summary)
         )
     )
+
+def insert_proposal(conn: sqlite3.Connection, proposal: dict[str, Any]) -> dict[str, Any]:
+    proposal = normalize_proposal(proposal)
+    conn.execute(
+        '''
+        INSERT INTO proposals
+        (proposal_id, xp_season, formula_version, source_agent, proposal_type, title, summary,
+         reasoning, estimated_active_minutes, requested_xp_wager, confidence, risk_level,
+         affected_areas_json, acceptance_criteria_json, rollback_plan, status, decision,
+         decision_note, decided_at, simulated_xp_gain, simulated_xp_loss, created_at,
+         updated_at, raw_json)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ''',
+        proposal_values(proposal)
+    )
+    return proposal
+
+def insert_seed_proposal(conn: sqlite3.Connection, proposal: dict[str, Any]) -> dict[str, Any]:
+    proposal = normalize_proposal(proposal)
+    conn.execute(
+        '''
+        INSERT OR IGNORE INTO proposals
+        (proposal_id, xp_season, formula_version, source_agent, proposal_type, title, summary,
+         reasoning, estimated_active_minutes, requested_xp_wager, confidence, risk_level,
+         affected_areas_json, acceptance_criteria_json, rollback_plan, status, decision,
+         decision_note, decided_at, simulated_xp_gain, simulated_xp_loss, created_at,
+         updated_at, raw_json)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ''',
+        proposal_values(proposal)
+    )
+    return proposal
+
+def proposal_values(proposal: dict[str, Any]) -> tuple[Any, ...]:
+    return (
+        proposal["proposal_id"], proposal["xp_season"], proposal["formula_version"],
+        proposal["source_agent"], proposal["proposal_type"], proposal["title"],
+        proposal["summary"], proposal["reasoning"], proposal["estimated_active_minutes"],
+        proposal["requested_xp_wager"], proposal["confidence"], proposal["risk_level"],
+        json.dumps(proposal["affected_areas"]), json.dumps(proposal["acceptance_criteria"]),
+        proposal.get("rollback_plan"), proposal["status"], proposal.get("decision"),
+        proposal.get("decision_note"), proposal.get("decided_at"), proposal["simulated_xp_gain"],
+        proposal["simulated_xp_loss"], proposal["created_at"], proposal["updated_at"],
+        json.dumps(proposal)
+    )
+
+def proposal_exists(conn: sqlite3.Connection, proposal_id: str) -> bool:
+    row = conn.execute("SELECT 1 FROM proposals WHERE proposal_id = ?", (proposal_id,)).fetchone()
+    return row is not None
+
+def proposal_by_id(proposal_id: str) -> dict[str, Any] | None:
+    with connect() as conn:
+        row = conn.execute(
+            "SELECT raw_json FROM proposals WHERE proposal_id = ?",
+            (proposal_id,)
+        ).fetchone()
+    return json.loads(row["raw_json"]) if row else None
+
+def update_proposal_decision(
+    conn: sqlite3.Connection,
+    proposal_id: str,
+    decision: str,
+    decision_note: str,
+) -> dict[str, Any] | None:
+    row = conn.execute(
+        "SELECT raw_json FROM proposals WHERE proposal_id = ?",
+        (proposal_id,)
+    ).fetchone()
+    if row is None:
+        return None
+
+    proposal = apply_decision(json.loads(row["raw_json"]), decision, decision_note)
+    conn.execute(
+        '''
+        UPDATE proposals
+        SET status = ?, decision = ?, decision_note = ?, decided_at = ?,
+            simulated_xp_gain = ?, simulated_xp_loss = ?, updated_at = ?,
+            raw_json = ?
+        WHERE proposal_id = ?
+        ''',
+        (
+            proposal["status"], proposal["decision"], proposal["decision_note"],
+            proposal["decided_at"], proposal["simulated_xp_gain"], proposal["simulated_xp_loss"],
+            proposal["updated_at"], json.dumps(proposal), proposal_id
+        )
+    )
+    insert_event(conn, proposal_decision_event(proposal))
+    return proposal
 
 def ensure_compatible_schema(conn: sqlite3.Connection) -> None:
     event_columns = {

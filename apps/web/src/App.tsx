@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import {
+  decideProposal,
   getAgents,
   getArtifacts,
   getEvents,
@@ -9,6 +10,7 @@ import {
   getMemoryStores,
   getMilestones,
   getPlannedItems,
+  getProposals,
   getRoutes,
   getSeasonSummaries
 } from "./api";
@@ -22,6 +24,8 @@ import type {
   MemoryStore,
   Milestone,
   PlannedItem,
+  Proposal,
+  ProposalDecision,
   Route,
   SeasonSummary
 } from "./types";
@@ -34,12 +38,13 @@ import { ReviewDesk } from "./components/ReviewDesk";
 import { TrophyShelf } from "./components/TrophyShelf";
 import { VisualToken } from "./components/VisualToken";
 
-type TabId = "hq" | "expeditions" | "field-reports" | "roster" | "systems";
+type TabId = "hq" | "expeditions" | "field-reports" | "proposal-desk" | "roster" | "systems";
 
 const tabs: { id: TabId; label: string }[] = [
   { id: "hq", label: "HQ" },
   { id: "expeditions", label: "Expeditions" },
   { id: "field-reports", label: "Field Reports" },
+  { id: "proposal-desk", label: "Proposal Desk" },
   { id: "roster", label: "Roster" },
   { id: "systems", label: "Systems" }
 ];
@@ -75,11 +80,19 @@ function formatXp(value = 0) {
   return value.toLocaleString(undefined, { maximumFractionDigits: 1 });
 }
 
+function formatPercent(value = 0) {
+  return `${Math.round(value * 100)}%`;
+}
+
 function formatMinutes(value = 0) {
   if (value < 60) return `${Math.round(value)}m`;
   const hours = Math.floor(value / 60);
   const minutes = Math.round(value % 60);
   return minutes ? `${hours}h ${minutes}m` : `${hours}h`;
+}
+
+function labelize(value: string) {
+  return value.replace(/_/g, " ");
 }
 
 function SystemsView({
@@ -176,6 +189,260 @@ function SystemsView({
   );
 }
 
+const decisionNotes: Record<ProposalDecision, string> = {
+  approve: "Approved in local Proposal Desk; eligible for implementation planning only.",
+  deny: "Denied in local Proposal Desk; simulated soft-wager loss recorded.",
+  revise: "Revision requested in local Proposal Desk; no simulated XP loss recorded.",
+  defer: "Deferred in local Proposal Desk for later review; no simulated XP loss recorded."
+};
+
+function ProposalAnalytics({ proposals }: { proposals: Proposal[] }) {
+  const averageWager = proposals.length
+    ? proposals.reduce((sum, proposal) => sum + proposal.requested_xp_wager, 0) / proposals.length
+    : 0;
+  const averageConfidence = proposals.length
+    ? proposals.reduce((sum, proposal) => sum + proposal.confidence, 0) / proposals.length
+    : 0;
+  const simulatedAtRisk = proposals
+    .filter((proposal) => proposal.status === "pending")
+    .reduce((sum, proposal) => sum + proposal.requested_xp_wager, 0);
+  const simulatedLost = proposals.reduce((sum, proposal) => sum + proposal.simulated_xp_loss, 0);
+  const countsByType = countProposals(proposals, (proposal) => proposal.proposal_type);
+  const countsByDecision = countProposals(proposals, (proposal) => proposal.decision ?? proposal.status);
+  const countsByAgent = countProposals(proposals, (proposal) => proposal.source_agent);
+
+  return (
+    <section className="living-section proposal-analytics">
+      <SectionHeader eyebrow="Proposal Analytics" title="Soft Wager Calibration" note="Advisory only; not applied to Season 0.x XP." />
+      <div className="proposal-metrics">
+        <div><strong>{proposals.length}</strong><span>proposals</span></div>
+        <div><strong>{formatXp(averageWager)}</strong><span>avg requested wager</span></div>
+        <div><strong>{formatPercent(averageConfidence)}</strong><span>avg confidence</span></div>
+        <div><strong>{formatXp(simulatedAtRisk)}</strong><span>simulated XP at risk</span></div>
+        <div><strong>{formatXp(simulatedLost)}</strong><span>simulated XP lost</span></div>
+      </div>
+      <div className="proposal-breakdown-grid">
+        <Breakdown title="Count By Type" counts={countsByType} />
+        <Breakdown title="Decision And Status Counts" counts={countsByDecision} />
+        <Breakdown title="Proposals By Agent" counts={countsByAgent} />
+      </div>
+    </section>
+  );
+}
+
+function countProposals(proposals: Proposal[], selector: (proposal: Proposal) => string) {
+  return proposals.reduce<Record<string, number>>((counts, proposal) => {
+    const key = selector(proposal);
+    counts[key] = (counts[key] ?? 0) + 1;
+    return counts;
+  }, {});
+}
+
+function Breakdown({ title, counts }: { title: string; counts: Record<string, number> }) {
+  const entries = Object.entries(counts).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+  return (
+    <div className="panel proposal-breakdown">
+      <h3>{title}</h3>
+      {entries.length ? (
+        <div className="stack">
+          {entries.map(([key, count]) => (
+            <div className="proposal-count-row" key={key}>
+              <span>{labelize(key)}</span>
+              <strong>{count}</strong>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <EmptyState label="No proposal records are available." />
+      )}
+    </div>
+  );
+}
+
+function ProposalSection({
+  title,
+  note,
+  proposals,
+  onDecision,
+  decisionPending
+}: {
+  title: string;
+  note: string;
+  proposals: Proposal[];
+  onDecision: (proposal: Proposal, decision: ProposalDecision) => void;
+  decisionPending: string | null;
+}) {
+  return (
+    <section className="living-section">
+      <SectionHeader eyebrow="Proposal Desk" title={title} note={note} />
+      <div className="proposal-grid">
+        {proposals.length
+          ? proposals.map((proposal) => (
+            <ProposalCard
+              key={proposal.proposal_id}
+              proposal={proposal}
+              onDecision={onDecision}
+              decisionPending={decisionPending === proposal.proposal_id}
+            />
+          ))
+          : <EmptyState label="No proposals in this section." />}
+      </div>
+    </section>
+  );
+}
+
+function ProposalCard({
+  proposal,
+  onDecision,
+  decisionPending
+}: {
+  proposal: Proposal;
+  onDecision: (proposal: Proposal, decision: ProposalDecision) => void;
+  decisionPending: boolean;
+}) {
+  const hasDecisionNote = Boolean(proposal.decision_note);
+  const canDecide = proposal.status === "pending";
+  return (
+    <article className={`proposal-card risk-${proposal.risk_level}`}>
+      <div className="proposal-card-header">
+        <div>
+          <p className="eyebrow">{labelize(proposal.proposal_type)}</p>
+          <h3>{proposal.title}</h3>
+          <p>{proposal.summary}</p>
+        </div>
+        <span className="badge">{labelize(proposal.status)}</span>
+      </div>
+
+      <div className="proposal-facts">
+        <div><span>source agent</span><strong>{proposal.source_agent}</strong></div>
+        <div><span>confidence</span><strong>{formatPercent(proposal.confidence)}</strong></div>
+        <div><span>requested wager</span><strong>{formatXp(proposal.requested_xp_wager)} XP</strong></div>
+        <div><span>estimated active time</span><strong>{formatMinutes(proposal.estimated_active_minutes)}</strong></div>
+        <div><span>risk level</span><strong>{proposal.risk_level}</strong></div>
+      </div>
+
+      <p className="proposal-reasoning">{proposal.reasoning}</p>
+
+      <div className="proposal-detail-grid">
+        <ListBlock title="Affected Areas" items={proposal.affected_areas} />
+        <ListBlock title="Acceptance Criteria" items={proposal.acceptance_criteria} />
+      </div>
+
+      <div className="proposal-rollback">
+        <span>Rollback plan</span>
+        <p>{proposal.rollback_plan}</p>
+      </div>
+
+      {hasDecisionNote && (
+        <div className="proposal-decision-note">
+          <span>Decision note</span>
+          <p>{proposal.decision_note}</p>
+        </div>
+      )}
+
+      <div className="proposal-wager-row">
+        <span>simulated gain {formatXp(proposal.simulated_xp_gain)} XP</span>
+        <span>simulated loss {formatXp(proposal.simulated_xp_loss)} XP</span>
+      </div>
+
+      {canDecide && (
+        <div className="proposal-actions">
+          {(["approve", "deny", "revise", "defer"] as ProposalDecision[]).map((decision) => (
+            <button
+              disabled={decisionPending}
+              key={decision}
+              onClick={() => onDecision(proposal, decision)}
+              type="button"
+            >
+              {decision === "approve" ? "Approve" : decision === "deny" ? "Deny" : decision === "revise" ? "Revise" : "Defer"}
+            </button>
+          ))}
+        </div>
+      )}
+    </article>
+  );
+}
+
+function ListBlock({ title, items }: { title: string; items: string[] }) {
+  return (
+    <div className="proposal-list-block">
+      <span>{title}</span>
+      {items.length ? (
+        <ul>
+          {items.map((item) => <li key={item}>{item}</li>)}
+        </ul>
+      ) : (
+        <p>None listed.</p>
+      )}
+    </div>
+  );
+}
+
+function ProposalDeskView({
+  proposals,
+  onDecision,
+  decisionPending
+}: {
+  proposals: Proposal[];
+  onDecision: (proposal: Proposal, decision: ProposalDecision) => void;
+  decisionPending: string | null;
+}) {
+  const pending = proposals.filter((proposal) => ["draft", "pending", "revise_requested"].includes(proposal.status));
+  const approved = proposals.filter((proposal) => ["approved", "implemented", "accepted"].includes(proposal.status));
+  const denied = proposals.filter((proposal) => ["denied", "rejected"].includes(proposal.status));
+  const deferred = proposals.filter((proposal) => ["deferred", "archived"].includes(proposal.status));
+
+  return (
+    <div className="tab-page proposal-desk-page">
+      <section className="today-panel proposal-desk-intro">
+        <div>
+          <p className="eyebrow">Local-only Review</p>
+          <h2>Proposal Desk</h2>
+          <p>
+            Subjective and directional ideas can be reviewed here before implementation. Soft wagers are recorded for
+            Season 0.x calibration, but they never apply real XP or trigger work automatically.
+          </p>
+        </div>
+        <div className="state-summary" aria-label="Proposal Desk safety posture">
+          <div className="state-chip state-awake"><span className="state-dot" /><strong>local</strong><span>SQLite only</span></div>
+          <div className="state-chip state-test_mode"><span className="state-dot" /><strong>soft</strong><span>wagers only</span></div>
+          <div className="state-chip state-dormant"><span className="state-dot" /><strong>no</strong><span>auto implementation</span></div>
+        </div>
+      </section>
+
+      <ProposalSection
+        title="Pending Proposals"
+        note={`${pending.length} awaiting decision or clarification`}
+        proposals={pending}
+        onDecision={onDecision}
+        decisionPending={decisionPending}
+      />
+      <ProposalSection
+        title="Approved Proposals"
+        note={`${approved.length} eligible for future implementation planning`}
+        proposals={approved}
+        onDecision={onDecision}
+        decisionPending={decisionPending}
+      />
+      <ProposalSection
+        title="Denied Proposals"
+        note={`${denied.length} recorded with simulated wager outcomes`}
+        proposals={denied}
+        onDecision={onDecision}
+        decisionPending={decisionPending}
+      />
+      <ProposalSection
+        title="Deferred Proposals"
+        note={`${deferred.length} archived for later review`}
+        proposals={deferred}
+        onDecision={onDecision}
+        decisionPending={decisionPending}
+      />
+      <ProposalAnalytics proposals={proposals} />
+    </div>
+  );
+}
+
 export default function App() {
   const [activeTab, setActiveTab] = useState<TabId>("hq");
   const [health, setHealth] = useState<Health | null>(null);
@@ -189,6 +456,8 @@ export default function App() {
   const [plannedItems, setPlannedItems] = useState<PlannedItem[]>([]);
   const [artifacts, setArtifacts] = useState<Artifact[]>([]);
   const [seasonSummaries, setSeasonSummaries] = useState<SeasonSummary[]>([]);
+  const [proposals, setProposals] = useState<Proposal[]>([]);
+  const [decisionPending, setDecisionPending] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -204,9 +473,10 @@ export default function App() {
       getMemoryStores(),
       getPlannedItems(),
       getArtifacts(),
-      getSeasonSummaries()
+      getSeasonSummaries(),
+      getProposals()
     ])
-      .then(([apiHealth, a, ex, ev, ms, inc, rt, mem, planned, art, summaries]) => {
+      .then(([apiHealth, a, ex, ev, ms, inc, rt, mem, planned, art, summaries, prop]) => {
         setHealth(apiHealth);
         setAgents(a);
         setExpeditions(ex);
@@ -218,6 +488,7 @@ export default function App() {
         setPlannedItems(planned);
         setArtifacts(art);
         setSeasonSummaries(summaries);
+        setProposals(prop);
         setError(null);
       })
       .catch((err) => {
@@ -226,6 +497,20 @@ export default function App() {
       })
       .finally(() => setLoading(false));
   }, []);
+
+  const handleProposalDecision = async (proposal: Proposal, decision: ProposalDecision) => {
+    setDecisionPending(proposal.proposal_id);
+    try {
+      const updated = await decideProposal(proposal.proposal_id, decision, decisionNotes[decision]);
+      setProposals((current) => current.map((item) => item.proposal_id === updated.proposal_id ? updated : item));
+      setEvents(await getEvents());
+      setError(null);
+    } catch (err) {
+      setError(String(err));
+    } finally {
+      setDecisionPending(null);
+    }
+  };
 
   const sortedEvents = [...events].sort((a, b) => b.timestamp.localeCompare(a.timestamp));
   const latestEventBySource = new Map<string, Event>();
@@ -392,6 +677,14 @@ export default function App() {
               : <EmptyState label="No field reports are available from the local event ledger." />}
           </div>
         </div>
+      )}
+
+      {activeTab === "proposal-desk" && (
+        <ProposalDeskView
+          proposals={proposals}
+          onDecision={handleProposalDecision}
+          decisionPending={decisionPending}
+        />
       )}
 
       {activeTab === "roster" && (

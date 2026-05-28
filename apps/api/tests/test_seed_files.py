@@ -41,6 +41,7 @@ def test_required_endpoints_return_seeded_data(seeded_client):
         "/planned": 4,
         "/artifacts": 2,
         "/season-summaries": 1,
+        "/proposals": 4,
     }
 
     health = seeded_client.get("/health")
@@ -104,6 +105,134 @@ def test_post_events_rejects_duplicate_ids(seeded_client):
 
     response = seeded_client.post("/events", json=payload)
     assert response.status_code == 409
+
+def proposal_payload(proposal_id: str, status: str = "pending") -> dict:
+    return {
+        "proposal_id": proposal_id,
+        "source_agent": "test-harness",
+        "proposal_type": "discovery",
+        "title": f"Proposal {proposal_id}",
+        "summary": "Local proposal API test record.",
+        "reasoning": "Verifies soft wager proposal handling without external mutation.",
+        "estimated_active_minutes": 45,
+        "requested_xp_wager": 1.75,
+        "confidence": 0.64,
+        "risk_level": "low",
+        "affected_areas": ["proposal_desk"],
+        "acceptance_criteria": ["The proposal can be reviewed locally."],
+        "rollback_plan": "Delete the local proposal test record.",
+        "status": status,
+    }
+
+def test_get_proposal_by_id_and_unknown_404(seeded_client):
+    response = seeded_client.get("/proposals/proposal-hq-rooms-inhabited")
+    assert response.status_code == 200
+    proposal = response.json()
+    assert proposal["title"] == "Make HQ rooms more visually inhabited"
+    assert proposal["status"] == "pending"
+
+    missing = seeded_client.get("/proposals/proposal-does-not-exist")
+    assert missing.status_code == 404
+
+def test_post_proposals_creates_pending_and_rejects_duplicate_ids(seeded_client):
+    payload = proposal_payload("proposal-api-create")
+    response = seeded_client.post("/proposals", json=payload)
+    assert response.status_code == 200
+    created = response.json()
+
+    assert created["proposal_id"] == payload["proposal_id"]
+    assert created["status"] == "pending"
+    assert created["xp_season"] == "0.1"
+    assert created["formula_version"] == "xp_calibration_v0_1"
+    assert created["simulated_xp_gain"] == 0
+    assert created["simulated_xp_loss"] == 0
+
+    duplicate = seeded_client.post("/proposals", json=payload)
+    assert duplicate.status_code == 409
+
+def test_post_proposals_allows_only_draft_or_pending_creation(seeded_client):
+    response = seeded_client.post(
+        "/proposals",
+        json=proposal_payload("proposal-invalid-status", status="approved"),
+    )
+    assert response.status_code == 422
+
+def test_proposal_decisions_update_status_and_soft_wager_loss(seeded_client):
+    expected = {
+        "approve": ("approved", 0),
+        "deny": ("denied", 1.75),
+        "revise": ("revise_requested", 0),
+        "defer": ("deferred", 0),
+    }
+
+    for decision, (status, simulated_loss) in expected.items():
+        proposal_id = f"proposal-decision-{decision}"
+        create = seeded_client.post("/proposals", json=proposal_payload(proposal_id))
+        assert create.status_code == 200
+
+        response = seeded_client.patch(
+            f"/proposals/{proposal_id}/decision",
+            json={
+                "decision": decision,
+                "decision_note": f"{decision} during local API test.",
+            },
+        )
+        assert response.status_code == 200
+        proposal = response.json()
+        assert proposal["status"] == status
+        assert proposal["decision"] == decision
+        assert proposal["decision_note"] == f"{decision} during local API test."
+        assert proposal["simulated_xp_loss"] == simulated_loss
+        assert proposal["simulated_xp_gain"] == 0
+
+def test_proposal_decision_creates_zero_xp_local_event(seeded_client):
+    proposal_id = "proposal-decision-event"
+    created = seeded_client.post("/proposals", json=proposal_payload(proposal_id))
+    assert created.status_code == 200
+
+    response = seeded_client.patch(
+        f"/proposals/{proposal_id}/decision",
+        json={
+            "decision": "deny",
+            "decision_note": "Denied to verify local event ledger recording.",
+        },
+    )
+    assert response.status_code == 200
+
+    events = seeded_client.get("/events").json()
+    decision_events = [
+        event for event in events
+        if event["event_type"] == "proposal_decision" and event.get("proposal_id") == proposal_id
+    ]
+    assert len(decision_events) == 1
+    event = decision_events[0]
+    assert event["source_id"] == "expedition-hq-dashboard"
+    assert event["expedition_id"] == "expedition-hq-dashboard"
+    assert event["active_minutes"] == 0
+    assert event["base_xp"] == 0
+    assert event["awarded_xp"] == 0
+    assert event["total_multiplier_raw"] == 1
+    assert event["tags"] == ["proposal", "soft-wager", "deny"]
+
+def test_proposal_decision_does_not_apply_real_xp_to_season_summary(seeded_client):
+    proposal_id = "proposal-no-real-xp"
+    created = seeded_client.post("/proposals", json=proposal_payload(proposal_id))
+    assert created.status_code == 200
+
+    before = seeded_client.get("/season-summaries").json()[0]
+    response = seeded_client.patch(
+        f"/proposals/{proposal_id}/decision",
+        json={
+            "decision": "deny",
+            "decision_note": "Denied to verify soft wagers stay separate from real XP.",
+        },
+    )
+    assert response.status_code == 200
+    after = seeded_client.get("/season-summaries").json()[0]
+
+    assert after["total_active_minutes"] == before["total_active_minutes"]
+    assert after["total_base_xp"] == before["total_base_xp"]
+    assert after["total_awarded_xp"] == before["total_awarded_xp"]
 
 def test_xp_formula_party_cap_and_uncapped_total():
     event = normalize_event_xp({

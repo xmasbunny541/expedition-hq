@@ -121,3 +121,30 @@ CREATE TABLE IF NOT EXISTS season_summaries (
   ended_at TEXT,
   raw_json TEXT NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS proposals (
+  proposal_id TEXT PRIMARY KEY,
+  xp_season TEXT NOT NULL,
+  formula_version TEXT NOT NULL,
+  source_agent TEXT NOT NULL,
+  proposal_type TEXT NOT NULL,
+  title TEXT NOT NULL,
+  summary TEXT NOT NULL,
+  reasoning TEXT NOT NULL,
+  estimated_active_minutes REAL DEFAULT 0,
+  requested_xp_wager REAL DEFAULT 0,
+  confidence REAL DEFAULT 0,
+  risk_level TEXT NOT NULL,
+  affected_areas_json TEXT DEFAULT '[]',
+  acceptance_criteria_json TEXT DEFAULT '[]',
+  rollback_plan TEXT,
+  status TEXT NOT NULL,
+  decision TEXT,
+  decision_note TEXT,
+  decided_at TEXT,
+  simulated_xp_gain REAL DEFAULT 0,
+  simulated_xp_loss REAL DEFAULT 0,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL,
+  raw_json TEXT NOT NULL
+);

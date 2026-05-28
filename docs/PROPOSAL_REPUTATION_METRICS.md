@@ -1,10 +1,22 @@
 # Proposal Reputation Metrics
 
-This is planning documentation only. Expedition HQ should not compute or apply proposal reputation during Season 0.x.
+Proposal reputation remains advisory during Season 0.x. Expedition HQ may display local proposal analytics, but it must not compute or apply real reputation, XP rewards, or XP penalties from proposals yet.
 
-Future reputation metrics should help compare proposal quality without turning subjective design taste into automatic XP.
+## MVP analytics
 
-## Candidate metrics
+The Proposal Desk currently shows:
+
+- Proposal count by type.
+- Approval, denial, defer, revise, and status counts.
+- Average requested wager.
+- Average confidence.
+- Simulated XP at risk for pending proposals.
+- Simulated XP lost for denied proposals.
+- Proposal count by source agent.
+
+These metrics help August evaluate proposal quality and calibration pressure. They are not a scoring policy.
+
+## Candidate future metrics
 
 - Approval rate: share of proposals August approves.
 - Revision rate: share of proposals August revises before approval.
@@ -15,13 +27,10 @@ Future reputation metrics should help compare proposal quality without turning s
 - Risk accuracy: observed risk compared with proposed risk level.
 - Wager calibration: requested wager compared with accepted value and actual active effort.
 
-## Use in later seasons
-
-Season 0.x data should be used to choose reasonable wager ranges and identify overconfident proposal patterns. Proposal reputation should stay advisory until August explicitly approves a scoring policy.
-
 ## Guardrails
 
 - Keep proposal reputation separate from active-time XP and multiplier XP.
 - Preserve proposal records even when XP resets.
-- Do not punish revised or deferred proposals.
-- Do not let subjective polish tags automatically inflate awarded XP.
+- Do not punish revised or deferred proposals during Season 0.x.
+- Do not let subjective polish, discovery, handoff, or sentimental tags automatically inflate awarded XP.
+- Do not use proposal analytics as an implementation queue or external automation trigger.
