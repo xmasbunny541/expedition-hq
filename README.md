@@ -60,6 +60,15 @@ npm run dev
 
 Open the dashboard at `http://127.0.0.1:5173`. The web app expects the API at `http://127.0.0.1:8789` unless `VITE_API_BASE` is set.
 
+Persistent local startup:
+
+```powershell
+.\scripts\Start-ExpeditionHQ.ps1
+.\scripts\Register-ExpeditionHQStartup.ps1 -RunNow
+```
+
+The startup entry is per-user and local-only. It starts the read-only API on `127.0.0.1:8789` and the web dashboard on `127.0.0.1:5173` at Windows logon. The installer uses Task Scheduler when permitted and falls back to a Startup-folder shortcut when Windows blocks scheduled task registration. Runtime logs and status are written under ignored `runtime/` files.
+
 Verification:
 
 ```powershell
