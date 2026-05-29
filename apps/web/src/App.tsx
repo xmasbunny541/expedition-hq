@@ -36,7 +36,7 @@ import { FieldReportCard } from "./components/FieldReportCard";
 import { HQRooms } from "./components/HQRooms";
 import { ReviewDesk } from "./components/ReviewDesk";
 import { TrophyShelf } from "./components/TrophyShelf";
-import { VisualToken } from "./components/VisualToken";
+import { displayName, VisualToken } from "./components/VisualToken";
 
 type TabId = "hq" | "expeditions" | "field-reports" | "proposal-desk" | "roster" | "systems";
 
@@ -93,6 +93,49 @@ function formatMinutes(value = 0) {
 
 function labelize(value: string) {
   return value.replace(/_/g, " ");
+}
+
+function agentClaimStatus(agent: Agent) {
+  const counts = agent.xp_status?.claim_status_counts ?? {};
+  const entries = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+  return entries[0]?.[0] ?? "no_claims";
+}
+
+function AgentXpBoard({ agents }: { agents: Agent[] }) {
+  const ranked = [...agents]
+    .sort((a, b) => (b.xp_status?.awarded_xp ?? 0) - (a.xp_status?.awarded_xp ?? 0))
+    .slice(0, 6);
+
+  return (
+    <section className="living-section xp-board-section">
+      <SectionHeader
+        eyebrow="Agent XP Status"
+        title="Calibration Scoreboard"
+        note="Season 0.x visibility is a stress test, not final reputation."
+      />
+      <div className="xp-board">
+        {ranked.map((agent) => {
+          const xpStatus = agent.xp_status;
+          const claimStatus = agentClaimStatus(agent);
+          return (
+            <article className="xp-agent-row" key={agent.id}>
+              <VisualToken agent={agent} size="small" />
+              <div>
+                <h3>{displayName(agent)}</h3>
+                <p>{agent.id}</p>
+              </div>
+              <strong>{formatXp(xpStatus?.awarded_xp ?? 0)} XP</strong>
+              <div className="xp-agent-meta">
+                <span>{xpStatus?.event_count ?? 0} events</span>
+                <span>{xpStatus?.review_item_count ?? 0} review flags</span>
+                <span>{labelize(claimStatus)}</span>
+              </div>
+            </article>
+          );
+        })}
+      </div>
+    </section>
+  );
 }
 
 function SystemsView({
@@ -694,7 +737,7 @@ export default function App() {
     "codex-headless-cli-runs"
   ].includes(agent.id));
   const operationalSystems = agents.filter((agent) => !agent.allowed_as_little_guy);
-  const reviewEvents = sortedEvents.filter((event) => event.needs_review || ["medium", "high"].includes(event.risk_level) || event.status === "blocked");
+  const reviewEvents = sortedEvents.filter((event) => event.needs_review || event.review_flags?.length || event.xp_claim_status === "review_pending" || ["medium", "high"].includes(event.risk_level) || event.status === "blocked");
   const openIncidents = incidents.filter((incident) => incident.status === "open");
   const stateCounts = countByState(agents, incidents);
   const currentSeasonSummary = seasonSummaries.find((summary) => !summary.ended_at) ?? seasonSummaries[0];
@@ -777,6 +820,8 @@ export default function App() {
               ))}
             </div>
           </section>
+
+          <AgentXpBoard agents={littleGuys} />
 
           <HQRooms agents={agents} incidents={incidents} latestEventForAgent={latestEventForAgent} reviewEvents={reviewEvents} />
 

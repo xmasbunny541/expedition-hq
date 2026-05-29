@@ -60,6 +60,12 @@ CREATE TABLE IF NOT EXISTS events (
   shadow_multiplier_notes_json TEXT DEFAULT '[]',
   multiplier_notes_json TEXT DEFAULT '[]',
   scaling_flags_json TEXT DEFAULT '[]',
+  source_project TEXT,
+  xp_claim_status TEXT DEFAULT 'calibration_awarded',
+  evidence_refs_json TEXT DEFAULT '[]',
+  artifact_refs_json TEXT DEFAULT '[]',
+  field_report_path TEXT,
+  review_flags_json TEXT DEFAULT '[]',
   tags_json TEXT DEFAULT '[]',
   raw_json TEXT NOT NULL
 );

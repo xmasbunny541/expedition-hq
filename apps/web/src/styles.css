@@ -516,6 +516,26 @@ p {
   font-weight: 800;
 }
 
+.agent-title-row {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.agent-title-row h3 {
+  overflow-wrap: anywhere;
+}
+
+.agent-xp-badge {
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: #d9aa61;
+  color: #21170c;
+  font-size: .78rem;
+  padding: 5px 8px;
+}
+
 .visual-specialist,
 .visual-candidate_specialist {
   border-color: #76d69d;
@@ -751,6 +771,58 @@ p {
 .shadow {
   border-color: rgba(143, 168, 255, .48);
   color: #dfe6ff;
+}
+
+.xp-board {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 10px;
+}
+
+.xp-agent-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  border: 1px solid rgba(217, 170, 97, .2);
+  border-radius: 8px;
+  background: linear-gradient(160deg, rgba(52, 38, 24, .74), rgba(22, 31, 34, .68));
+  padding: 12px;
+}
+
+.xp-agent-row h3,
+.xp-agent-row p {
+  margin: 0;
+}
+
+.xp-agent-row p,
+.xp-agent-meta span {
+  color: #bbaea0;
+  font-size: .78rem;
+  overflow-wrap: anywhere;
+}
+
+.xp-agent-row > strong {
+  border-radius: 999px;
+  background: #d9aa61;
+  color: #21170c;
+  font-size: .84rem;
+  padding: 6px 9px;
+  white-space: nowrap;
+}
+
+.xp-agent-meta {
+  grid-column: 2 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.xp-agent-meta span {
+  border: 1px solid rgba(247, 239, 226, .1);
+  border-radius: 999px;
+  background: rgba(10, 11, 11, .24);
+  padding: 4px 8px;
 }
 
 .calibration-grid {
@@ -1172,6 +1244,7 @@ p {
   .split-grid,
   .living-grid,
   .today-panel,
+  .xp-agent-row,
   .proposal-card-header,
   .field-report {
     grid-template-columns: 1fr;
@@ -1207,5 +1280,9 @@ p {
 
   .tabs {
     position: static;
+  }
+
+  .xp-agent-meta {
+    grid-column: 1;
   }
 }

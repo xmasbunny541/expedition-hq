@@ -6,6 +6,7 @@ Local-first starter scaffold for building **Expedition HQ**: a read-only, living
 
 - Codex project instructions in `AGENTS.md`
 - Security and non-goal guardrails
+- Agent XP status plan and gamification rules
 - Redacted agent census import
 - Seed rosters for agents, expeditions, routes, memory stores, blockers, events, and milestones
 - FastAPI + SQLite backend skeleton
@@ -60,6 +61,12 @@ npm run dev
 
 Open the dashboard at `http://127.0.0.1:5173`. The web app expects the API at `http://127.0.0.1:8789` unless `VITE_API_BASE` is set.
 
+Season 0.x cross-project XP claims can be submitted to the local API with evidence:
+
+```powershell
+python scripts/log_xp_claim.py --source-id openclaw-main --expedition-id expedition-hq-dashboard --title "Claim title" --summary "What useful work happened and why it matters." --active-minutes 30 --evidence "path/or/result"
+```
+
 Persistent local startup:
 
 ```powershell
@@ -79,4 +86,4 @@ cd apps/web
 npm run build
 ```
 
-The API is read-only except for local SQLite event ingestion through `POST /events`. Reseeding is intentionally a local script operation, not a public API route.
+The API is read-only except for local SQLite event/XP-claim ingestion through `POST /events` and `POST /xp-claims`. Reseeding is intentionally a local script operation, not a public API route.

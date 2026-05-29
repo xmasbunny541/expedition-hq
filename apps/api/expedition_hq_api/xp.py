@@ -24,6 +24,9 @@ SHADOW_MULTIPLIERS = [
     "polish",
     "sentimental_record",
 ]
+XP_CLAIM_STATUS_AWARDED = "calibration_awarded"
+XP_CLAIM_STATUS_REVIEW_PENDING = "review_pending"
+XP_CLAIM_STATUS_ZERO = "zero_xp_record"
 
 ALLOWED_SCORING_VALUES: dict[str, set[float]] = {
     "artifact": {1.0, 1.15, 1.3},
@@ -83,11 +86,20 @@ def normalize_event_xp(event: dict[str, Any]) -> dict[str, Any]:
     out["xp_confidence"] = out.get("xp_confidence") or "estimated"
     out["party_agents"] = party_agents
     out["party_size"] = party_size
+    out["source_project"] = _optional_string(out.get("source_project"))
+    out["evidence_refs"] = _string_list(out.get("evidence_refs"))
+    out["artifact_refs"] = _string_list(out.get("artifact_refs"))
+    out["field_report_path"] = _optional_string(out.get("field_report_path"))
+    out["decision_record_ref"] = _optional_string(out.get("decision_record_ref"))
+    out["test_output_ref"] = _optional_string(out.get("test_output_ref"))
     out["scoring_multipliers"] = {key: _round(scoring_multipliers[key]) for key in SCORING_MULTIPLIERS}
     out["shadow_multipliers"] = _normalize_shadow_multipliers(out.get("shadow_multipliers"))
     out["shadow_multiplier_notes"] = out.get("shadow_multiplier_notes", [])
     out["multiplier_notes"] = out.get("multiplier_notes", [])
     out["scaling_flags"] = scaling_flags(base_xp, awarded_xp, total_multiplier_raw)
+    out["review_flags"] = review_flags(out)
+    out["needs_review"] = _needs_review(out)
+    out["xp_claim_status"] = xp_claim_status(out)
     return out
 
 
@@ -100,6 +112,138 @@ def scaling_flags(base_xp: float, awarded_xp: float, total_multiplier_raw: float
     if base_xp > 0 and awarded_xp >= base_xp * 5:
         flags.append("scaling_review")
     return flags
+
+
+def review_flags(event: dict[str, Any]) -> list[str]:
+    flags: list[str] = []
+    _append_unique(flags, _string_list(event.get("review_flags")))
+    _append_unique(flags, _string_list(event.get("scaling_flags")))
+
+    active_minutes = _as_float(event.get("active_minutes"), 0.0)
+    summary = str(event.get("summary") or "").strip()
+
+    if active_minutes > 0 and not _has_evidence(event):
+        flags.append("missing_evidence")
+    if active_minutes > 0 and not event.get("expedition_id"):
+        flags.append("missing_expedition")
+    if active_minutes >= 120:
+        flags.append("large_active_minutes")
+    if 0 < active_minutes < 5:
+        flags.append("tiny_claim")
+    if active_minutes > 0 and len(summary) < 40:
+        flags.append("thin_summary")
+    if int(event.get("party_size") or 0) >= 4:
+        flags.append("large_party_claim")
+
+    return _dedupe(flags)
+
+
+def audit_event_claim(
+    event: dict[str, Any],
+    known_agent_ids: set[str] | None = None,
+    existing_events: list[dict[str, Any]] | None = None,
+) -> dict[str, Any]:
+    out = normalize_event_xp(event)
+    flags = _string_list(out.get("review_flags"))
+
+    if known_agent_ids is not None:
+        source_id = str(out.get("source_id") or "").strip()
+        if source_id and source_id not in known_agent_ids:
+            flags.append("unknown_source")
+        if any(agent_id not in known_agent_ids for agent_id in out.get("party_agents") or []):
+            flags.append("unknown_party_agent")
+
+    if existing_events:
+        summary_key = _summary_key(out)
+        source_id = str(out.get("source_id") or "")
+        current_id = str(out.get("id") or "")
+        duplicate = False
+        tiny_claims = 0
+
+        for existing in existing_events:
+            normalized_existing = normalize_event_xp(existing)
+            if str(normalized_existing.get("id") or "") == current_id:
+                continue
+            if str(normalized_existing.get("source_id") or "") != source_id:
+                continue
+            if summary_key and _summary_key(normalized_existing) == summary_key:
+                duplicate = True
+            if 0 < _as_float(normalized_existing.get("active_minutes"), 0.0) < 5:
+                tiny_claims += 1
+
+        if duplicate:
+            flags.append("duplicate_summary")
+        if 0 < _as_float(out.get("active_minutes"), 0.0) < 5 and tiny_claims >= 2:
+            flags.append("repeated_tiny_claim")
+
+    out["review_flags"] = _dedupe(flags)
+    out["needs_review"] = _needs_review(out)
+    out["xp_claim_status"] = xp_claim_status(out)
+    return out
+
+
+def audit_event_claims(
+    events: list[dict[str, Any]],
+    known_agent_ids: set[str] | None = None,
+) -> list[dict[str, Any]]:
+    return [
+        audit_event_claim(event, known_agent_ids=known_agent_ids, existing_events=events)
+        for event in events
+    ]
+
+
+def xp_claim_status(event: dict[str, Any]) -> str:
+    existing = str(event.get("xp_claim_status") or "").strip()
+    if existing == "rejected":
+        return existing
+    if _needs_review(event):
+        return XP_CLAIM_STATUS_REVIEW_PENDING
+    if _as_float(event.get("awarded_xp"), 0.0) <= 0:
+        return XP_CLAIM_STATUS_ZERO
+    return XP_CLAIM_STATUS_AWARDED
+
+
+def aggregate_agent_xp_status(
+    events: list[dict[str, Any]],
+    agent_ids: set[str] | None = None,
+) -> dict[str, dict[str, Any]]:
+    statuses: dict[str, dict[str, Any]] = {}
+    for agent_id in sorted(agent_ids or set()):
+        statuses[agent_id] = _empty_agent_xp_status()
+
+    for event in events:
+        normalized = normalize_event_xp(event)
+        participants = _event_participants(normalized)
+        share_count = max(1, len(participants))
+
+        for agent_id in participants:
+            if agent_ids is not None and agent_id not in agent_ids:
+                continue
+            status = statuses.setdefault(agent_id, _empty_agent_xp_status())
+            status["active_minutes"] += _as_float(normalized.get("active_minutes"), 0.0) / share_count
+            status["base_xp"] += _as_float(normalized.get("base_xp"), 0.0) / share_count
+            status["awarded_xp"] += _as_float(normalized.get("awarded_xp"), 0.0) / share_count
+            status["event_count"] += 1
+            if _needs_review(normalized):
+                status["review_item_count"] += 1
+            for flag in normalized.get("review_flags") or []:
+                status["review_flags"].append(flag)
+            claim_status = str(normalized.get("xp_claim_status") or xp_claim_status(normalized))
+            status["claim_status_counts"][claim_status] += 1
+            timestamp = str(normalized.get("timestamp") or "")
+            if timestamp and timestamp > status["latest_event_at"]:
+                status["latest_event_at"] = timestamp
+
+    for status in statuses.values():
+        status["active_minutes"] = _round(status["active_minutes"])
+        status["base_xp"] = _round(status["base_xp"])
+        status["awarded_xp"] = _round(status["awarded_xp"])
+        status["review_flags"] = _dedupe(status["review_flags"])
+        status["claim_status_counts"] = dict(status["claim_status_counts"])
+        status["season"] = CURRENT_XP_SEASON
+        status["label"] = CURRENT_XP_LABEL
+
+    return statuses
 
 
 def aggregate_season_summary(
@@ -191,6 +335,55 @@ def _normalize_shadow_multipliers(value: Any) -> dict[str, bool]:
     return {key: bool(value.get(key, False)) for key in SHADOW_MULTIPLIERS}
 
 
+def _has_evidence(event: dict[str, Any]) -> bool:
+    evidence_refs = _string_list(event.get("evidence_refs"))
+    artifact_refs = _string_list(event.get("artifact_refs"))
+    direct_refs = [
+        event.get("field_report_path"),
+        event.get("decision_record_ref"),
+        event.get("test_output_ref"),
+    ]
+    return bool(evidence_refs or artifact_refs or any(_optional_string(ref) for ref in direct_refs))
+
+
+def _string_list(value: Any) -> list[str]:
+    if isinstance(value, str):
+        value = [value]
+    if not isinstance(value, list):
+        return []
+    out: list[str] = []
+    for item in value:
+        normalized = str(item).strip()
+        if normalized:
+            out.append(normalized)
+    return out
+
+
+def _optional_string(value: Any) -> str | None:
+    if value is None:
+        return None
+    normalized = str(value).strip()
+    return normalized or None
+
+
+def _append_unique(target: list[str], values: list[str]) -> None:
+    for value in values:
+        if value not in target:
+            target.append(value)
+
+
+def _dedupe(values: list[str]) -> list[str]:
+    out: list[str] = []
+    _append_unique(out, values)
+    return out
+
+
+def _summary_key(event: dict[str, Any]) -> str:
+    summary = str(event.get("summary") or "").strip().lower()
+    title = str(event.get("title") or "").strip().lower()
+    return f"{title}|{summary}" if title or summary else ""
+
+
 def _unique_agent_ids(value: Any, source_id: Any) -> list[str]:
     if not isinstance(value, list):
         return []
@@ -218,6 +411,7 @@ def _event_participants(event: dict[str, Any]) -> list[str]:
 def _needs_review(event: dict[str, Any]) -> bool:
     return bool(
         event.get("needs_review")
+        or event.get("review_flags")
         or event.get("risk_level") in {"medium", "high"}
         or event.get("status") == "blocked"
     )
@@ -240,6 +434,21 @@ def _top_xp(values: dict[str, float], id_key: str) -> list[dict[str, Any]]:
 def _average(values: Any) -> float:
     nums = [_as_float(value, 0.0) for value in values]
     return sum(nums) / len(nums) if nums else 0
+
+
+def _empty_agent_xp_status() -> dict[str, Any]:
+    return {
+        "season": CURRENT_XP_SEASON,
+        "label": CURRENT_XP_LABEL,
+        "active_minutes": 0.0,
+        "base_xp": 0.0,
+        "awarded_xp": 0.0,
+        "event_count": 0,
+        "review_item_count": 0,
+        "review_flags": [],
+        "claim_status_counts": defaultdict(int),
+        "latest_event_at": "",
+    }
 
 
 def _as_float(value: Any, default: float) -> float:

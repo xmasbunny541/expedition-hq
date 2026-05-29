@@ -29,6 +29,7 @@ export function FieldReportCard({
   const shadowTags = Object.entries(event.shadow_multipliers ?? {})
     .filter(([, enabled]) => enabled)
     .map(([key]) => key);
+  const reviewFlags = (event.review_flags ?? []).filter((flag) => !(event.scaling_flags ?? []).includes(flag));
 
   return (
     <article className={`field-report report-${event.status}`}>
@@ -57,11 +58,17 @@ export function FieldReportCard({
         )}
         <div className="pill-row">
           <span className="pill">{event.event_type}</span>
+          <span className={`pill ${event.xp_claim_status === "review_pending" ? "attention" : ""}`}>
+            {labelKey(event.xp_claim_status ?? "calibration_awarded")}
+          </span>
           <span className={`pill risk-${event.risk_level}`}>risk: {event.risk_level}</span>
           <span className="pill">party: {event.party_size ?? 0}</span>
+          {event.evidence_refs?.length > 0 && <span className="pill">evidence: {event.evidence_refs.length}</span>}
+          {event.artifact_refs?.length > 0 && <span className="pill">artifacts: {event.artifact_refs.length}</span>}
           {event.party_agents?.length > 0 && <span className="pill">agents: {event.party_agents.join(", ")}</span>}
           {event.needs_review && <span className="pill attention">review</span>}
           {event.scaling_flags?.map((flag) => <span className="pill attention" key={flag}>{labelKey(flag)}</span>)}
+          {reviewFlags.map((flag) => <span className="pill attention" key={flag}>{labelKey(flag)}</span>)}
           {shadowTags.map((tag) => <span className="pill shadow" key={tag}>{labelKey(tag)}</span>)}
           <span className="pill">{displayTime(event.timestamp)}</span>
         </div>

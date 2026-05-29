@@ -11,7 +11,7 @@ export function ReviewDesk({
   agentById: Map<string, Agent>;
 }) {
   const reviewEvents = events
-    .filter((event) => event.needs_review || ["medium", "high"].includes(event.risk_level) || event.status === "blocked")
+    .filter((event) => event.needs_review || event.review_flags?.length || event.xp_claim_status === "review_pending" || ["medium", "high"].includes(event.risk_level) || event.status === "blocked")
     .slice(0, 4);
   const blockedIncidents = incidents.filter((incident) => incident.status === "open").slice(0, 3);
 
@@ -33,7 +33,7 @@ export function ReviewDesk({
               <VisualToken agent={agent} label={agent ? undefined : "EV"} size="small" />
               <div>
                 <h3>{event.title}</h3>
-                <p>{agent ? displayName(agent) : event.source_id}</p>
+                <p>{agent ? displayName(agent) : event.source_id} / {event.xp_claim_status?.replace(/_/g, " ")}</p>
               </div>
               <span className={`badge risk-${event.risk_level}`}>{event.risk_level}</span>
             </article>

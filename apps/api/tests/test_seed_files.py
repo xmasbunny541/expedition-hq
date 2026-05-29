@@ -76,6 +76,7 @@ def test_post_events_creates_local_event(seeded_client):
             "reuse_leverage": 1.0,
             "risk_control": 1.25,
         },
+        "evidence_refs": ["apps/api/tests/test_seed_files.py::test_post_events_creates_local_event"],
         "tags": ["test"],
     }
 
@@ -90,9 +91,85 @@ def test_post_events_creates_local_event(seeded_client):
     assert created["total_multiplier_raw"] == 1.976562
     assert created["awarded_xp"] == 0.988281
     assert created["xp"] == created["awarded_xp"]
+    assert created["evidence_refs"] == payload["evidence_refs"]
+    assert created["xp_claim_status"] == "review_pending"
+    assert created["review_flags"] == ["unknown_source"]
 
     events = seeded_client.get("/events").json()
     assert any(event["id"] == payload["id"] for event in events)
+
+
+def test_xp_claim_endpoint_accepts_cross_project_claim_with_evidence(seeded_client):
+    payload = {
+        "id": "evt-test-cross-project-claim",
+        "source_id": "openclaw-main",
+        "source_project": "C:/Users/augus/Desktop/outside-work",
+        "expedition_id": "outside-work-calibration",
+        "event_type": "cross_project_work",
+        "title": "Cross-project XP claim",
+        "summary": "Records useful outside-project work with reviewable evidence for Season 0.x calibration.",
+        "active_minutes": 15,
+        "evidence_refs": ["C:/Users/augus/Desktop/outside-work/logs/claim.txt"],
+        "tags": ["cross-project", "calibration"],
+    }
+
+    response = seeded_client.post("/xp-claims", json=payload)
+    assert response.status_code == 200
+    created = response.json()
+
+    assert created["source_project"] == payload["source_project"]
+    assert created["xp_claim_status"] == "calibration_awarded"
+    assert created["review_flags"] == []
+    assert created["awarded_xp"] > 0
+
+
+def test_xp_claim_endpoint_flags_missing_evidence_without_rejecting(seeded_client):
+    payload = {
+        "id": "evt-test-missing-evidence-claim",
+        "source_id": "openclaw-main",
+        "expedition_id": "expedition-hq-dashboard",
+        "event_type": "stress_probe",
+        "title": "Missing evidence probe",
+        "summary": "Deliberately submits a nonzero Season 0.x claim without evidence so the ledger flags it.",
+        "active_minutes": 12,
+    }
+
+    response = seeded_client.post("/xp-claims", json=payload)
+    assert response.status_code == 200
+    created = response.json()
+
+    assert created["awarded_xp"] > 0
+    assert created["needs_review"] is True
+    assert created["xp_claim_status"] == "review_pending"
+    assert created["review_flags"] == ["missing_evidence"]
+
+
+def test_post_events_rejects_agent_supplied_awarded_xp(seeded_client):
+    payload = {
+        "id": "evt-test-self-award",
+        "source_id": "openclaw-main",
+        "expedition_id": "expedition-hq-dashboard",
+        "event_type": "self_award_probe",
+        "title": "Self award probe",
+        "summary": "Attempts to set final awarded XP directly, which the API must reject.",
+        "active_minutes": 1,
+        "awarded_xp": 999,
+    }
+
+    response = seeded_client.post("/events", json=payload)
+    assert response.status_code == 422
+
+
+def test_agents_include_visible_xp_status(seeded_client):
+    response = seeded_client.get("/agents")
+    assert response.status_code == 200
+    agents = response.json()
+    openclaw = next(agent for agent in agents if agent["id"] == "openclaw-main")
+
+    assert openclaw["xp_status"]["awarded_xp"] > 0
+    assert openclaw["xp_status"]["event_count"] > 0
+    assert "claim_status_counts" in openclaw["xp_status"]
+
 
 def test_post_events_rejects_duplicate_ids(seeded_client):
     payload = {

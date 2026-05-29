@@ -10,6 +10,20 @@ export interface Agent {
   current_assignment: string | null;
   summary?: string;
   allowed_as_little_guy: boolean;
+  xp_status?: AgentXpStatus;
+}
+
+export interface AgentXpStatus {
+  season: string;
+  label: string;
+  active_minutes: number;
+  base_xp: number;
+  awarded_xp: number;
+  event_count: number;
+  review_item_count: number;
+  review_flags: string[];
+  claim_status_counts: Record<string, number>;
+  latest_event_at: string;
 }
 
 export interface Expedition {
@@ -26,6 +40,7 @@ export interface Event {
   id: string;
   timestamp: string;
   source_id: string;
+  source_project?: string | null;
   expedition_id?: string | null;
   event_type: string;
   title: string;
@@ -51,6 +66,13 @@ export interface Event {
   shadow_multiplier_notes: string[] | string;
   multiplier_notes: string[] | string;
   scaling_flags: string[];
+  xp_claim_status: string;
+  review_flags: string[];
+  evidence_refs: string[];
+  artifact_refs: string[];
+  field_report_path?: string | null;
+  decision_record_ref?: string | null;
+  test_output_ref?: string | null;
   tags: string[];
 }
 

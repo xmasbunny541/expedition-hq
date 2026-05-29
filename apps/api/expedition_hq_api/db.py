@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from .proposals import apply_decision, normalize_proposal, proposal_decision_event
-from .xp import aggregate_season_summary, normalize_event_xp
+from .xp import aggregate_season_summary, audit_event_claims, normalize_event_xp
 
 ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_DB_PATH = ROOT / "data" / "expedition-hq.db"
@@ -44,6 +44,12 @@ EVENT_COMPAT_COLUMNS = {
     "shadow_multiplier_notes_json": "TEXT DEFAULT '[]'",
     "multiplier_notes_json": "TEXT DEFAULT '[]'",
     "scaling_flags_json": "TEXT DEFAULT '[]'",
+    "source_project": "TEXT",
+    "xp_claim_status": "TEXT DEFAULT 'calibration_awarded'",
+    "evidence_refs_json": "TEXT DEFAULT '[]'",
+    "artifact_refs_json": "TEXT DEFAULT '[]'",
+    "field_report_path": "TEXT",
+    "review_flags_json": "TEXT DEFAULT '[]'",
 }
 PROPOSAL_COMPAT_COLUMNS = {
     "decision_note_provided": "INTEGER DEFAULT 0",
@@ -216,8 +222,10 @@ def insert_event(conn: sqlite3.Connection, event: dict[str, Any]) -> None:
          risk_level, needs_review, xp, xp_season, formula_version, xp_mode, active_minutes,
          base_xp, awarded_xp, total_multiplier_raw, multiplier_cap, xp_source, xp_confidence,
          party_agents_json, party_size, scoring_multipliers_json, shadow_multipliers_json,
-         shadow_multiplier_notes_json, multiplier_notes_json, scaling_flags_json, tags_json, raw_json)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+         shadow_multiplier_notes_json, multiplier_notes_json, scaling_flags_json, source_project,
+         xp_claim_status, evidence_refs_json, artifact_refs_json, field_report_path, review_flags_json,
+         tags_json, raw_json)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''',
         (
             event["id"], event["timestamp"], event["source_id"], event.get("expedition_id"),
@@ -230,6 +238,9 @@ def insert_event(conn: sqlite3.Connection, event: dict[str, Any]) -> None:
             event.get("party_size", 0), json.dumps(event.get("scoring_multipliers", {})),
             json.dumps(event.get("shadow_multipliers", {})), json.dumps(event.get("shadow_multiplier_notes", [])),
             json.dumps(event.get("multiplier_notes", [])), json.dumps(event.get("scaling_flags", [])),
+            event.get("source_project"), event.get("xp_claim_status"),
+            json.dumps(event.get("evidence_refs", [])), json.dumps(event.get("artifact_refs", [])),
+            event.get("field_report_path"), json.dumps(event.get("review_flags", [])),
             json.dumps(event.get("tags", [])), json.dumps(event)
         )
     )
@@ -243,8 +254,10 @@ def insert_seed_event(conn: sqlite3.Connection, event: dict[str, Any]) -> None:
          risk_level, needs_review, xp, xp_season, formula_version, xp_mode, active_minutes,
          base_xp, awarded_xp, total_multiplier_raw, multiplier_cap, xp_source, xp_confidence,
          party_agents_json, party_size, scoring_multipliers_json, shadow_multipliers_json,
-         shadow_multiplier_notes_json, multiplier_notes_json, scaling_flags_json, tags_json, raw_json)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+         shadow_multiplier_notes_json, multiplier_notes_json, scaling_flags_json, source_project,
+         xp_claim_status, evidence_refs_json, artifact_refs_json, field_report_path, review_flags_json,
+         tags_json, raw_json)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''',
         (
             event["id"], event["timestamp"], event["source_id"], event.get("expedition_id"),
@@ -257,6 +270,9 @@ def insert_seed_event(conn: sqlite3.Connection, event: dict[str, Any]) -> None:
             event.get("party_size", 0), json.dumps(event.get("scoring_multipliers", {})),
             json.dumps(event.get("shadow_multipliers", {})), json.dumps(event.get("shadow_multiplier_notes", [])),
             json.dumps(event.get("multiplier_notes", [])), json.dumps(event.get("scaling_flags", [])),
+            event.get("source_project"), event.get("xp_claim_status"),
+            json.dumps(event.get("evidence_refs", [])), json.dumps(event.get("artifact_refs", [])),
+            event.get("field_report_path"), json.dumps(event.get("review_flags", [])),
             json.dumps(event.get("tags", [])), json.dumps(event)
         )
     )
@@ -333,8 +349,8 @@ def rows(table: str) -> list[dict[str, Any]]:
 def season_summary_rows() -> list[dict[str, Any]]:
     seed_summaries = {summary["season"]: summary for summary in rows("season_summaries")}
     events_by_season: dict[str, list[dict[str, Any]]] = {}
-    for event in rows("events"):
-        event = normalize_event_xp(event)
+    known_agent_ids = {agent["id"] for agent in rows("agents")}
+    for event in audit_event_claims(rows("events"), known_agent_ids=known_agent_ids):
         events_by_season.setdefault(event["xp_season"], []).append(event)
 
     summaries = []

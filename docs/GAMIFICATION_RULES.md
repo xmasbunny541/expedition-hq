@@ -15,6 +15,14 @@ Season 0.x uses a frozen XP control set for calibration.
 
 Do not change these formulas during the Season 0.x test window unless August explicitly requests it.
 
+## Agent XP status doctrine
+
+XP is intended to become the main competitive status indicator for agents. Agents may optimize for XP, but they must earn it through useful, reviewable work. Expedition HQ is the scorekeeper; agents can submit event inputs, but the system owns final XP calculation, review flags, and awarded totals.
+
+The current compatibility plan is tracked in [Agent XP Status Plan](AGENT_XP_STATUS_PLAN.md).
+
+During Season 0.x, calibration XP should be visible enough to create incentive pressure. That is intentional. The matching compliance rule is that the UI must show claim/review state and the ledger must preserve suspicious scoring flags so gaming attempts become test evidence instead of hidden noise.
+
 ## Scoring multipliers
 
 Only these six multiplier types affect XP in Season 0.x:
