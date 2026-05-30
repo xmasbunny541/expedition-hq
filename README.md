@@ -75,8 +75,7 @@ Persistent local startup:
 .\scripts\Register-ExpeditionHQStartup.ps1 -RunNow
 ```
 
-The startup entry is per-user and local-only. It starts the read-only API on `127.0.0.1:8789` and the web dashboard on `127.0.0.1:5173` at Windows logon. The installer uses Task Scheduler when permitted and falls back to a Startup-folder shortcut when Windows blocks scheduled task registration. Runtime logs and status are written under ignored `runtime/` files.
-If Task Scheduler is blocked, the Startup-folder shortcut launches `scripts\Watch-ExpeditionHQ.ps1`, which rechecks the fixed API and web URLs every five minutes while the user session is active. The watcher writes `runtime\watcher-status.json`; the service launcher writes `runtime\status.json`.
+The startup entry is per-user and local-only. Task Scheduler runs a hidden `wscript.exe` launcher at Windows logon and every five minutes. The launcher starts `scripts\Watch-ExpeditionHQ.ps1` only when the watcher is not already running; the watcher starts or verifies the read-only API on `127.0.0.1:8789` and the web dashboard on `127.0.0.1:5173`. The installer falls back to a Startup-folder shortcut when Windows blocks scheduled task registration. The watcher writes `runtime\watcher-status.json`; the service launcher writes `runtime\status.json`.
 
 Verification:
 
