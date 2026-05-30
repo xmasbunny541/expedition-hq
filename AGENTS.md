@@ -45,6 +45,16 @@ Do not implement live control actions in the MVP:
 - no raw transcript ingestion unless redacted
 - no display of secret-bearing artifacts
 
+## Project-local memory
+
+Use `.codex-memory/` as Expedition HQ's project-local Codex memory. This is development collaboration memory, not a product feature and not permission for the dashboard to mutate memory stores.
+
+Record reusable lessons, durable decisions, real failure patterns, open questions, and handoffs when they will help future agents continue safely or avoid repeated mistakes. Do not create memory busywork for trivial one-off tasks.
+
+Never store secrets, credentials, raw private transcripts, `.env` contents, private keys, tunnel URLs, auth tokens, or secret-bearing config in `.codex-memory/`.
+
+Before relying on memory, prefer current repo files, tests, and live command output when they disagree with memory. After adding entries, run `.\scripts\Test-MemoryRedaction.ps1`.
+
 ## Development priorities
 
 1. Validate seed data.

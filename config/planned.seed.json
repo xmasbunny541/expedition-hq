@@ -42,5 +42,18 @@
       "define quiet hours and useful checks",
       "avoid unnecessary chatter"
     ]
+  },
+  {
+    "id": "playwright-visual-smoke-gate",
+    "classification": "Testing/rollout quality gate",
+    "status": "planned",
+    "required_before_activation": [
+      "wait until core screens and routes are stable enough to avoid brittle tests",
+      "run a visual smoke pass every time a new Expedition HQ dashboard screen is added before calling it done",
+      "capture repeated visual smoke findings as executable Playwright checks",
+      "cover Bureau HQ, Expedition Board, Field Reports, Milestone Gallery, resize behavior, and refresh behavior",
+      "assert no secret-looking values, fake live-control affordances, or unsafe controls are visible",
+      "keep first-time-operator friction audits as qualitative input before promoting checks to automation"
+    ]
   }
 ]

@@ -32,6 +32,7 @@ from .db import (
     update_proposal_work_start,
 )
 from .proposals import aggregate_peer_review_status
+from .participation import aggregate_season_participation
 from .season import current_season_window, filter_events_for_window
 from .xp import (
     FORMULA_VERSION,
@@ -571,6 +572,16 @@ def season_current() -> dict[str, Any]:
         "summary": summary,
         "event_count": summary["event_count"],
     }
+
+@app.get("/season-participation")
+def season_participation() -> dict[str, Any]:
+    agent_rows = rows("agents")
+    return aggregate_season_participation(
+        audited_events(),
+        proposal_rows(),
+        known_agent_ids={agent["id"] for agent in agent_rows},
+        season_window=current_season_window(),
+    )
 
 @app.get("/season-summaries")
 def season_summaries() -> list[dict[str, Any]]:

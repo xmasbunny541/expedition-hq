@@ -16,6 +16,7 @@ import type {
   RouteEdge,
   Room,
   SeasonCurrent,
+  SeasonParticipation,
   SeasonSummary
 } from "./types";
 
@@ -96,6 +97,10 @@ export function getSeasonSummaries() {
 
 export function getCurrentSeason() {
   return getJson<SeasonCurrent>("/season-current");
+}
+
+export function getSeasonParticipation() {
+  return getJson<SeasonParticipation>("/season-participation");
 }
 
 export function getProposals() {
