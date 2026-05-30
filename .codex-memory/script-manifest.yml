@@ -1,0 +1,35 @@
+# Approved local memory helper scripts for Expedition HQ.
+# These scripts are local-only and must not store secrets or mutate product state.
+
+scripts:
+  - path: scripts/Initialize-CodexMemory.ps1
+    purpose: Ensure the project-local memory folder and baseline files exist.
+    risk: low
+  - path: scripts/Update-SessionState.ps1
+    purpose: Replace the current project memory session-state handoff.
+    risk: low
+  - path: scripts/Add-CodexMemoryEntry.ps1
+    purpose: Add a typed memory entry after a redaction guard.
+    risk: low
+  - path: scripts/Add-LearningEntry.ps1
+    purpose: Add a reusable learning entry.
+    risk: low
+  - path: scripts/Add-ErrorEntry.ps1
+    purpose: Add an error/failure-pattern entry.
+    risk: low
+  - path: scripts/Add-CorrectionEntry.ps1
+    purpose: Add a user correction/course-change entry.
+    risk: low
+  - path: scripts/Add-ProactiveNextStep.ps1
+    purpose: Add a proposed next-step entry.
+    risk: low
+  - path: scripts/Get-MemoryStats.ps1
+    purpose: Summarize project-local memory counts and latest entries.
+    risk: read-only
+  - path: scripts/Review-Memory.ps1
+    purpose: Print concise project memory context for review.
+    risk: read-only
+  - path: scripts/Test-MemoryRedaction.ps1
+    purpose: Scan project-local memory for common secret patterns.
+    risk: read-only
+

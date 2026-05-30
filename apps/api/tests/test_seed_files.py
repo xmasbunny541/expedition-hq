@@ -199,6 +199,86 @@ def test_current_season_endpoint_uses_6am_window(seeded_client, monkeypatch):
     assert next_season["season"] == "0.2"
     assert next_season["started_at"] == "2026-05-31T06:00:00-07:00"
 
+def test_season_participation_endpoint_aggregates_current_window(seeded_client):
+    response = seeded_client.get("/season-participation")
+    assert response.status_code == 200
+    payload = response.json()
+
+    assert payload["season"] == "0.1"
+    assert payload["source_tables"] == ["events", "proposals"]
+    assert payload["graphics_independent"] is True
+    assert payload["activity_kinds"] == ["task", "goal", "proposal", "meaningful_action"]
+    assert payload["tracking_started_at"] == "2026-05-27T19:55:33-07:00"
+    assert payload["summary"]["meaningful_action_count"] >= 9
+    assert payload["summary"]["goal_count"] >= 9
+    assert payload["summary"]["proposal_count"] >= 6
+    assert payload["summary"]["active_agent_count"] > 0
+    assert {"approved", "work_queue", "actual_work", "final_review", "completed"}.issubset(
+        payload["proposal_queue_counts"]
+    )
+
+    openclaw = next(agent for agent in payload["agents"] if agent["agent_id"] == "openclaw-main")
+    assert openclaw["known_agent"] is True
+    assert openclaw["awarded_xp"] > 0
+    assert openclaw["roles"]["source"] > 0
+
+def test_season_participation_starts_clean_at_initial_restart_without_losing_bureau_state(
+    seeded_client,
+    monkeypatch,
+):
+    monkeypatch.setenv("EXPEDITION_HQ_NOW", "2026-05-30T06:30:00-07:00")
+
+    response = seeded_client.get("/season-participation")
+    assert response.status_code == 200
+    payload = response.json()
+
+    assert payload["season"] == "0.1"
+    assert payload["status"] == "active"
+    assert payload["tracking_started_at"] == "2026-05-30T06:00:00-07:00"
+    assert payload["summary"]["event_count"] == 0
+    assert payload["summary"]["active_agent_count"] == 0
+    assert payload["summary"]["meaningful_action_count"] == 0
+    assert payload["proposal_queue_counts"]["completed"] >= 1
+    assert payload["proposal_status_counts"]["accepted"] >= 1
+    assert "approved" in payload["proposal_queue_counts"]
+    assert "work_queue" in payload["proposal_queue_counts"]
+
+def test_season_participation_tracks_new_task_goal_and_meaningful_action_after_restart(
+    seeded_client,
+    monkeypatch,
+):
+    monkeypatch.setenv("EXPEDITION_HQ_NOW", "2026-05-30T08:00:00-07:00")
+    response = seeded_client.post(
+        "/xp-claims",
+        json={
+            "id": "evt-season-0-1-task-claim",
+            "timestamp": "2026-05-30T07:15:00-07:00",
+            "source_id": "openclaw-main",
+            "expedition_id": "expedition-hq-dashboard",
+            "event_type": "task_completed",
+            "title": "Season 0.1 task claim",
+            "summary": "Records a reviewable task, goal link, and meaningful action after the Season 0.1 restart.",
+            "active_minutes": 24,
+            "evidence_refs": ["apps/api/tests/test_seed_files.py::test_season_participation_tracks_new_task_goal_and_meaningful_action_after_restart"],
+            "tags": ["task", "season-0.1"],
+        },
+    )
+    assert response.status_code == 200
+
+    payload = seeded_client.get("/season-participation").json()
+    assert payload["tracking_started_at"] == "2026-05-30T06:00:00-07:00"
+    assert payload["summary"]["event_count"] == 1
+    assert payload["summary"]["task_count"] == 1
+    assert payload["summary"]["goal_count"] == 1
+    assert payload["summary"]["meaningful_action_count"] == 1
+    assert payload["summary"]["awarded_xp"] > 0
+
+    openclaw = next(agent for agent in payload["agents"] if agent["agent_id"] == "openclaw-main")
+    assert openclaw["task_count"] == 1
+    assert openclaw["goal_count"] == 1
+    assert openclaw["meaningful_action_count"] == 1
+    assert openclaw["roles"]["source"] == 1
+
 def test_retargeted_initial_restart_does_not_archive_warmup_state(tmp_path, monkeypatch):
     state_path = tmp_path / "season-state.json"
     state_path.write_text(json.dumps({

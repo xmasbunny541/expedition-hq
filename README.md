@@ -14,6 +14,7 @@ Local-first starter scaffold for building **Expedition HQ**: a read-only, living
 - JSON schema and TypeScript type starter
 - Hook/skill placeholders for future OpenClaw/Codex integration
 - Field report and milestone archive folders
+- Project-local Codex memory scaffold in `.codex-memory/`
 
 ## Recommended first commits
 
@@ -83,11 +84,34 @@ Verification:
 npm.cmd run seed:validate
 npm.cmd run api:test
 npm.cmd run web:build
+npm.cmd run memory:test
 ```
 
 The npm verification scripts use the repo-local Python runner, avoid the Windows Store `python` alias, and keep pytest temp/cache output under ignored `runtime/` paths. Use the direct venv commands above when you are actively debugging setup; use the npm scripts for routine checks and overnight automation reports.
 
 The API is read-only except for local SQLite event/XP-claim ingestion through `POST /events` and `POST /xp-claims`. Reseeding is intentionally a local script operation, not a public API route.
+
+## Project-local Codex memory
+
+Expedition HQ has a local `.codex-memory/` scaffold for Codex collaboration. This is development memory, not a product memory-write feature.
+
+Use it to preserve reusable lessons, decisions, real failure patterns, open questions, and session handoffs. Do not use it for secrets, credentials, raw private transcripts, `.env` contents, private keys, tunnel URLs, auth tokens, or secret-bearing config.
+
+Useful commands:
+
+```powershell
+npm.cmd run memory:init
+npm.cmd run memory:stats
+npm.cmd run memory:review
+npm.cmd run memory:test
+```
+
+Add entries directly with the helper scripts when the note is worth preserving:
+
+```powershell
+.\scripts\Add-LearningEntry.ps1 -Title "Short lesson" -Body "Reusable context future agents should know."
+.\scripts\Update-SessionState.ps1 -Task "Current task" -Status "in_progress" -Notes "Important handoff detail."
+```
 
 Season 0.x daily rollover:
 

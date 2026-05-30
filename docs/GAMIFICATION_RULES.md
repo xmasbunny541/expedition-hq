@@ -71,6 +71,17 @@ XP should represent meaningful contribution time:
 
 Do not award XP for random pings, passive uptime, opening files, fake activity, empty summaries, or repeated no-op status checks.
 
+## Participation tracking
+
+Season 0.1 participation is tracked through `/season-participation`, which reads existing events and proposals instead of adding a separate graphics-dependent state model.
+
+- Tasks come from task/work/implementation/audit/test/build/fix/repair event signals.
+- Goals come from event records linked to expeditions.
+- Proposals come from Planning Bureau records, proposal events, council votes, and proposal-scoped route participation.
+- Meaningful actions come from reviewable ledger records and local zero-XP phase markers.
+
+Participation counters are calibration evidence. They do not alter `base_xp`, `awarded_xp`, peer-review XP, soft wagers, milestones, or proposal statuses.
+
 ## Peer-review XP
 
 Peer-review XP is a separate council-learning track. It is not active-time XP, not party-size XP, and not work-contribution XP.

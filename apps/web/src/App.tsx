@@ -16,6 +16,7 @@ import {
   getRoutes,
   getRouteEdges,
   getRooms,
+  getSeasonParticipation,
   getSeasonSummaries,
   completeProposalImplementation,
   requestProposalImplementation,
@@ -40,6 +41,7 @@ import type {
   RouteParticipant,
   Room,
   SeasonCurrent,
+  SeasonParticipation,
   SeasonSummary
 } from "./types";
 import { AgentCard } from "./components/AgentCard";
@@ -140,7 +142,7 @@ function focusProposalCard(proposalId: string) {
 
 function proposalStatusLabel(status: Proposal["status"]) {
   if (status === "accepted") return "completed";
-  if (status === "in_progress") return "queued for work";
+  if (status === "in_progress") return "work queue";
   if (status === "implementation_requested") return "actual work";
   if (status === "implemented") return "final review";
   return labelize(status);
@@ -197,6 +199,107 @@ function AgentXpBoard({ agents }: { agents: Agent[] }) {
             </article>
           );
         })}
+      </div>
+    </section>
+  );
+}
+
+function SeasonParticipationPanel({
+  participation,
+  agentById
+}: {
+  participation: SeasonParticipation | null;
+  agentById: Map<string, Agent>;
+}) {
+  if (!participation) return null;
+
+  const summary = participation.summary;
+  const queue = participation.proposal_queue_counts;
+  const topAgents = participation.agents.slice(0, 6);
+  const queueRows = [
+    ["approved", queue.approved],
+    ["Work Queue", queue.work_queue],
+    ["actual work", queue.actual_work],
+    ["final review", queue.final_review],
+    ["completed", queue.completed]
+  ];
+
+  return (
+    <section className="living-section participation-ledger">
+      <SectionHeader
+        eyebrow="Season Participation"
+        title={`${participation.season} Ledger`}
+        note={`Tracking window opens ${formatShortDateTime(participation.tracking_started_at)} local time.`}
+      />
+      <div className="participation-grid">
+        <div className="participation-metrics" aria-label="Season participation totals">
+          <div><strong>{formatAgentCount(summary.active_agent_count)}</strong><span>active this window</span></div>
+          <div><strong>{summary.meaningful_action_count}</strong><span>meaningful actions</span></div>
+          <div><strong>{summary.goal_count}</strong><span>goal-linked records</span></div>
+          <div><strong>{summary.task_count}</strong><span>task records</span></div>
+          <div><strong>{summary.proposal_count}</strong><span>proposal touches</span></div>
+          <div><strong>{formatXp(summary.awarded_xp)} XP</strong><span>awarded from events</span></div>
+          <div><strong>{formatXp(summary.peer_review_xp)} XP</strong><span>current council track</span></div>
+          <div><strong>{summary.review_item_count}</strong><span>review flags</span></div>
+        </div>
+        <div className="participation-queue panel">
+          <h3>Planning Bureau Continuity</h3>
+          <div className="participation-queue-grid">
+            {queueRows.map(([label, count]) => (
+              <div key={label}>
+                <strong>{count}</strong>
+                <span>{label}</span>
+              </div>
+            ))}
+          </div>
+          <p>
+            Approved proposals and Work Queue records stay in place while Season 0.1 starts counting fresh activity.
+          </p>
+        </div>
+      </div>
+      <div className="participation-board">
+        <section className="panel">
+          <h3>Agent Participation</h3>
+          <div className="participation-agent-list">
+            {topAgents.length ? topAgents.map((row) => {
+              const agent = agentById.get(row.agent_id);
+              const roleEntries = Object.entries(row.roles).slice(0, 5);
+              return (
+                <article className="participation-agent-row" key={row.agent_id}>
+                  <VisualToken agent={agent} label={agent ? undefined : "?"} size="small" state={agent?.ui_state ?? "stable"} />
+                  <div>
+                    <h4>{agent ? displayName(agent) : row.agent_id}</h4>
+                    <p>{row.agent_id}</p>
+                    <div className="participation-role-list">
+                      <span>{row.meaningful_action_count} actions</span>
+                      <span>{row.goal_count} goals</span>
+                      <span>{row.task_count} tasks</span>
+                      <span>{row.proposal_activity_count} proposal touches</span>
+                      {roleEntries.map(([role, count]) => (
+                        <span key={role}>{labelize(role)} {count}</span>
+                      ))}
+                    </div>
+                  </div>
+                  <strong>{formatXp(row.awarded_xp + row.peer_review_xp)} XP</strong>
+                </article>
+              );
+            }) : <EmptyState label="No Season 0.1 participation has been recorded in this window." />}
+          </div>
+        </section>
+        <section className="panel">
+          <h3>Recent Participation Records</h3>
+          <div className="participation-recent-list">
+            {participation.recent_activity.length ? participation.recent_activity.slice(0, 5).map((record) => (
+              <article key={record.id}>
+                <div>
+                  <strong>{record.title}</strong>
+                  <span>{formatShortDateTime(record.timestamp)} / {record.activity_kinds.map(labelize).join(", ")}</span>
+                </div>
+                <span>{formatXp(record.awarded_xp)} XP</span>
+              </article>
+            )) : <EmptyState label="No event-ledger records are inside the active Season 0.1 window." />}
+          </div>
+        </section>
       </div>
     </section>
   );
@@ -1215,6 +1318,7 @@ export default function App() {
   const [plannedItems, setPlannedItems] = useState<PlannedItem[]>([]);
   const [artifacts, setArtifacts] = useState<Artifact[]>([]);
   const [currentSeasonState, setCurrentSeasonState] = useState<SeasonCurrent | null>(null);
+  const [seasonParticipation, setSeasonParticipation] = useState<SeasonParticipation | null>(null);
   const [seasonSummaries, setSeasonSummaries] = useState<SeasonSummary[]>([]);
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [dashboardConfig, setDashboardConfig] = useState<DashboardConfig | null>(null);
@@ -1248,11 +1352,15 @@ export default function App() {
           console.warn("Current season endpoint unavailable; using health and summary fallback.", err);
           return null;
         }),
+        getSeasonParticipation().catch((err) => {
+          console.warn("Season participation endpoint unavailable; using empty panel fallback.", err);
+          return null;
+        }),
         getSeasonSummaries(),
         getProposals(),
         getDashboardConfig()
       ])
-      .then(([apiHealth, a, ex, ev, ms, inc, rt, roomRows, edgeRows, mem, planned, art, activeSeason, summaries, prop, config]) => {
+      .then(([apiHealth, a, ex, ev, ms, inc, rt, roomRows, edgeRows, mem, planned, art, activeSeason, participation, summaries, prop, config]) => {
         if (cancelled) return;
         setHealth(apiHealth);
         setAgents(a);
@@ -1267,6 +1375,7 @@ export default function App() {
         setPlannedItems(planned);
         setArtifacts(art);
         setCurrentSeasonState(activeSeason);
+        setSeasonParticipation(participation);
         setSeasonSummaries(summaries);
         setProposals(prop);
         setDashboardConfig(config);
@@ -1311,6 +1420,17 @@ export default function App() {
     }, 2800);
   };
 
+  const refreshSeasonTracking = async () => {
+    const [latestEvents, participation, activeSeason] = await Promise.all([
+      getEvents(),
+      getSeasonParticipation().catch(() => null),
+      getCurrentSeason().catch(() => null)
+    ]);
+    setEvents(latestEvents);
+    setSeasonParticipation(participation);
+    setCurrentSeasonState(activeSeason);
+  };
+
   const submitProposalDecision = async () => {
     if (!pendingDecision) return;
     const { proposal, decision } = pendingDecision;
@@ -1318,7 +1438,7 @@ export default function App() {
     try {
       const updated = await decideProposal(proposal.proposal_id, decision, decisionNoteDraft.trim());
       setProposals((current) => current.map((item) => item.proposal_id === updated.proposal_id ? updated : item));
-      setEvents(await getEvents());
+      await refreshSeasonTracking();
       markProposalChanged(updated.proposal_id);
       setPendingDecision(null);
       setDecisionNoteDraft("");
@@ -1335,7 +1455,7 @@ export default function App() {
     try {
       const updated = await startProposalWork(proposal.proposal_id);
       setProposals((current) => current.map((item) => item.proposal_id === updated.proposal_id ? updated : item));
-      setEvents(await getEvents());
+      await refreshSeasonTracking();
       markProposalChanged(updated.proposal_id);
       setError(null);
     } catch (err) {
@@ -1350,7 +1470,7 @@ export default function App() {
     try {
       const updated = await requestProposalImplementation(proposal.proposal_id);
       setProposals((current) => current.map((item) => item.proposal_id === updated.proposal_id ? updated : item));
-      setEvents(await getEvents());
+      await refreshSeasonTracking();
       markProposalChanged(updated.proposal_id);
       setError(null);
     } catch (err) {
@@ -1365,7 +1485,7 @@ export default function App() {
     try {
       const updated = await completeProposalImplementation(proposal.proposal_id);
       setProposals((current) => current.map((item) => item.proposal_id === updated.proposal_id ? updated : item));
-      setEvents(await getEvents());
+      await refreshSeasonTracking();
       markProposalChanged(updated.proposal_id);
       setError(null);
     } catch (err) {
@@ -1380,7 +1500,7 @@ export default function App() {
     try {
       const updated = await reviewProposalImplementation(proposal.proposal_id, reviewDecision);
       setProposals((current) => current.map((item) => item.proposal_id === updated.proposal_id ? updated : item));
-      setEvents(await getEvents());
+      await refreshSeasonTracking();
       markProposalChanged(updated.proposal_id);
       setError(null);
     } catch (err) {
@@ -1496,6 +1616,8 @@ export default function App() {
               ))}
             </div>
           </section>
+
+          <SeasonParticipationPanel participation={seasonParticipation} agentById={agentById} />
 
           <AgentXpBoard agents={littleGuys} />
 

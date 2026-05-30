@@ -10,6 +10,10 @@
     "api:init": "node scripts/run-python.mjs scripts/init_db.py",
     "api:dev": "cd apps/api && node ../../scripts/run-python.mjs -m uvicorn expedition_hq_api.main:app --reload --host 127.0.0.1 --port 8789",
     "api:test": "node scripts/run-python.mjs -m pytest apps/api/tests --basetemp runtime/pytest-temp-api -p no:cacheprovider",
-    "api:test:local": "node scripts/run-python.mjs -m pytest apps/api/tests --basetemp runtime/pytest-temp-local -p no:cacheprovider"
+    "api:test:local": "node scripts/run-python.mjs -m pytest apps/api/tests --basetemp runtime/pytest-temp-local -p no:cacheprovider",
+    "memory:init": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/Initialize-CodexMemory.ps1",
+    "memory:stats": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/Get-MemoryStats.ps1",
+    "memory:review": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/Review-Memory.ps1",
+    "memory:test": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/Test-MemoryRedaction.ps1"
   }
 }

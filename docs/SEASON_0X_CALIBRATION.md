@@ -57,6 +57,21 @@ May 29, 2026 is a warm-up calibration day because too little XP was tracked to j
 
 The active dashboard totals use the current 6am-to-6am window. The event ledger remains append-only, expedition records remain durable, achievement-style records remain durable, and historical summaries remain available for comparison.
 
+## Season participation tracking
+
+Beginning with the May 30, 2026 6am Season 0.1 window, `/season-participation` is the stable read-only feed for current-season participation. It is derived from the event ledger and Planning Bureau proposal records. It must not depend on homepage or hubworld graphics, because those visuals may change while the underlying stats remain comparable.
+
+The feed tracks four neutral participation categories:
+
+- `task`: event records with task, work, implementation, audit, test, build, fix, or repair signals in `event_type` or tags.
+- `goal`: event records linked to an `expedition_id`.
+- `proposal`: proposal records, proposal events, council reviews, and proposal-scoped route participation.
+- `meaningful_action`: reviewable ledger records, evidence-bearing work, field reports, artifacts, blockers, safety improvements, and zero-XP proposal phase markers.
+
+These categories are descriptive counters. They do not change the Season 0.x XP formula.
+
+Planning Bureau continuity stays intact: `approved` means approved but not yet started, and `in_progress` remains the Work Queue. Do not relabel these just to restart Season 0.1; proposal phases can continue when August is ready.
+
 ## Scheduler authority
 
 Windows Task Scheduler is the source of truth for daily Season 0.x reset execution. Codex/OpenClaw automation may audit and report scheduler state, next run time, last result, and current season preview, but it must not independently perform seasonal resets.

@@ -189,6 +189,7 @@ p {
 .tab-page,
 .living-section {
   margin-top: 28px;
+  scroll-margin-top: 76px;
 }
 
 .section-heading {
@@ -916,6 +917,140 @@ p {
   border-radius: 999px;
   background: rgba(10, 11, 11, .24);
   padding: 4px 8px;
+}
+
+.participation-ledger {
+  border: 1px solid rgba(143, 168, 255, .18);
+  border-radius: 8px;
+  background: linear-gradient(155deg, rgba(22, 31, 34, .66), rgba(38, 31, 24, .58));
+  padding: 16px;
+}
+
+.participation-grid,
+.participation-board {
+  display: grid;
+  gap: 14px;
+}
+
+.participation-grid {
+  grid-template-columns: minmax(0, 1.35fr) minmax(260px, .65fr);
+}
+
+.participation-board {
+  grid-template-columns: minmax(0, 1.1fr) minmax(260px, .9fr);
+  margin-top: 14px;
+}
+
+.participation-metrics,
+.participation-queue-grid {
+  display: grid;
+  gap: 8px;
+}
+
+.participation-metrics {
+  grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
+}
+
+.participation-metrics > div,
+.participation-queue-grid > div {
+  min-height: 74px;
+  border: 1px solid rgba(247, 239, 226, .1);
+  border-radius: 8px;
+  background: rgba(10, 11, 11, .24);
+  padding: 10px;
+}
+
+.participation-metrics strong,
+.participation-queue-grid strong {
+  display: block;
+  color: #fff0cf;
+  font-size: 1.18rem;
+  overflow-wrap: anywhere;
+}
+
+.participation-metrics span,
+.participation-queue-grid span,
+.participation-queue p,
+.participation-agent-row p,
+.participation-recent-list span {
+  color: #bbaea0;
+  font-size: .78rem;
+}
+
+.participation-queue {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+}
+
+.participation-queue-grid {
+  grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
+}
+
+.participation-queue p {
+  margin: 0;
+}
+
+.participation-agent-list,
+.participation-recent-list {
+  display: grid;
+  gap: 10px;
+}
+
+.participation-agent-row,
+.participation-recent-list article {
+  display: grid;
+  gap: 10px;
+  align-items: center;
+  border-radius: 8px;
+  background: rgba(18, 19, 18, .36);
+  padding: 10px;
+}
+
+.participation-agent-row {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+}
+
+.participation-agent-row h4,
+.participation-agent-row p {
+  margin: 0;
+}
+
+.participation-agent-row > strong,
+.participation-recent-list article > span {
+  border-radius: 999px;
+  background: rgba(143, 168, 255, .18);
+  color: #dfe6ff;
+  font-size: .82rem;
+  font-weight: 900;
+  padding: 6px 9px;
+  white-space: nowrap;
+}
+
+.participation-role-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 7px;
+}
+
+.participation-role-list span {
+  border: 1px solid rgba(118, 214, 157, .2);
+  border-radius: 999px;
+  background: rgba(34, 64, 46, .18);
+  color: #d7ffe7;
+  font-size: .74rem;
+  padding: 4px 8px;
+}
+
+.participation-recent-list article {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.participation-recent-list strong {
+  display: block;
+  margin-bottom: 3px;
+  overflow-wrap: anywhere;
 }
 
 .calibration-grid {
@@ -1651,7 +1786,11 @@ p {
   .observatory-banner,
   .split-grid,
   .living-grid,
+  .participation-grid,
+  .participation-board,
   .today-panel,
+  .participation-agent-row,
+  .participation-recent-list article,
   .xp-agent-row,
   .proposal-card-header,
   .field-report {

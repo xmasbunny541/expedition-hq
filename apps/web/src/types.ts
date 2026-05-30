@@ -236,6 +236,83 @@ export interface SeasonCurrent {
   summary: SeasonSummary;
 }
 
+export interface SeasonParticipationSummary {
+  active_agent_count: number;
+  event_count: number;
+  active_minutes: number;
+  base_xp: number;
+  awarded_xp: number;
+  peer_review_xp: number;
+  review_item_count: number;
+  proposal_record_count: number;
+  proposal_review_count: number;
+  activity_counts: Record<string, number>;
+  task_count: number;
+  goal_count: number;
+  proposal_count: number;
+  meaningful_action_count: number;
+}
+
+export interface SeasonParticipationAgent {
+  agent_id: string;
+  known_agent: boolean;
+  event_count: number;
+  proposal_activity_count: number;
+  active_minutes: number;
+  base_xp: number;
+  awarded_xp: number;
+  peer_review_xp: number;
+  review_item_count: number;
+  activity_counts: Record<string, number>;
+  task_count: number;
+  goal_count: number;
+  proposal_count: number;
+  meaningful_action_count: number;
+  roles: Record<string, number>;
+  latest_activity_at: string;
+}
+
+export interface SeasonParticipationRecord {
+  record_type: "event";
+  id: string;
+  timestamp: string;
+  title: string;
+  event_type: string;
+  expedition_id?: string | null;
+  activity_kinds: string[];
+  participants: string[];
+  active_minutes: number;
+  awarded_xp: number;
+  needs_review: boolean;
+  review_flags: string[];
+}
+
+export interface SeasonParticipation {
+  season: string;
+  season_family: string;
+  label: string;
+  started_at: string;
+  ends_at: string;
+  tracking_started_at: string;
+  timezone: string;
+  daily_reset_time: string;
+  status: string;
+  source_tables: string[];
+  graphics_independent: boolean;
+  activity_kinds: string[];
+  summary: SeasonParticipationSummary;
+  proposal_status_counts: Record<string, number>;
+  proposal_queue_counts: {
+    approved: number;
+    work_queue: number;
+    actual_work: number;
+    final_review: number;
+    completed: number;
+  };
+  agents: SeasonParticipationAgent[];
+  recent_activity: SeasonParticipationRecord[];
+}
+
 export type ProposalStatus =
   | "draft"
   | "pending"
