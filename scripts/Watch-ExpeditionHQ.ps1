@@ -22,11 +22,13 @@ if (-not (Test-Path -LiteralPath $StartScript)) {
 $createdNew = $false
 $mutex = [System.Threading.Mutex]::new($true, "Local\ExpeditionHQLocalDashboardWatcher", [ref]$createdNew)
 if (-not $createdNew) {
-  [pscustomobject]@{
-    updated_at = (Get-Date).ToString("o")
-    status = "already_running"
-    root = $Root
-  } | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath $StatusPath -Encoding UTF8
+  if (-not (Test-Path -LiteralPath $StatusPath)) {
+    [pscustomobject]@{
+      updated_at = (Get-Date).ToString("o")
+      status = "already_running"
+      root = $Root
+    } | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath $StatusPath -Encoding UTF8
+  }
   exit 0
 }
 
@@ -57,8 +59,14 @@ try {
     $startedAt = Get-Date
     Add-Content -LiteralPath $LogPath -Encoding UTF8 -Value "[$($startedAt.ToString("o"))] checking Expedition HQ"
 
-    $output = & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $StartScript -ApiPort $ApiPort -WebPort $WebPort 2>&1
-    $exitCode = $LASTEXITCODE
+    $output = $null
+    $exitCode = 0
+    try {
+      $output = & $StartScript -ApiPort $ApiPort -WebPort $WebPort 2>&1
+    } catch {
+      $exitCode = 1
+      $output = @($output, $_.Exception.Message) | Where-Object { $_ }
+    }
     if ($output) {
       $output | ForEach-Object {
         Add-Content -LiteralPath $LogPath -Encoding UTF8 -Value $_

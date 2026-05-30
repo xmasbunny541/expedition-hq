@@ -138,6 +138,8 @@ $python = Resolve-Tool -Name "python" -Candidates @(
 )
 
 $node = Resolve-Tool -Name "node" -Candidates @(
+  (Join-Path $env:ProgramFiles "nodejs\node.exe"),
+  (Join-Path ${env:ProgramFiles(x86)} "nodejs\node.exe"),
   (Join-Path $env:USERPROFILE ".cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe")
 )
 
@@ -182,5 +184,6 @@ $status | ConvertTo-Json -Depth 6
 
 $unhealthy = @($results | Where-Object { $_.status -notin @("healthy", "already_healthy") })
 if ($unhealthy.Count -gt 0) {
-  exit 1
+  $details = ($unhealthy | ForEach-Object { "$($_.name)=$($_.status)" }) -join ", "
+  throw "Expedition HQ services are not healthy: $details"
 }
