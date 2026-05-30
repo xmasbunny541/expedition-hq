@@ -348,6 +348,62 @@ High-confidence, low-risk changes:
 - Clean mojibake if the deep research report file itself is corrupted, not just console rendering.
 - Pin dependency versions when stability matters more than freshness.
 
+## Implementation Follow-Up: 2026-05-29
+
+This section records the first implementation pass made after the audit. The pass deliberately favored realistic, low-to-medium blast-radius product changes over a full rewrite of the architecture.
+
+### Changed
+
+| Recommendation | What changed | Why |
+|---|---|---|
+| Move room definitions out of frontend code. | Added `config/rooms.seed.json`, seeded it into SQLite, exposed `GET /rooms`, and updated `HQRooms` to render from API data. | This is the cleanest first step toward an actual world model. It makes the HQ environment durable data instead of a decorative React constant. |
+| Add route graph data. | Added `config/route-edges.seed.json`, a `route_edges` table, `GET /route-edges`, and a route-edge strip below the HQ rooms. | Routes are now visible as bridges/gates between rooms instead of plain text inventory rows. This directly supports the observatory/expedition metaphor. |
+| Add `last_observed_at` and latest activity context to agents. | `GET /agents` now enriches agents with `last_observed_at`, `latest_event_id`, `latest_event_title`, and `activity_reason`. `AgentCard` shows latest report, last seen time, and current reason. | This makes agents easier to understand at a glance without opening logs. It answers "what are they doing and why?" better than a static roster. |
+| Add activity-signal API surface. | Added `GET /activity-signals` and `GET /world-map`. | These endpoints establish a backend-owned activity/world layer so future UI work does not have to re-derive everything locally. |
+| Gate local writes with `EXPEDITION_HQ_ALLOW_WRITE_EVENTS`. | Added API enforcement for event, XP claim, proposal creation, and proposal decision writes. Added tests. | The environment config now means what it says. This tightens compliance with the local/read-only posture. |
+| Consume dashboard refresh config. | Added `GET /dashboard-config`; the frontend polls using `refresh_seconds` and shows last observed time. | This makes the observatory feel more alive while still staying read-only toward external systems. |
+| Reframe Proposal Desk as secondary planning. | UI and docs now use "Planning Bureau" language for the proposal surface. | The feature remains useful, but the wording moves it away from a control desk and toward agent suggestions/planning records. |
+| Show assigned specialists visually. | `ExpeditionCard` now renders assigned agents as tokens and shows the latest expedition report. | Expeditions now connect visibly to participants, not just raw agent IDs. |
+| Show field-report evidence/artifact refs. | `FieldReportCard` now displays report path, evidence refs, and artifact refs when present. | This starts turning the ledger into inspectable history instead of pure XP accounting. |
+| Improve seed validation. | `scripts/validate_seed.py` now checks agent-room references, route-edge room references, and expedition assigned-agent references. | The new world model needs relationship checks or it will quietly drift. |
+| Update local command ergonomics. | README, `package.json`, and bootstrap scripts now prefer venv Python, `npm.cmd`, and local pytest basetemp. | The audited verification found Windows command shims were brittle. The repo now documents and scripts the commands that actually worked. |
+| Update hook/skill safety examples. | OpenClaw ingest example now includes evidence refs; field-report prompt now asks for evidence and XP inputs instead of `suggested_xp`. | The API owns XP calculation, and nonzero work should point to reviewable evidence. |
+| Clarify product direction. | `AGENTS.md` now says to prefer environmental state, routes, artifacts, and activity trails over another card grid or scoreboard. | This keeps future work aligned with the thesis at the project instruction level. |
+
+### Partially Changed
+
+| Recommendation | What changed | What remains |
+|---|---|---|
+| Build a data-driven HQ world model. | Rooms and route edges are now real seed/API/UI data. | Missions, assignments, state snapshots, discoveries, and achievement unlock tables are still not implemented. |
+| Add activity-state derivation. | Latest event, activity reason, last observed time, and route/room context are now derived. | There is no persisted `agent_state_snapshots` table yet, so historical movement over time is still reconstructed from events. |
+| Turn artifacts and field reports into inspectable history. | Field report cards now surface report/evidence/artifact refs. | There are no artifact preview cards, redaction levels, or artifact evidence tables yet. |
+| Consolidate schemas and validation. | Shared TS/schema files now include rooms and route edges, and seed validation checks relationships. | The JSON schema is still not used as the validation engine for every seed file. Frontend/backend/shared type drift is reduced, not eliminated. |
+| Rebalance gamification away from pure scoreboard. | UI language and agent cards now emphasize current activity and evidence more. | XP is still prominent. A true season journey, discovery log, and ecosystem-growth view remain future work. |
+
+### Not Changed Yet
+
+| Recommendation | Reason deferred |
+|---|---|
+| Add full mission/task tables. | This needs product design, migration decisions, and UI treatment. Adding a shallow table now would create another disconnected record type. |
+| Add persisted agent state snapshots and movement history. | The current event ledger can support derived activity. Persistent movement history should wait until the system has a clear event-to-state transition policy. |
+| Add achievement unlock records. | Milestones are still manually seeded. Unlock records should be added with evidence refs and display rules together, not as empty schema first. |
+| Add redaction levels to artifacts and memory stores. | Important, but it touches archive policy and UI display rules. It should be done as a focused safety pass. |
+| Add executable browser/e2e tests. | Backend tests and a manual browser smoke were done. A real Playwright suite is useful, but setting it up cleanly is a separate testing task. |
+| Remove or repurpose `EventRow`. | It is unused but harmless. Removing it was lower value than implementing the world-model path. |
+| Add HTML metadata/theme color. | Low impact compared with the ecosystem-model changes. |
+| Pin dependency versions. | Useful for stability, but not directly tied to the product thesis and could create dependency churn. |
+
+### Verification After Changes
+
+- `.\.venv\Scripts\python.exe scripts\validate_seed.py` passed.
+- `.\.venv\Scripts\python.exe -m pytest apps\api\tests --basetemp runtime\pytest-implementation-temp` passed: 26 tests.
+- `npm.cmd run build` passed.
+- Browser smoke at `http://127.0.0.1:5173/` confirmed Planning Bureau, Staging Area, Signal Desk, route-edge text, and last-observed status rendered with no API error.
+
+### Updated Judgment
+
+The project moved meaningfully closer to the thesis, but it is still not finished. The biggest improvement is that HQ rooms and routes are now data-backed ecosystem objects rather than hard-coded presentation. The biggest remaining gap is time: agents still do not have a durable state history, mission trail, or achievement unlock history. Those are the next changes that would make the system feel less like a dashboard and more like a living observatory.
+
 ## Long-Term Evolution Path
 
 Phase 1: Stabilize the observatory.
@@ -369,3 +425,55 @@ Phase 4: Add governed semi-autonomy.
 - Controls, if ever added, should be explicit, gated, auditable, and visually distinct from the ambient observatory.
 
 Final judgment: this project is not off-track. It is a good foundation. The danger is building more conventional dashboard machinery because it is easy and measurable. The better next move is to make the HQ itself the product: rooms, trails, missions, artifacts, and little specialists whose work is visible without reading a log.
+
+## Proposal Council Redesign: 2026-05-29
+
+The old Planning Bureau was locally safe, but it was still shaped like one desk making one decision. The redesign changes the product direction to a council of specialists reviewing expedition plans.
+
+First evaluation: this is a better fit for the thesis. It keeps the dashboard local-first and read-only toward external systems, but it lets agents behave like specialists with visible judgment. Support, oppose, and abstain are easy to understand. Abstain is especially important because it records honest uncertainty instead of fake confidence.
+
+Devil's advocate evaluation: the feature can still become a corporate approval board if the UI over-focuses on counts, verdicts, and XP. The safe direction is to show the votes as field advice around a plan, not as a managerial gate.
+
+Substantial difference: both evaluations support the council design, but the second one warns that the product should keep the council secondary to the expedition world. The next UI pass should make proposal participation appear as specialist activity trails and field notes, not just another analytics panel.
+
+Implemented design anchors:
+- Proposals carry local broadcast status and eligible specialist lists.
+- Council votes support `support`, `oppose`, and `abstain`.
+- Each vote stores confidence, simple reasoning, expected benefit, expected failure mode, and risk notes.
+- Peer-review XP is separate from active-time, party-size, and work-contribution XP.
+- Useful assessments can receive small peer-review XP after outcome is known.
+- Wrong votes and abstains are not penalized.
+- External systems such as Copilot, Claude, Perplexity, Gemini, DeepSeek, Kimi, and Manus are candidate visiting specialists until profiled.
+
+## Homepage Concept Preferences: 2026-05-30
+
+This section records user feedback from generated homepage concept exploration. Treat it as product direction for the next HQ/homepage design pass.
+
+Confirmed direction:
+- Cute elf-like and bean-like helpers are preferred. The product should feel like clever little helpers doing work inside the computer.
+- The best homepage shape is a game-like hubworld with rooms, bridges, agents, and recent handoffs, not a spreadsheet, KPI board, or technical system map.
+- The screen should be friendly, colorful, cute, and readable. Avoid grim-dark styling.
+- Genre explorations worth keeping alive: magical computer workshop, shire-style helper village, space base with observation monitors, toy/train/mailroom dispatch systems, and bridge-focused hubworld maps.
+
+Clarity requirements:
+- The user must be able to tell who is doing what at a glance. Helpers need consistent portraits, roles, room placement, and short activity labels.
+- Any `Needs a look` graphic should match the same helper visible in the hubworld, and clicking it should lead to the relevant review, decision, or input surface.
+- `Saved stuff` is not precise enough. Use `Work archives` for records, reports, artifacts, and historical work.
+- The central hub must be obvious. It should be named as a work-sorting place, such as `Work Board`, `Town Square`, `Dispatch Board`, or `Mission Board`.
+- Rooms should feel like spaces that multiple agents can occupy together, not single-use cards.
+- `Recent handoffs` is a strong pattern when shown as a compact chain of helper portraits passing work.
+- Bridges are a strong metaphor when they visibly carry notes, questions, reports, ideas, or finished work. Avoid vague `Paths` language.
+
+Learning surface:
+- The dashboard should teach basic concepts through hover/tap tooltips, small nested explanations, and repeated symbols.
+- A guide, legend, or manual tab is useful only if it explains symbols that visibly appear in the hubworld.
+- The product may eventually need a simple car-manual-style primer, but the homepage itself should remain intuitive enough to use without reading homework first.
+
+Naming and state preferences:
+- Avoid `awake` as a primary state; its meaning is unclear.
+- Prefer plain labels such as `Doing now`, `waiting for you`, `resting`, `building`, `saving`, `checking`, `carrying note`, `questions`, `reports`, and `finished work`.
+- Do not show `All local` as a prominent normal-state badge. If the system is ever not local or could expose data, surface that as a warning with consequences and suggested remediation.
+
+Devil's advocate:
+- Cute theme alone is not enough. If symbols do not repeat, helper portraits do not match alerts, or labels remain vague, the UI becomes charming but confusing.
+- The right target is playful observability: game-like enough to enjoy watching, but data-backed enough that every helper, room, handoff, archive item, and review alert reflects real project state.

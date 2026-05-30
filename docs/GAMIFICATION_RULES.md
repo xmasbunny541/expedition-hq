@@ -57,6 +57,8 @@ They exist to collect subjective calibration data without contaminating the scor
 
 Milestones are badges and trophies during Season 0.x. They should not create large arbitrary XP rewards, and they are not mixed into base XP or multiplier XP.
 
+Seasonal resets must not relock, delete, rewrite, or reclassify milestones, badges, achievements, expedition records, or field reports. For now seasonal updates affect XP display/state only, and Windows Task Scheduler is the source of truth for executing the reset.
+
 ## Reward real progress only
 
 XP should represent meaningful contribution time:
@@ -68,3 +70,17 @@ XP should represent meaningful contribution time:
 - safety, review, redaction, or read-only posture improves
 
 Do not award XP for random pings, passive uptime, opening files, fake activity, empty summaries, or repeated no-op status checks.
+
+## Peer-review XP
+
+Peer-review XP is a separate council-learning track. It is not active-time XP, not party-size XP, and not work-contribution XP.
+
+- Award it only after a proposal outcome is known.
+- Keep awards small during Season 0.x; the current cap is `0.25` XP per useful assessment.
+- Award it for useful reasoning, useful warnings, useful benefit predictions, useful failure-mode predictions, or a useful abstain.
+- Do not penalize incorrect votes.
+- Do not penalize abstain.
+- Do not include peer-review XP in `base_xp`, `awarded_xp`, season summaries, or milestone XP.
+- Agent status should foreground current-season peer-review XP. All-time peer-review XP should remain available as nested history for technical review and project memory.
+
+Simple version: this is a tiny thank-you for good advice, not a work score.

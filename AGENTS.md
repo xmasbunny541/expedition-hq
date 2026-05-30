@@ -31,6 +31,8 @@ Store neutral operational data:
 
 Render those through the Expedition HQ theme in the UI.
 
+When the UI has to choose, prefer environmental state, room placement, routes, artifacts, and activity trails over another card grid or scoreboard.
+
 ## Safety boundaries
 
 Do not implement live control actions in the MVP:

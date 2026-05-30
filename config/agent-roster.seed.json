@@ -465,12 +465,13 @@
     "room": "staging-area",
     "current_assignment": null,
     "summary": "Schedule recurring or one-shot OpenClaw jobs.",
-    "decision_mode": "Automation only unless a scheduled agent turn runs.",
+    "decision_mode": "Audit/report automation only for Expedition HQ season resets; Windows Task Scheduler remains the execution source of truth.",
     "needs_august_review": "Yes before creating recurring external-facing automations.",
     "logs_history": true,
     "allowed_as_little_guy": false,
     "capabilities": [
       "Schedule recurring or one-shot OpenClaw jobs.",
+      "Audit and report Expedition HQ reset scheduler status without executing the reset.",
       "Wake agents through main, isolated, current, or session-bound targets.",
       "Support proactive checks when configured."
     ],
@@ -576,5 +577,278 @@
       "OpenClaw status APIs",
       "bridge status APIs"
     ]
+  },
+  {
+    "id": "copilot-visiting-specialist",
+    "display_name": "Copilot Visiting Specialist",
+    "visual_name": "The Office Scout",
+    "source_classification": "Candidate visiting specialist",
+    "visual_class": "candidate_specialist",
+    "status": "candidate-unprofiled",
+    "ui_state": "blueprint",
+    "visual_archetype": "Notebook scout",
+    "room": "staging-area",
+    "current_assignment": "external-candidate-profiling",
+    "summary": "Future Copilot-based candidate whose free-tier planning and review value can be profiled before trust.",
+    "decision_mode": "Advisory only until local profile records prove useful, safe assessments.",
+    "needs_august_review": "Yes before any trusted-agent promotion, external send, or sensitive context use.",
+    "logs_history": "not yet",
+    "allowed_as_little_guy": true,
+    "capabilities": [
+      "Candidate proposal review through Copilot access when manually provided.",
+      "Free-tier capability profiling before trusted HQ status.",
+      "Can be treated as a visiting specialist or minimum-wage candidate until evidence improves."
+    ],
+    "triggers": [
+      "Manual candidate profiling session.",
+      "Future redacted proposal review import."
+    ],
+    "tools_or_systems": [
+      "Copilot",
+      "manual redacted prompts",
+      "local profile notes"
+    ],
+    "candidate_profile": {
+      "provider": "Copilot",
+      "visiting_specialist": true,
+      "free_tier_capabilities_profiled": false,
+      "trust_level": "untrusted_candidate",
+      "quality_band": "unprofiled_or_minimum_wage_candidate",
+      "promotion_gate": "Promote only after useful, safe, redacted peer-review assessments are recorded locally."
+    }
+  },
+  {
+    "id": "claude-visiting-specialist",
+    "display_name": "Claude Visiting Specialist",
+    "visual_name": "The Careful Scribe",
+    "source_classification": "Candidate visiting specialist",
+    "visual_class": "candidate_specialist",
+    "status": "candidate-unprofiled",
+    "ui_state": "blueprint",
+    "visual_archetype": "Careful scribe",
+    "room": "staging-area",
+    "current_assignment": "external-candidate-profiling",
+    "summary": "Future Claude-based candidate whose free-tier reasoning and review limits can be profiled locally.",
+    "decision_mode": "Advisory only; no trusted memory, secrets, or external actions.",
+    "needs_august_review": "Yes before trusted HQ status or sensitive context use.",
+    "logs_history": "not yet",
+    "allowed_as_little_guy": true,
+    "capabilities": [
+      "Candidate proposal review through Claude access when manually provided.",
+      "Free-tier reasoning profile before any trusted role.",
+      "Can abstain when context is too thin."
+    ],
+    "triggers": [
+      "Manual candidate profiling session.",
+      "Future redacted proposal review import."
+    ],
+    "tools_or_systems": [
+      "Claude",
+      "manual redacted prompts",
+      "local profile notes"
+    ],
+    "candidate_profile": {
+      "provider": "Claude",
+      "visiting_specialist": true,
+      "free_tier_capabilities_profiled": false,
+      "trust_level": "untrusted_candidate",
+      "quality_band": "unprofiled_or_minimum_wage_candidate",
+      "promotion_gate": "Promote only after useful, safe, redacted peer-review assessments are recorded locally."
+    }
+  },
+  {
+    "id": "perplexity-visiting-specialist",
+    "display_name": "Perplexity Visiting Specialist",
+    "visual_name": "The Trail Finder",
+    "source_classification": "Candidate visiting specialist",
+    "visual_class": "candidate_specialist",
+    "status": "candidate-unprofiled",
+    "ui_state": "blueprint",
+    "visual_archetype": "Trail finder",
+    "room": "staging-area",
+    "current_assignment": "external-candidate-profiling",
+    "summary": "Future Perplexity-based candidate for source-aware scouting and proposal review after free-tier profiling.",
+    "decision_mode": "Advisory only; source claims must remain reviewable.",
+    "needs_august_review": "Yes before trusted HQ status or any external/context-sensitive use.",
+    "logs_history": "not yet",
+    "allowed_as_little_guy": true,
+    "capabilities": [
+      "Candidate source scouting when manually requested.",
+      "Free-tier capability profiling before trusted HQ status.",
+      "Can flag weak evidence and abstain when citations are not enough."
+    ],
+    "triggers": [
+      "Manual candidate profiling session.",
+      "Future redacted proposal review import."
+    ],
+    "tools_or_systems": [
+      "Perplexity",
+      "manual redacted prompts",
+      "local profile notes"
+    ],
+    "candidate_profile": {
+      "provider": "Perplexity",
+      "visiting_specialist": true,
+      "free_tier_capabilities_profiled": false,
+      "trust_level": "untrusted_candidate",
+      "quality_band": "unprofiled_or_minimum_wage_candidate",
+      "promotion_gate": "Promote only after useful, safe, redacted peer-review assessments are recorded locally."
+    }
+  },
+  {
+    "id": "gemini-visiting-specialist",
+    "display_name": "Gemini Visiting Specialist",
+    "visual_name": "The Wide-Lens Scout",
+    "source_classification": "Candidate visiting specialist",
+    "visual_class": "candidate_specialist",
+    "status": "candidate-unprofiled",
+    "ui_state": "blueprint",
+    "visual_archetype": "Wide-lens scout",
+    "room": "staging-area",
+    "current_assignment": "external-candidate-profiling",
+    "summary": "Future Gemini-based candidate whose multimodal and broad-context value can be profiled before trust.",
+    "decision_mode": "Advisory only until local free-tier profile evidence exists.",
+    "needs_august_review": "Yes before trusted HQ status or sensitive context use.",
+    "logs_history": "not yet",
+    "allowed_as_little_guy": true,
+    "capabilities": [
+      "Candidate proposal review through Gemini access when manually provided.",
+      "Free-tier capability profiling before trusted HQ status.",
+      "Can compare broad options and abstain on missing evidence."
+    ],
+    "triggers": [
+      "Manual candidate profiling session.",
+      "Future redacted proposal review import."
+    ],
+    "tools_or_systems": [
+      "Gemini",
+      "manual redacted prompts",
+      "local profile notes"
+    ],
+    "candidate_profile": {
+      "provider": "Gemini",
+      "visiting_specialist": true,
+      "free_tier_capabilities_profiled": false,
+      "trust_level": "untrusted_candidate",
+      "quality_band": "unprofiled_or_minimum_wage_candidate",
+      "promotion_gate": "Promote only after useful, safe, redacted peer-review assessments are recorded locally."
+    }
+  },
+  {
+    "id": "deepseek-visiting-specialist",
+    "display_name": "DeepSeek Visiting Specialist",
+    "visual_name": "The Deep Drill",
+    "source_classification": "Candidate visiting specialist",
+    "visual_class": "candidate_specialist",
+    "status": "candidate-unprofiled",
+    "ui_state": "blueprint",
+    "visual_archetype": "Deep drill analyst",
+    "room": "staging-area",
+    "current_assignment": "external-candidate-profiling",
+    "summary": "Future DeepSeek-based candidate for low-cost reasoning checks after free-tier profiling.",
+    "decision_mode": "Advisory only; treat output as untrusted until local evidence says otherwise.",
+    "needs_august_review": "Yes before trusted HQ status or sensitive context use.",
+    "logs_history": "not yet",
+    "allowed_as_little_guy": true,
+    "capabilities": [
+      "Candidate proposal review through DeepSeek access when manually provided.",
+      "Low-cost reasoning profile before trusted HQ status.",
+      "Can serve as a minimum-wage candidate if useful but not reliable enough for trust."
+    ],
+    "triggers": [
+      "Manual candidate profiling session.",
+      "Future redacted proposal review import."
+    ],
+    "tools_or_systems": [
+      "DeepSeek",
+      "manual redacted prompts",
+      "local profile notes"
+    ],
+    "candidate_profile": {
+      "provider": "DeepSeek",
+      "visiting_specialist": true,
+      "free_tier_capabilities_profiled": false,
+      "trust_level": "untrusted_candidate",
+      "quality_band": "unprofiled_or_minimum_wage_candidate",
+      "promotion_gate": "Promote only after useful, safe, redacted peer-review assessments are recorded locally."
+    }
+  },
+  {
+    "id": "kimi-visiting-specialist",
+    "display_name": "Kimi Visiting Specialist",
+    "visual_name": "The Long Scroll Reader",
+    "source_classification": "Candidate visiting specialist",
+    "visual_class": "candidate_specialist",
+    "status": "candidate-unprofiled",
+    "ui_state": "blueprint",
+    "visual_archetype": "Long-scroll reader",
+    "room": "staging-area",
+    "current_assignment": "external-candidate-profiling",
+    "summary": "Future Kimi-based candidate for long-context review after free-tier capability profiling.",
+    "decision_mode": "Advisory only; no trusted status until local evidence is available.",
+    "needs_august_review": "Yes before trusted HQ status or sensitive context use.",
+    "logs_history": "not yet",
+    "allowed_as_little_guy": true,
+    "capabilities": [
+      "Candidate long-context proposal review when manually provided.",
+      "Free-tier capability profiling before trusted HQ status.",
+      "Can abstain when the context window or evidence quality is not enough."
+    ],
+    "triggers": [
+      "Manual candidate profiling session.",
+      "Future redacted proposal review import."
+    ],
+    "tools_or_systems": [
+      "Kimi",
+      "manual redacted prompts",
+      "local profile notes"
+    ],
+    "candidate_profile": {
+      "provider": "Kimi",
+      "visiting_specialist": true,
+      "free_tier_capabilities_profiled": false,
+      "trust_level": "untrusted_candidate",
+      "quality_band": "unprofiled_or_minimum_wage_candidate",
+      "promotion_gate": "Promote only after useful, safe, redacted peer-review assessments are recorded locally."
+    }
+  },
+  {
+    "id": "manus-visiting-specialist",
+    "display_name": "Manus Visiting Specialist",
+    "visual_name": "The Task Runner",
+    "source_classification": "Candidate visiting specialist",
+    "visual_class": "candidate_specialist",
+    "status": "candidate-unprofiled",
+    "ui_state": "blueprint",
+    "visual_archetype": "Task runner apprentice",
+    "room": "staging-area",
+    "current_assignment": "external-candidate-profiling",
+    "summary": "Future Manus-based candidate for task execution profiling before it can be trusted around HQ work.",
+    "decision_mode": "Advisory and sandboxed until local profile records prove safe task judgment.",
+    "needs_august_review": "Yes before trusted HQ status, external sends, or sensitive context use.",
+    "logs_history": "not yet",
+    "allowed_as_little_guy": true,
+    "capabilities": [
+      "Candidate task-planning review when manually provided.",
+      "Free-tier capability profiling before trusted HQ status.",
+      "Can remain a minimum-wage candidate if useful only for narrow low-risk checks."
+    ],
+    "triggers": [
+      "Manual candidate profiling session.",
+      "Future redacted proposal review import."
+    ],
+    "tools_or_systems": [
+      "Manus",
+      "manual redacted prompts",
+      "local profile notes"
+    ],
+    "candidate_profile": {
+      "provider": "Manus",
+      "visiting_specialist": true,
+      "free_tier_capabilities_profiled": false,
+      "trust_level": "untrusted_candidate",
+      "quality_band": "unprofiled_or_minimum_wage_candidate",
+      "promotion_gate": "Promote only after useful, safe, redacted peer-review assessments are recorded locally."
+    }
   }
 ]

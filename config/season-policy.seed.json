@@ -1,0 +1,40 @@
+{
+  "season_family": "0.x",
+  "first_season": "0.1",
+  "formula_version": "xp_calibration_v0_1",
+  "xp_mode": "uncapped_calibration",
+  "label": "Season 0.x - Uncapped Calibration XP",
+  "timezone": "America/Los_Angeles",
+  "daily_reset_time": "06:00",
+  "pre_restart_started_at": "2026-05-27T19:55:33-07:00",
+  "initial_restart_at": "2026-05-30T06:00:00-07:00",
+  "reset_mode": "display_current_season_only",
+  "scheduler_source_of_truth": "windows_task_scheduler",
+  "codex_automation_role": "audit_report_only",
+  "affected_domains": [
+    "xp_current_season_display",
+    "xp_season_state"
+  ],
+  "preserve": [
+    "achievements",
+    "milestones",
+    "badges",
+    "expeditions",
+    "events",
+    "field_reports",
+    "proposal_records",
+    "proposal_decision_events",
+    "season_summaries",
+    "artifacts",
+    "routes",
+    "rooms",
+    "agent_roster"
+  ],
+  "notes": [
+    "May 29 is treated as a warm-up calibration day, not a completed daily season.",
+    "Season 0.1 starts fresh at the May 30, 2026 6am local window.",
+    "After that, each daily 6am window advances Season 0.x by one decimal step.",
+    "Windows Task Scheduler is the source of truth for daily reset execution; Codex automation may audit and report scheduler state only.",
+    "Rollover updates XP display/state only; it does not delete, rewrite, relock, or reclassify achievements, milestones, expedition records, historical ledger records, or archive records."
+  ]
+}

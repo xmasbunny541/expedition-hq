@@ -19,8 +19,8 @@ export function ReviewDesk({
     <section className="panel review-panel">
       <div className="section-heading compact-heading">
         <div>
-          <p className="eyebrow">Review Desk</p>
-          <h2>Items Needing Eyes</h2>
+          <p className="eyebrow">Signal Desk</p>
+          <h2>Review Signals</h2>
         </div>
         <span className="review-count">{reviewEvents.length + blockedIncidents.length}</span>
       </div>

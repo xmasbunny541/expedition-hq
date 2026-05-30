@@ -6,7 +6,21 @@ import sqlite3
 from pathlib import Path
 from typing import Any
 
-from .proposals import apply_decision, normalize_proposal, proposal_decision_event
+from .proposals import (
+    apply_decision,
+    apply_implementation_complete,
+    apply_implementation_request,
+    apply_implementation_review,
+    apply_vote,
+    apply_work_start,
+    normalize_proposal,
+    proposal_implementation_brief,
+    proposal_implementation_complete_event,
+    proposal_implementation_request_event,
+    proposal_implementation_review_event,
+    proposal_decision_event,
+    proposal_work_start_event,
+)
 from .xp import aggregate_season_summary, audit_event_claims, normalize_event_xp
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -19,6 +33,8 @@ SEED_TABLES = [
     "milestones",
     "incidents",
     "routes",
+    "rooms",
+    "route_edges",
     "memory_stores",
     "planned_items",
     "artifacts",
@@ -52,6 +68,11 @@ EVENT_COMPAT_COLUMNS = {
     "review_flags_json": "TEXT DEFAULT '[]'",
 }
 PROPOSAL_COMPAT_COLUMNS = {
+    "broadcast_status": "TEXT DEFAULT 'broadcasted'",
+    "broadcasted_at": "TEXT",
+    "eligible_agent_ids_json": "TEXT DEFAULT '[]'",
+    "council_votes_json": "TEXT DEFAULT '[]'",
+    "council_summary_json": "TEXT DEFAULT '{}'",
     "decision_note_provided": "INTEGER DEFAULT 0",
     "dialogue_messages_json": "TEXT DEFAULT '[]'",
 }
@@ -168,6 +189,41 @@ def seed_db(force: bool = False) -> None:
                     (
                         route["id"], route["route"], route["status"],
                         route.get("risk"), json.dumps(route)
+                    )
+                )
+
+        rooms_path = seed_dir / "rooms.seed.json"
+        if rooms_path.exists():
+            for room in load_json(rooms_path):
+                conn.execute(
+                    '''
+                    INSERT OR REPLACE INTO rooms
+                    (id, name, token, tone, role, visual_class, sort_order, raw_json)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    ''',
+                    (
+                        room["id"], room["name"], room["token"], room["tone"],
+                        room.get("role"), room.get("visual_class"),
+                        room.get("sort_order", 0), json.dumps(room)
+                    )
+                )
+
+        route_edges_path = seed_dir / "route-edges.seed.json"
+        if route_edges_path.exists():
+            for edge in load_json(route_edges_path):
+                conn.execute(
+                    '''
+                    INSERT OR REPLACE INTO route_edges
+                    (id, from_node_id, to_node_id, route_type, status, privacy_class,
+                     risk_level, label, related_route_id, summary, raw_json)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ''',
+                    (
+                        edge["id"], edge["from_node_id"], edge["to_node_id"],
+                        edge["route_type"], edge["status"], edge.get("privacy_class"),
+                        edge.get("risk_level"), edge.get("label"),
+                        edge.get("related_route_id"), edge.get("summary"),
+                        json.dumps(edge)
                     )
                 )
 
@@ -372,36 +428,84 @@ def insert_season_summary(conn: sqlite3.Connection, summary: dict[str, Any]) -> 
     )
 
 def insert_proposal(conn: sqlite3.Connection, proposal: dict[str, Any]) -> dict[str, Any]:
-    proposal = normalize_proposal(proposal)
+    proposal = with_proposal_defaults(conn, proposal)
     conn.execute(
         '''
         INSERT INTO proposals
         (proposal_id, xp_season, formula_version, source_agent, proposal_type, title, summary,
          reasoning, estimated_active_minutes, requested_xp_wager, confidence, risk_level,
-         affected_areas_json, acceptance_criteria_json, rollback_plan, status, decision,
+         affected_areas_json, acceptance_criteria_json, rollback_plan, status, broadcast_status,
+         broadcasted_at, eligible_agent_ids_json, council_votes_json, council_summary_json, decision,
          decision_note, decision_note_provided, decided_at, simulated_xp_gain, simulated_xp_loss,
          dialogue_messages_json, created_at, updated_at, raw_json)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''',
         proposal_values(proposal)
     )
     return proposal
 
 def insert_seed_proposal(conn: sqlite3.Connection, proposal: dict[str, Any]) -> dict[str, Any]:
-    proposal = normalize_proposal(proposal)
+    proposal = with_proposal_defaults(conn, proposal)
+    existing_row = conn.execute(
+        "SELECT raw_json FROM proposals WHERE proposal_id = ?",
+        (proposal["proposal_id"],)
+    ).fetchone()
+    if existing_row is not None:
+        existing = with_proposal_defaults(conn, json.loads(existing_row["raw_json"]))
+        merged = merge_seed_proposal_metadata(conn, existing, proposal)
+        if merged != existing:
+            conn.execute(
+                '''
+                UPDATE proposals
+                SET broadcast_status = ?, broadcasted_at = ?, eligible_agent_ids_json = ?,
+                    council_votes_json = ?, council_summary_json = ?, updated_at = ?, raw_json = ?
+                WHERE proposal_id = ?
+                ''',
+                (
+                    merged.get("broadcast_status"), merged.get("broadcasted_at"),
+                    json.dumps(merged.get("eligible_agent_ids", [])),
+                    json.dumps(merged.get("council_votes", [])),
+                    json.dumps(merged.get("council_summary", {})),
+                    merged["updated_at"], json.dumps(merged), merged["proposal_id"]
+                )
+            )
+        return merged
+
     conn.execute(
         '''
         INSERT OR IGNORE INTO proposals
         (proposal_id, xp_season, formula_version, source_agent, proposal_type, title, summary,
          reasoning, estimated_active_minutes, requested_xp_wager, confidence, risk_level,
-         affected_areas_json, acceptance_criteria_json, rollback_plan, status, decision,
+         affected_areas_json, acceptance_criteria_json, rollback_plan, status, broadcast_status,
+         broadcasted_at, eligible_agent_ids_json, council_votes_json, council_summary_json, decision,
          decision_note, decision_note_provided, decided_at, simulated_xp_gain, simulated_xp_loss,
          dialogue_messages_json, created_at, updated_at, raw_json)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''',
         proposal_values(proposal)
     )
     return proposal
+
+def merge_seed_proposal_metadata(
+    conn: sqlite3.Connection,
+    existing: dict[str, Any],
+    seed: dict[str, Any],
+) -> dict[str, Any]:
+    merged = dict(existing)
+    changed = False
+
+    for key in ["broadcast_status", "broadcasted_at", "eligible_agent_ids"]:
+        if not merged.get(key) and seed.get(key):
+            merged[key] = seed[key]
+            changed = True
+
+    if not merged.get("council_votes") and seed.get("council_votes"):
+        merged["council_votes"] = seed["council_votes"]
+        changed = True
+
+    if changed:
+        merged = with_proposal_defaults(conn, merged)
+    return merged
 
 def proposal_values(proposal: dict[str, Any]) -> tuple[Any, ...]:
     return (
@@ -410,7 +514,10 @@ def proposal_values(proposal: dict[str, Any]) -> tuple[Any, ...]:
         proposal["summary"], proposal["reasoning"], proposal["estimated_active_minutes"],
         proposal["requested_xp_wager"], proposal["confidence"], proposal["risk_level"],
         json.dumps(proposal["affected_areas"]), json.dumps(proposal["acceptance_criteria"]),
-        proposal.get("rollback_plan"), proposal["status"], proposal.get("decision"),
+        proposal.get("rollback_plan"), proposal["status"], proposal.get("broadcast_status"),
+        proposal.get("broadcasted_at"), json.dumps(proposal.get("eligible_agent_ids", [])),
+        json.dumps(proposal.get("council_votes", [])), json.dumps(proposal.get("council_summary", {})),
+        proposal.get("decision"),
         proposal.get("decision_note"), 1 if proposal.get("decision_note_provided") else 0,
         proposal.get("decided_at"), proposal["simulated_xp_gain"], proposal["simulated_xp_loss"],
         json.dumps(proposal.get("dialogue_messages", [])), proposal["created_at"],
@@ -427,7 +534,31 @@ def proposal_by_id(proposal_id: str) -> dict[str, Any] | None:
             "SELECT raw_json FROM proposals WHERE proposal_id = ?",
             (proposal_id,)
         ).fetchone()
-    return json.loads(row["raw_json"]) if row else None
+        return with_proposal_defaults(conn, json.loads(row["raw_json"])) if row else None
+
+def proposal_rows() -> list[dict[str, Any]]:
+    with connect() as conn:
+        return [
+            with_proposal_defaults(conn, json.loads(row["raw_json"]))
+            for row in conn.execute("SELECT raw_json FROM proposals")
+        ]
+
+def eligible_proposal_agent_ids(conn: sqlite3.Connection, source_agent: str | None = None) -> list[str]:
+    eligible: list[str] = []
+    for row in conn.execute("SELECT id, allowed_as_little_guy, raw_json FROM agents"):
+        raw = json.loads(row["raw_json"])
+        agent_id = str(raw.get("id") or row["id"])
+        if source_agent and agent_id == source_agent:
+            continue
+        if raw.get("allowed_as_little_guy"):
+            eligible.append(agent_id)
+    return sorted(eligible)
+
+def with_proposal_defaults(conn: sqlite3.Connection, proposal: dict[str, Any]) -> dict[str, Any]:
+    out = dict(proposal)
+    if not out.get("eligible_agent_ids"):
+        out["eligible_agent_ids"] = eligible_proposal_agent_ids(conn, out.get("source_agent"))
+    return normalize_proposal(out)
 
 def update_proposal_decision(
     conn: sqlite3.Connection,
@@ -442,12 +573,14 @@ def update_proposal_decision(
     if row is None:
         return None
 
-    proposal = apply_decision(json.loads(row["raw_json"]), decision, decision_note)
+    proposal = apply_decision(with_proposal_defaults(conn, json.loads(row["raw_json"])), decision, decision_note)
     conn.execute(
         '''
         UPDATE proposals
         SET status = ?, decision = ?, decision_note = ?, decided_at = ?,
             decision_note_provided = ?, simulated_xp_gain = ?, simulated_xp_loss = ?,
+            broadcast_status = ?, broadcasted_at = ?, eligible_agent_ids_json = ?,
+            council_votes_json = ?, council_summary_json = ?,
             dialogue_messages_json = ?, updated_at = ?, raw_json = ?
         WHERE proposal_id = ?
         ''',
@@ -455,12 +588,249 @@ def update_proposal_decision(
             proposal["status"], proposal["decision"], proposal["decision_note"],
             proposal["decided_at"], 1 if proposal.get("decision_note_provided") else 0,
             proposal["simulated_xp_gain"], proposal["simulated_xp_loss"],
+            proposal.get("broadcast_status"), proposal.get("broadcasted_at"),
+            json.dumps(proposal.get("eligible_agent_ids", [])),
+            json.dumps(proposal.get("council_votes", [])),
+            json.dumps(proposal.get("council_summary", {})),
             json.dumps(proposal.get("dialogue_messages", [])), proposal["updated_at"],
             json.dumps(proposal), proposal_id
         )
     )
     insert_event(conn, proposal_decision_event(proposal))
     return proposal
+
+def update_proposal_vote(
+    conn: sqlite3.Connection,
+    proposal_id: str,
+    vote: dict[str, Any],
+) -> dict[str, Any] | None:
+    row = conn.execute(
+        "SELECT raw_json FROM proposals WHERE proposal_id = ?",
+        (proposal_id,)
+    ).fetchone()
+    if row is None:
+        return None
+
+    proposal = apply_vote(with_proposal_defaults(conn, json.loads(row["raw_json"])), vote)
+    conn.execute(
+        '''
+        UPDATE proposals
+        SET broadcast_status = ?, broadcasted_at = ?, eligible_agent_ids_json = ?,
+            council_votes_json = ?, council_summary_json = ?, updated_at = ?, raw_json = ?
+        WHERE proposal_id = ?
+        ''',
+        (
+            proposal.get("broadcast_status"), proposal.get("broadcasted_at"),
+            json.dumps(proposal.get("eligible_agent_ids", [])),
+            json.dumps(proposal.get("council_votes", [])),
+            json.dumps(proposal.get("council_summary", {})),
+            proposal["updated_at"], json.dumps(proposal), proposal_id
+        )
+    )
+    return proposal
+
+def update_proposal_work_start(
+    conn: sqlite3.Connection,
+    proposal_id: str,
+    start_note: str | None,
+) -> dict[str, Any] | None:
+    row = conn.execute(
+        "SELECT raw_json FROM proposals WHERE proposal_id = ?",
+        (proposal_id,)
+    ).fetchone()
+    if row is None:
+        return None
+
+    existing = with_proposal_defaults(conn, json.loads(row["raw_json"]))
+    already_started = existing.get("status") == "in_progress" and existing.get("work_started_at")
+    proposal = apply_work_start(existing, start_note)
+    conn.execute(
+        '''
+        UPDATE proposals
+        SET status = ?, dialogue_messages_json = ?, updated_at = ?, raw_json = ?
+        WHERE proposal_id = ?
+        ''',
+        (
+            proposal["status"],
+            json.dumps(proposal.get("dialogue_messages", [])),
+            proposal["updated_at"],
+            json.dumps(proposal),
+            proposal_id,
+        )
+    )
+    if not already_started:
+        insert_event(conn, proposal_work_start_event(proposal))
+    return proposal
+
+def update_proposal_implementation_request(
+    conn: sqlite3.Connection,
+    proposal_id: str,
+    request_note: str | None,
+) -> dict[str, Any] | None:
+    row = conn.execute(
+        "SELECT raw_json FROM proposals WHERE proposal_id = ?",
+        (proposal_id,)
+    ).fetchone()
+    if row is None:
+        return None
+
+    existing = with_proposal_defaults(conn, json.loads(row["raw_json"]))
+    already_requested = existing.get("status") == "implementation_requested" and existing.get("implementation_requested_at")
+    proposal = apply_implementation_request(existing, request_note)
+    if not proposal.get("implementation_brief_path"):
+        proposal["implementation_brief_path"] = str(write_implementation_brief(proposal))
+    route_plan = proposal.get("implementation_route_plan") or {}
+    if not route_plan.get("dispatch_job_path"):
+        route_plan["dispatch_job_path"] = str(write_implementation_dispatch_job(proposal))
+        proposal["implementation_route_plan"] = route_plan
+        write_implementation_dispatch_job(proposal)
+        write_implementation_brief(proposal)
+    conn.execute(
+        '''
+        UPDATE proposals
+        SET status = ?, dialogue_messages_json = ?, updated_at = ?, raw_json = ?
+        WHERE proposal_id = ?
+        ''',
+        (
+            proposal["status"],
+            json.dumps(proposal.get("dialogue_messages", [])),
+            proposal["updated_at"],
+            json.dumps(proposal),
+            proposal_id,
+        )
+    )
+    if not already_requested:
+        insert_event(conn, proposal_implementation_request_event(proposal))
+    return proposal
+
+def update_proposal_implementation_complete(
+    conn: sqlite3.Connection,
+    proposal_id: str,
+    completion_note: str | None,
+    evidence_refs: list[str] | None,
+) -> dict[str, Any] | None:
+    row = conn.execute(
+        "SELECT raw_json FROM proposals WHERE proposal_id = ?",
+        (proposal_id,)
+    ).fetchone()
+    if row is None:
+        return None
+
+    proposal = apply_implementation_complete(
+        with_proposal_defaults(conn, json.loads(row["raw_json"])),
+        completion_note,
+        evidence_refs,
+    )
+    conn.execute(
+        '''
+        UPDATE proposals
+        SET status = ?, dialogue_messages_json = ?, updated_at = ?, raw_json = ?
+        WHERE proposal_id = ?
+        ''',
+        (
+            proposal["status"],
+            json.dumps(proposal.get("dialogue_messages", [])),
+            proposal["updated_at"],
+            json.dumps(proposal),
+            proposal_id,
+        )
+    )
+    insert_event(conn, proposal_implementation_complete_event(proposal))
+    return proposal
+
+def update_proposal_implementation_review(
+    conn: sqlite3.Connection,
+    proposal_id: str,
+    review_decision: str,
+    review_note: str | None,
+    reviewer_id: str | None,
+) -> dict[str, Any] | None:
+    row = conn.execute(
+        "SELECT raw_json FROM proposals WHERE proposal_id = ?",
+        (proposal_id,)
+    ).fetchone()
+    if row is None:
+        return None
+
+    proposal = apply_implementation_review(
+        with_proposal_defaults(conn, json.loads(row["raw_json"])),
+        review_decision,
+        review_note,
+        reviewer_id,
+    )
+    conn.execute(
+        '''
+        UPDATE proposals
+        SET status = ?, simulated_xp_gain = ?, simulated_xp_loss = ?,
+            dialogue_messages_json = ?, updated_at = ?, raw_json = ?
+        WHERE proposal_id = ?
+        ''',
+        (
+            proposal["status"],
+            proposal["simulated_xp_gain"],
+            proposal["simulated_xp_loss"],
+            json.dumps(proposal.get("dialogue_messages", [])),
+            proposal["updated_at"],
+            json.dumps(proposal),
+            proposal_id,
+        )
+    )
+    insert_event(conn, proposal_implementation_review_event(proposal, review_decision))
+    return proposal
+
+def implementation_brief_dir() -> Path:
+    configured = os.environ.get("EXPEDITION_HQ_IMPLEMENTATION_BRIEF_DIR", "").strip()
+    return Path(configured) if configured else ROOT / "runtime" / "proposal-implementation-briefs"
+
+def implementation_dispatch_dir() -> Path:
+    configured = os.environ.get("EXPEDITION_HQ_IMPLEMENTATION_DISPATCH_DIR", "").strip()
+    return Path(configured) if configured else ROOT / "runtime" / "proposal-dispatch-jobs"
+
+def write_implementation_brief(proposal: dict[str, Any]) -> Path:
+    out_dir = implementation_brief_dir()
+    out_dir.mkdir(parents=True, exist_ok=True)
+    safe_id = "".join(ch if ch.isalnum() or ch in {"-", "_"} else "-" for ch in proposal["proposal_id"])
+    safe_session = "".join(
+        ch if ch.isalnum() or ch in {"-", "_"} else "-"
+        for ch in str(proposal.get("implementation_session_id") or "implementation")
+    )
+    path = out_dir / f"{safe_id}-{safe_session}.md"
+    path.write_text(proposal_implementation_brief(proposal), encoding="utf-8")
+    return path
+
+def write_implementation_dispatch_job(proposal: dict[str, Any]) -> Path:
+    out_dir = implementation_dispatch_dir()
+    out_dir.mkdir(parents=True, exist_ok=True)
+    safe_id = "".join(ch if ch.isalnum() or ch in {"-", "_"} else "-" for ch in proposal["proposal_id"])
+    safe_session = "".join(
+        ch if ch.isalnum() or ch in {"-", "_"} else "-"
+        for ch in str(proposal.get("implementation_session_id") or "implementation")
+    )
+    path = out_dir / f"{safe_id}-{safe_session}.json"
+    route_plan = proposal.get("implementation_route_plan") or {}
+    payload = {
+        "job_type": "proposal_implementation",
+        "proposal_id": proposal.get("proposal_id"),
+        "proposal_title": proposal.get("title"),
+        "implementation_session_id": proposal.get("implementation_session_id"),
+        "authorized_at": proposal.get("implementation_requested_at"),
+        "authority_source": route_plan.get("authority_source") or "implement_proposal",
+        "autonomy_scope": route_plan.get("autonomy_scope") or "proposal_scoped",
+        "dispatch_status": proposal.get("implementation_dispatch_status") or route_plan.get("dispatch_status"),
+        "implementation_brief_path": proposal.get("implementation_brief_path"),
+        "route_snapshot": route_plan,
+        "proposal_scope": {
+            "affected_areas": proposal.get("affected_areas", []),
+            "acceptance_criteria": proposal.get("acceptance_criteria", []),
+            "rollback_plan": proposal.get("rollback_plan") or "",
+            "risk_level": proposal.get("risk_level"),
+        },
+        "provider_result_refs": route_plan.get("provider_result_refs", []),
+        "skipped_providers": route_plan.get("skipped_providers", []),
+        "evidence_refs": proposal.get("implementation_evidence_refs", []),
+    }
+    path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    return path
 
 def ensure_compatible_schema(conn: sqlite3.Connection) -> None:
     event_columns = {

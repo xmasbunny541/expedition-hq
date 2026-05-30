@@ -1,0 +1,74 @@
+[
+  {
+    "id": "edge-central-comms",
+    "from_node_id": "central-desk",
+    "to_node_id": "comms-wing",
+    "route_type": "command_signal",
+    "status": "active",
+    "privacy_class": "local",
+    "risk_level": "low",
+    "label": "WebChat signal path",
+    "related_route_id": "current-webchat",
+    "summary": "OpenClaw Control/WebChat connects the command desk to the Comms Wing."
+  },
+  {
+    "id": "edge-comms-systems",
+    "from_node_id": "comms-wing",
+    "to_node_id": "systems-deck",
+    "route_type": "gateway_access",
+    "status": "active-temporary",
+    "privacy_class": "public-by-url",
+    "risk_level": "high",
+    "label": "Gateway-direct rope bridge",
+    "related_route_id": "phone-gateway-direct",
+    "summary": "Temporary phone access crosses a public-by-URL Cloudflare route and stays review-sensitive."
+  },
+  {
+    "id": "edge-comms-archive",
+    "from_node_id": "comms-wing",
+    "to_node_id": "archive-vault",
+    "route_type": "governed_hook",
+    "status": "active-test-only",
+    "privacy_class": "test-only",
+    "risk_level": "medium",
+    "label": "Bridge-facing test gate",
+    "related_route_id": "bridge-facing-test",
+    "summary": "Bridge-facing tests can reach governed archive work, but production public MCP remains blocked."
+  },
+  {
+    "id": "edge-engineering-comms",
+    "from_node_id": "engineering-bay",
+    "to_node_id": "comms-wing",
+    "route_type": "artifact_dispatch",
+    "status": "active",
+    "privacy_class": "local",
+    "risk_level": "medium",
+    "label": "Watcher dispatch rail",
+    "related_route_id": "watcher-dispatch",
+    "summary": "The watcher can dispatch transcript-triggered work into headless Codex artifacts."
+  },
+  {
+    "id": "edge-comms-map",
+    "from_node_id": "comms-wing",
+    "to_node_id": "map-room",
+    "route_type": "planned_connector",
+    "status": "planned",
+    "privacy_class": "unapproved-public",
+    "risk_level": "high",
+    "label": "Future MCP courier path",
+    "related_route_id": "future-chatgpt-mcp",
+    "summary": "Future ChatGPT MCP remains a blueprint until ingress, persistence, and exposure posture are approved."
+  },
+  {
+    "id": "edge-systems-map",
+    "from_node_id": "systems-deck",
+    "to_node_id": "map-room",
+    "route_type": "private_dashboard",
+    "status": "candidate-failed",
+    "privacy_class": "private-candidate",
+    "risk_level": "medium",
+    "label": "Tailscale survey trail",
+    "related_route_id": "tailscale-dashboard",
+    "summary": "Tailscale dashboard access is preserved as failed reconnaissance, not current infrastructure."
+  }
+]

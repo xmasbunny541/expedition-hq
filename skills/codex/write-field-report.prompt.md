@@ -13,6 +13,11 @@ Include:
 - risk_level
 - needs_review
 - sentimental_note
-- suggested_xp
+- active_minutes
+- evidence_refs
+- scoring_multipliers
+- shadow_multipliers
+
+The API computes final XP. Do not invent `base_xp`, `awarded_xp`, or `total_multiplier_raw`.
 
 Keep it factual. Do not invent success.

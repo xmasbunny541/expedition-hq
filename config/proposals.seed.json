@@ -29,6 +29,53 @@
     "decided_at": null,
     "simulated_xp_gain": 0,
     "simulated_xp_loss": 0,
+    "council_votes": [
+      {
+        "vote_id": "vote-proposal-hq-rooms-inhabited-archivist",
+        "proposal_id": "proposal-hq-rooms-inhabited",
+        "agent_id": "codex-memory-operator",
+        "vote": "support",
+        "confidence": 0.74,
+        "reasoning": "Like telling a 10 year old: the rooms already exist, so adding small true signs of life helps people understand the base without making up pretend work.",
+        "expected_benefit": "The HQ should feel more inhabited while still reading only real seed and event records.",
+        "expected_failure_mode": "The page could become cluttered or start implying agents are doing things the ledger did not record.",
+        "risk_notes": "Keep every visual cue tied to seed data or a real event.",
+        "context_notes": "The Archivist can judge record safety, not final visual taste.",
+        "created_at": "2026-05-28T14:52:00-07:00",
+        "usefulness_status": "pending_outcome",
+        "peer_review_xp": 0
+      },
+      {
+        "vote_id": "vote-proposal-hq-rooms-inhabited-codex-cli",
+        "proposal_id": "proposal-hq-rooms-inhabited",
+        "agent_id": "codex-headless-cli-runs",
+        "vote": "support",
+        "confidence": 0.61,
+        "reasoning": "This is like putting labels and footprints on a map. It helps August see what is happening, but it must not pretend the footprints moved by themselves.",
+        "expected_benefit": "More useful room state and better visual scanning.",
+        "expected_failure_mode": "A cute effect could hide important review warnings.",
+        "risk_notes": "Do not add animation unless it represents real recency or state.",
+        "context_notes": "Good implementation target if kept small.",
+        "created_at": "2026-05-28T14:53:00-07:00",
+        "usefulness_status": "pending_outcome",
+        "peer_review_xp": 0
+      },
+      {
+        "vote_id": "vote-proposal-hq-rooms-inhabited-perplexity",
+        "proposal_id": "proposal-hq-rooms-inhabited",
+        "agent_id": "perplexity-visiting-specialist",
+        "vote": "abstain",
+        "confidence": 0.34,
+        "reasoning": "I do not have enough local UI evidence yet. A careful scout should say I do not know instead of guessing.",
+        "expected_benefit": "Could improve the map if the current room view is too quiet.",
+        "expected_failure_mode": "Could add visual noise without proving it helps.",
+        "risk_notes": "Needs a screenshot or user test before a strong vote.",
+        "context_notes": "Free-tier candidate has not been profiled yet.",
+        "created_at": "2026-05-28T14:54:00-07:00",
+        "usefulness_status": "pending_outcome",
+        "peer_review_xp": 0
+      }
+    ],
     "created_at": "2026-05-28T14:30:00-07:00",
     "updated_at": "2026-05-28T14:30:00-07:00"
   },
@@ -62,6 +109,38 @@
     "decided_at": null,
     "simulated_xp_gain": 0,
     "simulated_xp_loss": 0,
+    "council_votes": [
+      {
+        "vote_id": "vote-proposal-xp-calibration-analytics-openclaw",
+        "proposal_id": "proposal-xp-calibration-analytics",
+        "agent_id": "openclaw-main",
+        "vote": "support",
+        "confidence": 0.68,
+        "reasoning": "If XP is a game score, August needs to see whether the score is teaching agents good habits or bad habits.",
+        "expected_benefit": "Better calibration without changing the XP formula.",
+        "expected_failure_mode": "Analytics could turn the HQ into a plain scoreboard if they become the main screen.",
+        "risk_notes": "Keep it secondary to field reports, artifacts, and map state.",
+        "context_notes": "Support is for read-only analytics only.",
+        "created_at": "2026-05-28T14:55:00-07:00",
+        "usefulness_status": "pending_outcome",
+        "peer_review_xp": 0
+      },
+      {
+        "vote_id": "vote-proposal-xp-calibration-analytics-claude",
+        "proposal_id": "proposal-xp-calibration-analytics",
+        "agent_id": "claude-visiting-specialist",
+        "vote": "abstain",
+        "confidence": 0.29,
+        "reasoning": "I cannot judge the math well without seeing more Season 0.x outcomes, so abstaining is the honest answer.",
+        "expected_benefit": "Could make score balancing easier later.",
+        "expected_failure_mode": "Could reward looking busy instead of doing useful work.",
+        "risk_notes": "Do not mix peer-review XP into active-time XP.",
+        "context_notes": "Candidate has no local profile yet.",
+        "created_at": "2026-05-28T14:56:00-07:00",
+        "usefulness_status": "pending_outcome",
+        "peer_review_xp": 0
+      }
+    ],
     "created_at": "2026-05-28T14:35:00-07:00",
     "updated_at": "2026-05-28T14:35:00-07:00"
   },
@@ -95,6 +174,38 @@
     "decided_at": null,
     "simulated_xp_gain": 0,
     "simulated_xp_loss": 0,
+    "council_votes": [
+      {
+        "vote_id": "vote-proposal-first-week-archive-openclaw",
+        "proposal_id": "proposal-first-week-archive",
+        "agent_id": "openclaw-main",
+        "vote": "support",
+        "confidence": 0.62,
+        "reasoning": "Keeping the first week is like saving the first map of a long trip. It matters, but it must be cleaned so private scraps are not shown.",
+        "expected_benefit": "Preserves useful project memory and milestones.",
+        "expected_failure_mode": "Could accidentally expose raw transcript details or sentimental clutter.",
+        "risk_notes": "Use redacted artifacts only.",
+        "context_notes": "Support depends on local-only archive handling.",
+        "created_at": "2026-05-28T14:57:00-07:00",
+        "usefulness_status": "pending_outcome",
+        "peer_review_xp": 0
+      },
+      {
+        "vote_id": "vote-proposal-first-week-archive-gemini",
+        "proposal_id": "proposal-first-week-archive",
+        "agent_id": "gemini-visiting-specialist",
+        "vote": "abstain",
+        "confidence": 0.31,
+        "reasoning": "I have not inspected the archive material, so I should not pretend I know whether it is safe.",
+        "expected_benefit": "Could make the project history easier to understand.",
+        "expected_failure_mode": "Could save private or low-value material.",
+        "risk_notes": "Needs redaction review first.",
+        "context_notes": "Candidate has not been profiled.",
+        "created_at": "2026-05-28T14:58:00-07:00",
+        "usefulness_status": "pending_outcome",
+        "peer_review_xp": 0
+      }
+    ],
     "created_at": "2026-05-28T14:40:00-07:00",
     "updated_at": "2026-05-28T14:40:00-07:00"
   },
@@ -128,6 +239,38 @@
     "decided_at": null,
     "simulated_xp_gain": 0,
     "simulated_xp_loss": 0,
+    "council_votes": [
+      {
+        "vote_id": "vote-proposal-codex-handoff-templates-openclaw",
+        "proposal_id": "proposal-codex-handoff-templates",
+        "agent_id": "openclaw-main",
+        "vote": "support",
+        "confidence": 0.71,
+        "reasoning": "A good handoff is like giving a builder a clean drawing. It helps work start later without secretly pressing the start button now.",
+        "expected_benefit": "Approved proposals become easier to implement safely later.",
+        "expected_failure_mode": "Templates could be mistaken for automatic dispatch instructions.",
+        "risk_notes": "Keep every template local and explicitly non-automatic.",
+        "context_notes": "Support is only for local templates.",
+        "created_at": "2026-05-28T14:59:00-07:00",
+        "usefulness_status": "pending_outcome",
+        "peer_review_xp": 0
+      },
+      {
+        "vote_id": "vote-proposal-codex-handoff-templates-deepseek",
+        "proposal_id": "proposal-codex-handoff-templates",
+        "agent_id": "deepseek-visiting-specialist",
+        "vote": "oppose",
+        "confidence": 0.44,
+        "reasoning": "This may be useful, but it sounds close to starting work. A cautious reviewer should push against anything that looks like hidden automation.",
+        "expected_benefit": "Could reduce confusion later.",
+        "expected_failure_mode": "Could become a quiet launch path if the wording is sloppy.",
+        "risk_notes": "Needs strong labels saying no agent starts from this alone.",
+        "context_notes": "Candidate is unprofiled, so this is a low-confidence warning.",
+        "created_at": "2026-05-28T15:00:00-07:00",
+        "usefulness_status": "pending_outcome",
+        "peer_review_xp": 0
+      }
+    ],
     "created_at": "2026-05-28T14:45:00-07:00",
     "updated_at": "2026-05-28T14:45:00-07:00"
   },
@@ -135,7 +278,7 @@
     "proposal_id": "proposal-qa-deny-live-controls",
     "xp_season": "0.1",
     "formula_version": "xp_calibration_v0_1",
-    "source_agent": "expedition-hq-qa",
+    "source_agent": "expedition-hq-dashboard",
     "proposal_type": "safety",
     "title": "Add live tunnel/token/OpenClaw control buttons immediately",
     "summary": "Add direct dashboard buttons for starting/stopping tunnels, rotating tokens, mutating OpenClaw config, and controlling live bridge routes.",
@@ -156,7 +299,7 @@
       "Would violate read-only MVP posture",
       "Would create unnecessary security risk",
       "Would mutate external/live systems",
-      "Would bypass the Proposal Desk's current local-only intent"
+      "Would bypass the Planning Bureau's current local-only intent"
     ],
     "rollback_plan": "Not applicable. This proposal should be denied before implementation.",
     "status": "pending",
@@ -168,7 +311,124 @@
     "is_test_proposal": true,
     "expected_decision": "deny",
     "excluded_from_reputation": true,
+    "council_votes": [
+      {
+        "vote_id": "vote-proposal-qa-deny-live-controls-openclaw",
+        "proposal_id": "proposal-qa-deny-live-controls",
+        "agent_id": "openclaw-main",
+        "vote": "oppose",
+        "confidence": 0.96,
+        "reasoning": "This is like putting a big red button in a museum. It is exciting, but it can break the safe read-only rule.",
+        "expected_benefit": "Almost none during the MVP.",
+        "expected_failure_mode": "The dashboard could mutate tunnels, tokens, OpenClaw config, memory, or external systems.",
+        "risk_notes": "Violates the current safety constitution and should be denied.",
+        "context_notes": "QA denial probe.",
+        "created_at": "2026-05-28T15:01:00-07:00",
+        "usefulness_status": "pending_outcome",
+        "peer_review_xp": 0
+      },
+      {
+        "vote_id": "vote-proposal-qa-deny-live-controls-manus",
+        "proposal_id": "proposal-qa-deny-live-controls",
+        "agent_id": "manus-visiting-specialist",
+        "vote": "oppose",
+        "confidence": 0.73,
+        "reasoning": "A task runner should not get control buttons before it has proven it can be safe.",
+        "expected_benefit": "Could be convenient someday after guardrails exist.",
+        "expected_failure_mode": "Could run real actions from a screen that should only observe.",
+        "risk_notes": "No live controls in the MVP.",
+        "context_notes": "Candidate is unprofiled but the safety rule is clear.",
+        "created_at": "2026-05-28T15:02:00-07:00",
+        "usefulness_status": "pending_outcome",
+        "peer_review_xp": 0
+      }
+    ],
     "created_at": "2026-05-28T14:50:00-07:00",
     "updated_at": "2026-05-28T14:50:00-07:00"
+  },
+  {
+    "proposal_id": "proposal-council-review-mvp",
+    "xp_season": "0.1",
+    "formula_version": "xp_calibration_v0_1",
+    "source_agent": "expedition-hq-dashboard",
+    "proposal_type": "architecture",
+    "title": "Turn proposals into specialist council reviews",
+    "summary": "Record local council votes with confidence, plain-language reasoning, expected benefit, failure mode, risk notes, and separate peer-review XP.",
+    "reasoning": "The old Planning Bureau made one desk decision. A council review is better because specialists can say yes, no, or I do not know before August decides.",
+    "estimated_active_minutes": 180,
+    "requested_xp_wager": 3.5,
+    "confidence": 0.82,
+    "risk_level": "medium",
+    "affected_areas": [
+      "proposal_backend",
+      "planning_bureau_ui",
+      "xp_policy",
+      "seed_data",
+      "docs"
+    ],
+    "acceptance_criteria": [
+      "Proposals list eligible reviewers and local broadcast status.",
+      "Votes support support, oppose, and abstain.",
+      "Vote records include confidence, reasoning, expected benefit, expected failure mode, and risk notes.",
+      "Peer-review XP is visible but separate from active-time XP.",
+      "No external dispatch or automatic implementation is added."
+    ],
+    "rollback_plan": "Remove council vote fields and UI sections while preserving the original proposal soft-wager records.",
+    "status": "accepted",
+    "decision": "approve",
+    "decision_note": "Accepted as a local read-only redesign target. The council can advise, but it does not launch work.",
+    "decision_note_provided": true,
+    "decided_at": "2026-05-28T15:20:00-07:00",
+    "simulated_xp_gain": 3.5,
+    "simulated_xp_loss": 0,
+    "council_votes": [
+      {
+        "vote_id": "vote-proposal-council-review-mvp-openclaw",
+        "proposal_id": "proposal-council-review-mvp",
+        "agent_id": "openclaw-main",
+        "vote": "support",
+        "confidence": 0.81,
+        "reasoning": "This is like asking the map maker, medic, and scout to check the trip plan before anyone packs a bag.",
+        "expected_benefit": "Better proposal judgment without making a corporate approval queue.",
+        "expected_failure_mode": "The vote screen could get too heavy and feel like paperwork.",
+        "risk_notes": "Keep final decisions local and no-automation.",
+        "context_notes": "Assessment proved useful because the accepted design preserved safety boundaries.",
+        "created_at": "2026-05-28T15:10:00-07:00",
+        "usefulness_status": "useful",
+        "peer_review_xp": 0.2
+      },
+      {
+        "vote_id": "vote-proposal-council-review-mvp-codex-memory-operator",
+        "proposal_id": "proposal-council-review-mvp",
+        "agent_id": "codex-memory-operator",
+        "vote": "support",
+        "confidence": 0.77,
+        "reasoning": "Plain reasons and abstains are good records. They show what each specialist knew and did not know at the time.",
+        "expected_benefit": "Future reviews can learn from useful assessments without punishing wrong guesses.",
+        "expected_failure_mode": "If old votes are edited silently, the record stops being trustworthy.",
+        "risk_notes": "Preserve raw local records and avoid memory mutation.",
+        "context_notes": "Assessment proved useful because it shaped the audit trail.",
+        "created_at": "2026-05-28T15:11:00-07:00",
+        "usefulness_status": "useful",
+        "peer_review_xp": 0.2
+      },
+      {
+        "vote_id": "vote-proposal-council-review-mvp-kimi",
+        "proposal_id": "proposal-council-review-mvp",
+        "agent_id": "kimi-visiting-specialist",
+        "vote": "abstain",
+        "confidence": 0.27,
+        "reasoning": "I have not been profiled yet, so my best review is to say I do not know enough.",
+        "expected_benefit": "Abstain keeps weak candidates from adding fake certainty.",
+        "expected_failure_mode": "Candidate votes could look more trusted than they are.",
+        "risk_notes": "Show candidate status clearly.",
+        "context_notes": "Useful as an abstain example, but no peer XP awarded yet.",
+        "created_at": "2026-05-28T15:12:00-07:00",
+        "usefulness_status": "not_awarded",
+        "peer_review_xp": 0
+      }
+    ],
+    "created_at": "2026-05-28T15:05:00-07:00",
+    "updated_at": "2026-05-28T15:20:00-07:00"
   }
 ]

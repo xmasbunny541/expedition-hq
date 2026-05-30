@@ -9,6 +9,7 @@ __pycache__/
 node_modules/
 dist/
 .vite/
+apps/web/dist/
 
 # Local database/runtime
 *.db
@@ -17,6 +18,7 @@ dist/
 /data/
 /runtime/
 /logs/
+runtime/pytest-*/
 
 # Secrets and live tunnel material
 *.secret.*

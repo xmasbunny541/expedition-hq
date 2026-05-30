@@ -10,6 +10,9 @@
   "active_minutes": 12,
   "xp_confidence": "estimated",
   "party_agents": [],
+  "evidence_refs": [
+    "redacted-openclaw-summary-or-artifact-path"
+  ],
   "scoring_multipliers": {
     "artifact": 1,
     "blocker_break": 1,

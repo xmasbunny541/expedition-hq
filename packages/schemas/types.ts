@@ -45,6 +45,34 @@ export interface AgentSeed {
   capabilities: string[];
   triggers: string[];
   tools_or_systems: string[];
+  candidate_profile?: CandidateProfile;
+}
+
+export interface CandidateProfile {
+  provider?: string;
+  visiting_specialist?: boolean;
+  free_tier_capabilities_profiled?: boolean;
+  trust_level?: string;
+  quality_band?: string;
+  promotion_gate?: string;
+  promotion_level?: string;
+  trust_ladder?: string[];
+  allowed_roles?: string[];
+  restrictions?: string[];
+  safety_flags?: string[];
+  useful_output_count?: number;
+  evidence_refs?: string[];
+  availability_notes?: string;
+  cost_quota_notes?: string;
+  promotion_review_cadence?: string;
+  promotion_recommendation?: string;
+  promotion_dossier?: {
+    pros: string[];
+    cons: string[];
+    recommendation: string;
+    next_gate: string;
+    evidence: string[];
+  };
 }
 
 export interface ExpeditionSeed {
@@ -57,6 +85,29 @@ export interface ExpeditionSeed {
   progress_percent: number;
   assigned_specialists: string[];
   next_objective: string;
+}
+
+export interface RoomSeed {
+  id: string;
+  name: string;
+  token: string;
+  tone: string;
+  role: string;
+  visual_class: "room";
+  sort_order: number;
+}
+
+export interface RouteEdgeSeed {
+  id: string;
+  from_node_id: string;
+  to_node_id: string;
+  route_type: string;
+  status: string;
+  privacy_class: string;
+  risk_level: string;
+  label: string;
+  related_route_id?: string;
+  summary: string;
 }
 
 export interface EventSeed {
@@ -141,10 +192,30 @@ export interface SeasonSummarySeed {
   notes: string[];
 }
 
+export interface SeasonPolicySeed {
+  season_family: string;
+  first_season: string;
+  formula_version: string;
+  xp_mode: string;
+  label: string;
+  timezone: string;
+  daily_reset_time: string;
+  pre_restart_started_at: string;
+  initial_restart_at: string;
+  reset_mode: "display_current_season_only";
+  scheduler_source_of_truth: "windows_task_scheduler";
+  codex_automation_role: "audit_report_only";
+  affected_domains: string[];
+  preserve: string[];
+  notes: string[];
+}
+
 export type ProposalStatus =
   | "draft"
   | "pending"
   | "approved"
+  | "in_progress"
+  | "implementation_requested"
   | "denied"
   | "revise_requested"
   | "deferred"
@@ -166,7 +237,11 @@ export type ProposalDialogueMessageType =
   | "decision_note"
   | "clarification_question"
   | "user_reply"
-  | "agent_revision_note";
+  | "agent_revision_note"
+  | "work_start"
+  | "implementation_request"
+  | "implementation_complete"
+  | "implementation_review";
 
 export interface ProposalDialogueMessageSeed {
   message_id: string;
@@ -176,6 +251,91 @@ export interface ProposalDialogueMessageSeed {
   message: string;
   created_at: string;
   message_type: ProposalDialogueMessageType;
+}
+
+export type ProposalVoteValue = "support" | "oppose" | "abstain";
+
+export interface ProposalVoteSeed {
+  vote_id: string;
+  proposal_id: string;
+  agent_id: string;
+  vote: ProposalVoteValue;
+  confidence: number;
+  reasoning: string;
+  expected_benefit: string;
+  expected_failure_mode: string;
+  risk_notes: string;
+  context_notes?: string;
+  created_at: string;
+  usefulness_status: "pending_outcome" | "useful" | "not_useful" | "not_awarded";
+  peer_review_xp: number;
+  response_kind?: "recorded" | "required_abstain" | "amended_after_prompt";
+  peer_review_xp_multiplier?: number;
+  peer_review_xp_penalty_reason?: string;
+  agent_memory_note?: string;
+}
+
+export interface ProposalCouncilSummary {
+  eligible_count: number;
+  participation_count: number;
+  participation_rate: number;
+  peer_review_participation_count?: number;
+  peer_review_participation_rate?: number;
+  amendment_requested_count?: number;
+  vote_counts: Record<ProposalVoteValue, number>;
+  average_confidence_by_vote: Record<ProposalVoteValue, number>;
+  healthy_abstain_count: number;
+  peer_review_xp_awarded: number;
+  useful_assessment_count: number;
+  pending_assessment_count: number;
+  guidance: string;
+}
+
+export interface ProposalImplementationRoutePlan {
+  orchestration_layer?: string;
+  route_snapshot_version?: string;
+  authority_source?: string;
+  autonomy_scope?: string;
+  dispatch_mode?: string;
+  dispatch_status?: string;
+  routing_owner?: string;
+  primary_provider?: string;
+  privacy?: string;
+  risk?: string;
+  task_type?: string;
+  policy_basis?: string;
+  provider_roles?: string[];
+  selected_agents?: RouteParticipant[];
+  candidate_providers?: RouteParticipant[];
+  skipped_providers?: RouteParticipant[];
+  provider_result_refs?: string[];
+  token_saving_choices?: string[];
+  promotion_policy?: string;
+  dispatch_job_path?: string;
+  dispatch_run_dir?: string;
+  recommended_agents?: {
+    agent_id: string;
+    role: string;
+    reason: string;
+  }[];
+  affected_areas?: string[];
+  approval_required_for?: string[];
+  final_reviewer_id?: string;
+}
+
+export interface RouteParticipant {
+  agent_id: string;
+  provider?: string;
+  access_mode?: string;
+  trust_level?: string;
+  task_role?: string;
+  route_status?: string;
+  cost_quota_notes?: string;
+  unavailable_reason?: string;
+  reason?: string;
+  result_refs?: string[];
+  evidence_refs?: string[];
+  capabilities?: string[];
 }
 
 export interface ProposalSeed {
@@ -195,10 +355,31 @@ export interface ProposalSeed {
   acceptance_criteria: string[];
   rollback_plan: string;
   status: ProposalStatus;
+  broadcast_status?: string;
+  broadcasted_at?: string | null;
+  eligible_agent_ids?: string[];
+  council_votes?: ProposalVoteSeed[];
+  council_summary?: ProposalCouncilSummary;
   decision: "approve" | "deny" | "revise" | "defer" | null;
   decision_note: string | null;
   decision_note_provided?: boolean;
   decided_at: string | null;
+  work_started_at?: string | null;
+  work_start_note?: string | null;
+  work_start_note_provided?: boolean;
+  implementation_session_id?: string | null;
+  implementation_requested_at?: string | null;
+  implementation_request_note?: string | null;
+  implementation_request_note_provided?: boolean;
+  implementation_brief_path?: string | null;
+  implementation_dispatch_status?: string | null;
+  implementation_route_plan?: ProposalImplementationRoutePlan;
+  implementation_completed_at?: string | null;
+  implementation_completion_note?: string | null;
+  implementation_evidence_refs?: string[];
+  implementation_reviewed_at?: string | null;
+  implementation_review_note?: string | null;
+  implementation_reviewer_id?: string | null;
   simulated_xp_gain: number;
   simulated_xp_loss: number;
   dialogue_messages?: ProposalDialogueMessageSeed[];

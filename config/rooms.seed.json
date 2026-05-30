@@ -1,0 +1,74 @@
+[
+  {
+    "id": "central-desk",
+    "name": "Central Desk",
+    "token": "CD",
+    "tone": "green",
+    "role": "Coordination and current expedition command.",
+    "visual_class": "room",
+    "sort_order": 10
+  },
+  {
+    "id": "map-room",
+    "name": "Map Room",
+    "token": "MR",
+    "tone": "green",
+    "role": "Expedition overview, campaign routes, and ecosystem growth.",
+    "visual_class": "room",
+    "sort_order": 20
+  },
+  {
+    "id": "archive-vault",
+    "name": "Archive Vault",
+    "token": "AV",
+    "tone": "amber",
+    "role": "Memory stores, durable artifacts, and field history.",
+    "visual_class": "room",
+    "sort_order": 30
+  },
+  {
+    "id": "engineering-bay",
+    "name": "Engineering Bay",
+    "token": "EB",
+    "tone": "blue",
+    "role": "Build work, Codex runs, and local implementation craft.",
+    "visual_class": "room",
+    "sort_order": 40
+  },
+  {
+    "id": "comms-wing",
+    "name": "Comms Wing",
+    "token": "CW",
+    "tone": "red",
+    "role": "Gateways, bridges, watcher routes, and signal flow.",
+    "visual_class": "room",
+    "sort_order": 50
+  },
+  {
+    "id": "systems-deck",
+    "name": "Systems Deck",
+    "token": "SD",
+    "tone": "blue",
+    "role": "Hosts, devices, runtimes, and local infrastructure.",
+    "visual_class": "room",
+    "sort_order": 60
+  },
+  {
+    "id": "review-desk",
+    "name": "Signal Desk",
+    "token": "SG",
+    "tone": "red",
+    "role": "Review lights for blocked, risky, or unclear activity.",
+    "visual_class": "room",
+    "sort_order": 70
+  },
+  {
+    "id": "staging-area",
+    "name": "Staging Area",
+    "token": "SA",
+    "tone": "amber",
+    "role": "Blueprints, sleeping constructs, and future integrations.",
+    "visual_class": "room",
+    "sort_order": 80
+  }
+]

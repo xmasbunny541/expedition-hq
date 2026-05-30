@@ -37,6 +37,29 @@
         },
         "summary": {
           "type": "string"
+        },
+        "candidate_profile": {
+          "type": "object",
+          "properties": {
+            "provider": { "type": "string" },
+            "visiting_specialist": { "type": "boolean" },
+            "free_tier_capabilities_profiled": { "type": "boolean" },
+            "trust_level": { "type": "string" },
+            "quality_band": { "type": "string" },
+            "promotion_gate": { "type": "string" },
+            "promotion_level": { "type": "string" },
+            "trust_ladder": { "type": "array", "items": { "type": "string" } },
+            "allowed_roles": { "type": "array", "items": { "type": "string" } },
+            "restrictions": { "type": "array", "items": { "type": "string" } },
+            "safety_flags": { "type": "array", "items": { "type": "string" } },
+            "useful_output_count": { "type": "integer", "minimum": 0 },
+            "evidence_refs": { "type": "array", "items": { "type": "string" } },
+            "availability_notes": { "type": "string" },
+            "cost_quota_notes": { "type": "string" },
+            "promotion_review_cadence": { "type": "string" },
+            "promotion_recommendation": { "type": "string" },
+            "promotion_dossier": { "type": "object" }
+          }
         }
       }
     },
@@ -179,6 +202,53 @@
         }
       }
     },
+    "room": {
+      "type": "object",
+      "required": [
+        "id",
+        "name",
+        "token",
+        "tone",
+        "role",
+        "visual_class",
+        "sort_order"
+      ],
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "token": { "type": "string" },
+        "tone": { "type": "string" },
+        "role": { "type": "string" },
+        "visual_class": { "type": "string" },
+        "sort_order": { "type": "integer" }
+      }
+    },
+    "route_edge": {
+      "type": "object",
+      "required": [
+        "id",
+        "from_node_id",
+        "to_node_id",
+        "route_type",
+        "status",
+        "privacy_class",
+        "risk_level",
+        "label",
+        "summary"
+      ],
+      "properties": {
+        "id": { "type": "string" },
+        "from_node_id": { "type": "string" },
+        "to_node_id": { "type": "string" },
+        "route_type": { "type": "string" },
+        "status": { "type": "string" },
+        "privacy_class": { "type": "string" },
+        "risk_level": { "type": "string" },
+        "label": { "type": "string" },
+        "related_route_id": { "type": "string" },
+        "summary": { "type": "string" }
+      }
+    },
     "season_summary": {
       "type": "object",
       "required": [
@@ -221,6 +291,60 @@
         "top_expeditions_by_base_xp": { "type": "array" },
         "top_expeditions_by_awarded_xp": { "type": "array" },
         "notes": { "type": "array" }
+      }
+    },
+    "season_policy": {
+      "type": "object",
+      "required": [
+        "season_family",
+        "first_season",
+        "formula_version",
+        "xp_mode",
+        "label",
+        "timezone",
+        "daily_reset_time",
+        "pre_restart_started_at",
+        "initial_restart_at",
+        "reset_mode",
+        "scheduler_source_of_truth",
+        "codex_automation_role"
+      ],
+      "properties": {
+        "season_family": { "type": "string" },
+        "first_season": { "type": "string" },
+        "formula_version": { "type": "string" },
+        "xp_mode": { "type": "string" },
+        "label": { "type": "string" },
+        "timezone": { "type": "string" },
+        "daily_reset_time": { "type": "string" },
+        "pre_restart_started_at": { "type": "string" },
+        "initial_restart_at": { "type": "string" },
+        "reset_mode": {
+          "type": "string",
+          "enum": ["display_current_season_only"]
+        },
+        "scheduler_source_of_truth": {
+          "type": "string",
+          "enum": ["windows_task_scheduler"]
+        },
+        "codex_automation_role": {
+          "type": "string",
+          "enum": ["audit_report_only"]
+        },
+        "affected_domains": {
+          "type": "array",
+          "items": { "type": "string" },
+          "contains": { "const": "xp_current_season_display" }
+        },
+        "preserve": {
+          "type": "array",
+          "items": { "type": "string" },
+          "contains": { "const": "expeditions" }
+        },
+        "notes": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
       }
     },
     "proposal": {
@@ -284,6 +408,8 @@
             "draft",
             "pending",
             "approved",
+            "in_progress",
+            "implementation_requested",
             "denied",
             "revise_requested",
             "deferred",
@@ -292,6 +418,88 @@
             "rejected",
             "archived"
           ]
+        },
+        "broadcast_status": {
+          "type": "string",
+          "enum": [
+            "draft",
+            "broadcasted",
+            "closed"
+          ]
+        },
+        "broadcasted_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "eligible_agent_ids": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "council_votes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "vote_id",
+              "proposal_id",
+              "agent_id",
+              "vote",
+              "confidence",
+              "reasoning",
+              "expected_benefit",
+              "expected_failure_mode",
+              "risk_notes",
+              "created_at"
+            ],
+            "properties": {
+              "vote_id": { "type": "string" },
+              "proposal_id": { "type": "string" },
+              "agent_id": { "type": "string" },
+              "vote": {
+                "type": "string",
+                "enum": ["support", "oppose", "abstain"]
+              },
+              "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+              "reasoning": { "type": "string" },
+              "expected_benefit": { "type": "string" },
+              "expected_failure_mode": { "type": "string" },
+              "risk_notes": { "type": "string" },
+              "context_notes": { "type": "string" },
+              "created_at": { "type": "string" },
+              "usefulness_status": {
+                "type": "string",
+                "enum": ["pending_outcome", "useful", "not_useful", "not_awarded"]
+              },
+              "peer_review_xp": { "type": "number", "minimum": 0, "maximum": 0.25 },
+              "response_kind": {
+                "type": "string",
+                "enum": ["recorded", "required_abstain", "amended_after_prompt"]
+              },
+              "peer_review_xp_multiplier": { "type": "number", "minimum": 0, "maximum": 1 },
+              "peer_review_xp_penalty_reason": { "type": "string" },
+              "agent_memory_note": { "type": "string" }
+            }
+          }
+        },
+        "council_summary": {
+          "type": "object",
+          "properties": {
+            "eligible_count": { "type": "integer", "minimum": 0 },
+            "participation_count": { "type": "integer", "minimum": 0 },
+            "participation_rate": { "type": "number", "minimum": 0 },
+            "peer_review_participation_count": { "type": "integer", "minimum": 0 },
+            "peer_review_participation_rate": { "type": "number", "minimum": 0 },
+            "amendment_requested_count": { "type": "integer", "minimum": 0 },
+            "vote_counts": { "type": "object" },
+            "average_confidence_by_vote": { "type": "object" },
+            "healthy_abstain_count": { "type": "integer", "minimum": 0 },
+            "peer_review_xp_awarded": { "type": "number", "minimum": 0 },
+            "useful_assessment_count": { "type": "integer", "minimum": 0 },
+            "pending_assessment_count": { "type": "integer", "minimum": 0 },
+            "guidance": { "type": "string" }
+          }
         },
         "decision": {
           "type": [
@@ -314,6 +522,148 @@
         },
         "decision_note_provided": { "type": "boolean" },
         "decided_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "work_started_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "work_start_note": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "work_start_note_provided": { "type": "boolean" },
+        "implementation_session_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "implementation_requested_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "implementation_request_note": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "implementation_request_note_provided": { "type": "boolean" },
+        "implementation_brief_path": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "implementation_dispatch_status": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "implementation_route_plan": {
+          "type": "object",
+          "properties": {
+            "orchestration_layer": { "type": "string" },
+            "route_snapshot_version": { "type": "string" },
+            "authority_source": { "type": "string" },
+            "autonomy_scope": { "type": "string" },
+            "dispatch_mode": { "type": "string" },
+            "dispatch_status": { "type": "string" },
+            "routing_owner": { "type": "string" },
+            "primary_provider": { "type": "string" },
+            "privacy": { "type": "string" },
+            "risk": { "type": "string" },
+            "task_type": { "type": "string" },
+            "policy_basis": { "type": "string" },
+            "provider_roles": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "selected_agents": {
+              "type": "array",
+              "items": { "type": "object" }
+            },
+            "candidate_providers": {
+              "type": "array",
+              "items": { "type": "object" }
+            },
+            "skipped_providers": {
+              "type": "array",
+              "items": { "type": "object" }
+            },
+            "provider_result_refs": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "token_saving_choices": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "promotion_policy": { "type": "string" },
+            "dispatch_job_path": { "type": "string" },
+            "dispatch_run_dir": { "type": "string" },
+            "recommended_agents": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "agent_id": { "type": "string" },
+                  "role": { "type": "string" },
+                  "reason": { "type": "string" }
+                }
+              }
+            },
+            "affected_areas": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "approval_required_for": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "final_reviewer_id": { "type": "string" }
+          }
+        },
+        "implementation_completed_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "implementation_completion_note": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "implementation_evidence_refs": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "implementation_reviewed_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "implementation_review_note": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "implementation_reviewer_id": {
           "type": [
             "string",
             "null"
@@ -350,7 +700,11 @@
                   "decision_note",
                   "clarification_question",
                   "user_reply",
-                  "agent_revision_note"
+                  "agent_revision_note",
+                  "work_start",
+                  "implementation_request",
+                  "implementation_complete",
+                  "implementation_review"
                 ]
               }
             }

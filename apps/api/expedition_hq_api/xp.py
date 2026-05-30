@@ -4,10 +4,19 @@ from collections import Counter, defaultdict
 from math import prod
 from typing import Any
 
+from .season import (
+    DEFAULT_FORMULA_VERSION,
+    DEFAULT_XP_LABEL,
+    DEFAULT_XP_MODE,
+    current_xp_label,
+    current_xp_season,
+    event_in_window,
+)
+
 CURRENT_XP_SEASON = "0.1"
-CURRENT_XP_LABEL = "Season 0.x · Uncapped Calibration XP"
-FORMULA_VERSION = "xp_calibration_v0_1"
-XP_MODE = "uncapped_calibration"
+CURRENT_XP_LABEL = DEFAULT_XP_LABEL
+FORMULA_VERSION = DEFAULT_FORMULA_VERSION
+XP_MODE = DEFAULT_XP_MODE
 XP_SOURCE = "active_minutes"
 
 SCORING_MULTIPLIERS = [
@@ -73,7 +82,7 @@ def normalize_event_xp(event: dict[str, Any]) -> dict[str, Any]:
     base_xp = active_minutes / 60
     awarded_xp = base_xp * total_multiplier_raw
 
-    out["xp_season"] = out.get("xp_season") or CURRENT_XP_SEASON
+    out["xp_season"] = out.get("xp_season") or current_xp_season(out.get("timestamp"))
     out["formula_version"] = FORMULA_VERSION
     out["xp_mode"] = XP_MODE
     out["active_minutes"] = _round(active_minutes)
@@ -206,6 +215,7 @@ def xp_claim_status(event: dict[str, Any]) -> str:
 def aggregate_agent_xp_status(
     events: list[dict[str, Any]],
     agent_ids: set[str] | None = None,
+    season_window: dict[str, Any] | None = None,
 ) -> dict[str, dict[str, Any]]:
     statuses: dict[str, dict[str, Any]] = {}
     for agent_id in sorted(agent_ids or set()):
@@ -213,6 +223,8 @@ def aggregate_agent_xp_status(
 
     for event in events:
         normalized = normalize_event_xp(event)
+        if season_window is not None and not event_in_window(normalized, season_window):
+            continue
         participants = _event_participants(normalized)
         share_count = max(1, len(participants))
 
@@ -240,8 +252,8 @@ def aggregate_agent_xp_status(
         status["awarded_xp"] = _round(status["awarded_xp"])
         status["review_flags"] = _dedupe(status["review_flags"])
         status["claim_status_counts"] = dict(status["claim_status_counts"])
-        status["season"] = CURRENT_XP_SEASON
-        status["label"] = CURRENT_XP_LABEL
+        status["season"] = season_window["season"] if season_window is not None else current_xp_season()
+        status["label"] = season_window["label"] if season_window is not None else current_xp_label()
 
     return statuses
 
@@ -438,8 +450,8 @@ def _average(values: Any) -> float:
 
 def _empty_agent_xp_status() -> dict[str, Any]:
     return {
-        "season": CURRENT_XP_SEASON,
-        "label": CURRENT_XP_LABEL,
+        "season": current_xp_season(),
+        "label": current_xp_label(),
         "active_minutes": 0.0,
         "base_xp": 0.0,
         "awarded_xp": 0.0,

@@ -72,6 +72,13 @@ export function FieldReportCard({
           {shadowTags.map((tag) => <span className="pill shadow" key={tag}>{labelKey(tag)}</span>)}
           <span className="pill">{displayTime(event.timestamp)}</span>
         </div>
+        {(event.field_report_path || event.evidence_refs?.length > 0 || event.artifact_refs?.length > 0) && (
+          <div className="report-ref-list">
+            {event.field_report_path && <span>report: {event.field_report_path}</span>}
+            {event.evidence_refs?.slice(0, 2).map((ref) => <span key={ref}>evidence: {ref}</span>)}
+            {event.artifact_refs?.slice(0, 2).map((ref) => <span key={ref}>artifact: {ref}</span>)}
+          </div>
+        )}
       </div>
     </article>
   );

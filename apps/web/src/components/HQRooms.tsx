@@ -1,22 +1,5 @@
-import type { Agent, Event, Incident } from "../types";
+import type { Agent, Event, Incident, Room, RouteEdge } from "../types";
 import { displayName, VisualToken } from "./VisualToken";
-
-interface RoomSpec {
-  id: string;
-  name: string;
-  token: string;
-  tone: string;
-}
-
-const rooms: RoomSpec[] = [
-  { id: "central-desk", name: "Central Desk", token: "CD", tone: "green" },
-  { id: "archive-vault", name: "Archive Vault", token: "AV", tone: "amber" },
-  { id: "engineering-bay", name: "Engineering Bay", token: "EB", tone: "blue" },
-  { id: "comms-wing", name: "Comms Wing", token: "CW", tone: "red" },
-  { id: "systems-deck", name: "Systems Deck", token: "SD", tone: "blue" },
-  { id: "map-room", name: "Map Room", token: "MR", tone: "green" },
-  { id: "review-desk", name: "Review Desk", token: "RD", tone: "red" }
-];
 
 function roomState(occupants: Agent[], reviewCount: number) {
   if (reviewCount > 0 || occupants.some((agent) => agent.ui_state === "blocked" || agent.status.includes("blocked"))) {
@@ -40,13 +23,18 @@ export function HQRooms({
   agents,
   incidents,
   latestEventForAgent,
-  reviewEvents
+  reviewEvents,
+  rooms,
+  routeEdges
 }: {
   agents: Agent[];
   incidents: Incident[];
   latestEventForAgent: (agent: Agent) => Event | undefined;
   reviewEvents: Event[];
+  rooms: Room[];
+  routeEdges: RouteEdge[];
 }) {
+  const sortedRooms = [...rooms].sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
   return (
     <section className="living-section">
       <div className="section-heading">
@@ -54,11 +42,11 @@ export function HQRooms({
           <p className="eyebrow">Living HQ</p>
           <h2>HQ Rooms</h2>
         </div>
-        <span className="section-note">Read-only room state from seed data and event history.</span>
+        <span className="section-note">Read-only room state from seed data, route edges, and event history.</span>
       </div>
 
       <div className="room-map" aria-label="Expedition HQ rooms">
-        {rooms.map((room) => {
+        {sortedRooms.map((room) => {
           const roomAgents = agents.filter((agent) => agent.room === room.id);
           const reviewCount = room.id === "review-desk"
             ? reviewEvents.length + incidents.filter((incident) => incident.status === "open").length
@@ -82,6 +70,7 @@ export function HQRooms({
                 </div>
               </header>
               <p className="room-state">{state}</p>
+              {room.role && <p className="room-role">{room.role}</p>}
               <p className="room-activity">{activity}</p>
               <div className="room-occupants">
                 {occupants.length ? occupants.map((agent) => (
@@ -97,6 +86,19 @@ export function HQRooms({
           );
         })}
       </div>
+
+      {routeEdges.length > 0 && (
+        <div className="route-graph" aria-label="Room route edges">
+          {routeEdges.map((edge) => (
+            <article className={`route-edge state-${edge.status} risk-${edge.risk_level ?? "low"}`} key={edge.id}>
+              <span>{edge.from_node_id.replace(/-/g, " ")}</span>
+              <strong>{edge.label ?? edge.route_type.replace(/_/g, " ")}</strong>
+              <span>{edge.to_node_id.replace(/-/g, " ")}</span>
+              <p>{edge.summary}</p>
+            </article>
+          ))}
+        </div>
+      )}
     </section>
   );
 }

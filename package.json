@@ -6,9 +6,10 @@
     "build": "npm run web:build",
     "web:dev": "cd apps/web && npm run dev",
     "web:build": "cd apps/web && npm run build",
-    "seed:validate": "python scripts/validate_seed.py",
-    "api:init": "python scripts/init_db.py",
-    "api:dev": "cd apps/api && python -m uvicorn expedition_hq_api.main:app --reload --host 127.0.0.1 --port 8789",
-    "api:test": "python -m pytest apps/api/tests"
+    "seed:validate": "node scripts/run-python.mjs scripts/validate_seed.py",
+    "api:init": "node scripts/run-python.mjs scripts/init_db.py",
+    "api:dev": "cd apps/api && node ../../scripts/run-python.mjs -m uvicorn expedition_hq_api.main:app --reload --host 127.0.0.1 --port 8789",
+    "api:test": "node scripts/run-python.mjs -m pytest apps/api/tests --basetemp runtime/pytest-temp-api -p no:cacheprovider",
+    "api:test:local": "node scripts/run-python.mjs -m pytest apps/api/tests --basetemp runtime/pytest-temp-local -p no:cacheprovider"
   }
 }

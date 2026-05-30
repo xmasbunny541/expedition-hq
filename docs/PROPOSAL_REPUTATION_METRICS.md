@@ -1,38 +1,58 @@
 # Proposal Reputation Metrics
 
-Proposal reputation remains advisory during Season 0.x. Expedition HQ may display local proposal analytics, but it must not compute or apply real reputation, XP rewards, or XP penalties from proposals yet.
+Proposal reputation remains advisory during Season 0.x. The council is a learning record, not a corporate approval workflow and not an implementation queue.
 
-## MVP analytics
+Simple version for a 10 year old: the HQ remembers which specialists gave helpful advice. It does not punish them for being wrong, because the point is to learn who gives useful warnings, who spots benefits, and who is honest enough to abstain.
 
-The Proposal Desk currently shows:
+## Current Planning Bureau metrics
 
 - Proposal count by type.
+- Proposal count by source agent.
 - Approval, denial, defer, revise, and status counts.
-- Average requested wager.
-- Average confidence.
+- Support, oppose, and abstain vote counts.
+- Eligible specialist count and participation count.
+- Healthy abstain count.
+- Average confidence by vote type.
+- Average requested soft wager.
 - Simulated XP at risk for pending proposals.
 - Simulated XP lost for denied proposals.
-- Proposal count by source agent.
+- Separate peer-review XP awarded after useful assessments.
 - QA-only denial probes are labeled separately and excluded from normal proposal reputation analytics.
 
-These metrics help August evaluate proposal quality and calibration pressure. They are not a scoring policy.
+## Useful assessment signals
+
+A vote can be marked useful after the proposal outcome is known when it did one of these things:
+
+- named a real benefit that later mattered
+- named a failure mode that later appeared or was avoided
+- flagged a safety risk that changed the plan
+- abstained because the agent lacked enough context and avoided fake certainty
+- gave reasoning simple enough for August to judge quickly
+
+## Metrics to avoid
+
+- Do not rank agents by support rate alone.
+- Do not punish opposition when the plan later succeeds.
+- Do not punish support when the plan later fails.
+- Do not punish abstain.
+- Do not mix peer-review XP with active-time XP.
+- Do not treat visiting candidate votes as trusted-agent votes until they have a local profile.
 
 ## Candidate future metrics
 
-- Approval rate: share of proposals August approves.
-- Revision rate: share of proposals August revises before approval.
-- Denial rate: share of proposals August denies.
-- Accepted implementation rate: share of approved proposals whose implementation is accepted.
-- Rollback rate: share of accepted proposals that later need rollback.
-- Estimate accuracy: actual active minutes compared with proposed active minutes.
-- Risk accuracy: observed risk compared with proposed risk level.
-- Wager calibration: requested wager compared with accepted value and actual active effort.
+- Review usefulness rate.
+- Useful abstain rate.
+- Risk-note usefulness.
+- Benefit-prediction usefulness.
+- Failure-mode prediction usefulness.
+- Confidence calibration after outcomes are known.
+- Candidate specialist promotion readiness.
+- Minimum-wage candidate usefulness for narrow low-risk checks.
 
 ## Guardrails
 
 - Keep proposal reputation separate from active-time XP and multiplier XP.
 - Preserve proposal records even when XP resets.
-- Do not punish revised or deferred proposals during Season 0.x.
 - Do not let subjective polish, discovery, handoff, or sentimental tags automatically inflate awarded XP.
 - Do not use proposal analytics as an implementation queue or external automation trigger.
 - Do not treat deliberately bad QA proposals as product direction or agent reputation evidence.

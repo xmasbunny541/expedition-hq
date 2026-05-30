@@ -96,6 +96,31 @@ CREATE TABLE IF NOT EXISTS routes (
   raw_json TEXT NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS rooms (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  token TEXT NOT NULL,
+  tone TEXT NOT NULL,
+  role TEXT,
+  visual_class TEXT,
+  sort_order INTEGER DEFAULT 0,
+  raw_json TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS route_edges (
+  id TEXT PRIMARY KEY,
+  from_node_id TEXT NOT NULL,
+  to_node_id TEXT NOT NULL,
+  route_type TEXT NOT NULL,
+  status TEXT NOT NULL,
+  privacy_class TEXT,
+  risk_level TEXT,
+  label TEXT,
+  related_route_id TEXT,
+  summary TEXT,
+  raw_json TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS memory_stores (
   id TEXT PRIMARY KEY,
   classification TEXT NOT NULL,
@@ -145,6 +170,11 @@ CREATE TABLE IF NOT EXISTS proposals (
   acceptance_criteria_json TEXT DEFAULT '[]',
   rollback_plan TEXT,
   status TEXT NOT NULL,
+  broadcast_status TEXT DEFAULT 'broadcasted',
+  broadcasted_at TEXT,
+  eligible_agent_ids_json TEXT DEFAULT '[]',
+  council_votes_json TEXT DEFAULT '[]',
+  council_summary_json TEXT DEFAULT '{}',
   decision TEXT,
   decision_note TEXT,
   decision_note_provided INTEGER DEFAULT 0,
@@ -156,3 +186,9 @@ CREATE TABLE IF NOT EXISTS proposals (
   updated_at TEXT NOT NULL,
   raw_json TEXT NOT NULL
 );
+
+CREATE INDEX IF NOT EXISTS idx_events_timestamp ON events(timestamp);
+CREATE INDEX IF NOT EXISTS idx_events_source_id ON events(source_id);
+CREATE INDEX IF NOT EXISTS idx_events_expedition_id ON events(expedition_id);
+CREATE INDEX IF NOT EXISTS idx_agents_room ON agents(room);
+CREATE INDEX IF NOT EXISTS idx_route_edges_nodes ON route_edges(from_node_id, to_node_id);
